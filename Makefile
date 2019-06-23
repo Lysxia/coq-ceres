@@ -1,9 +1,12 @@
-.PHONY: coq test
+.PHONY: coq test build install clean html
 
 MF_COQ := Makefile.coq
 
 build: $(MF_COQ)
 	$(MAKE) -f $(MF_COQ)
+
+install: build
+	$(MAKE) -f $(MF_COQ) install
 
 test: build
 	coqc -Q theories/ Ceres test/Test.v
