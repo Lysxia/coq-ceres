@@ -94,7 +94,7 @@ Class Serialize (A : Type) : Type :=
   sexp_of : A -> sexp atom.
 ```
 
-S-expression, and thus serializable types, can be serialized to a `string`.
+S-expressions can be serialized to a `string`. Thus, so can serializable types.
 
 ```coq
 Definition string_of {A : Type} `{Serialize A} : A -> string.
