@@ -13,7 +13,7 @@ $(MF_COQ): _CoqProject
 
 clean:
 	if [ -e $(MF_COQ) ] ; then make -f $(MF_COQ) clean ; fi
-	rm */*.{vo,glob} */.*.aux
+	$(RM) */*.{vo,glob} */.*.aux
 
 COQDOCJS_DIR := coqdocjs
 
