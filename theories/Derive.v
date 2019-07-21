@@ -93,7 +93,7 @@ Definition deriveSerializeWith (o : options) (SA : Type) : TM unit :=
     tyDef <- tmQuoteInductive (inductive_mind i) ;;
     tyOne <- get_ind_body tyDef ;;
     q_body <- _deriveSerialize o tyDef ctx q_SA' q_A ;;
-    body <- tmUnquoteTyped SA q_body ;;
+    body <- tmUnquoteTyped SA q_body >>= tmEval cbn ;;
     iname <- tmEval all (mk_instance_name o (ind_name tyOne)) ;;
     tmDefinitionRed iname None body ;;
     tmExistingInstance iname;;
