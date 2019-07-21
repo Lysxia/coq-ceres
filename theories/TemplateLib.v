@@ -84,11 +84,14 @@ Definition tMatch
     (x : term) (y : term) (z : term)
     (branch : ident -> context -> term -> TM term)
   : TM term :=
-  match y with
-  | tApp (tInd i _ as ti) ys =>
+  let go i ti ys :=
     let name := inductive_mind i in
     tyDef <- tmQuoteInductive name ;;
     _tMatch tyDef i ti ys x z branch
+  in
+  match y with
+  | tApp (tInd i _ as ti) ys => go i ti ys
+  | tInd i _ as ti => go i ti []
   | _ => tmFail "Not matching an inductive"
   end.
 
@@ -110,9 +113,12 @@ Definition isSort : term -> bool := fun t =>
 
 (* Using [Monad] here leads to a universe inconsistency!? *)
 Definition tmInferInstanceQ
-           (rs : option reductionStrategy) (q_constraint : term) : TM term :=
+    (debug : bool) (rs : option reductionStrategy) (q_constraint : term)
+  : TM term :=
   constraint <- tmUnquoteTyped Type q_constraint ;;
+  when debug (tmPrint constraint) ;;
   oinst <- tmInferInstance rs constraint ;;
+  when debug (tmPrint oinst) ;;
   match oinst with
   | None => tmFail "Instance not found"
   | Some inst => tmQuote inst
@@ -138,24 +144,3 @@ Definition is_recursive (tyDef : mutual_inductive_body) : bool :=
   existsb (fun body =>
       existsb (fun ctor => is_recursive_ctor_type (snd (fst ctor))) (ind_ctors body)
     )%bool (ind_bodies tyDef).
-
-(*
-Definition unitI := mkInd "unit" 0.
-Quote Definition unitQ := unit.
-Quote Definition ttQ := tt.
-
-Definition testMatch y : TM unit :=
-  tMatch (tRel 0) y unitQ (fun _ _ _ => tmReturn ttQ) >>= fun t =>
-  tmUnquote (tLambda nAnon y t) >>= print_nf.
-
-Run TemplateProgram (tmQuote (t 2) >>= testMatch).
-
-Test Quote (match F1 : Fin.t 1 with F1 => tt | FS m => tt end).
-Test Quote (match [1] with [] => tt | _ :: _ => tt end).
-Test Quote (match false with false => tt | true => tt end).
-Test Quote (if false then tt else tt).
-
-CoInductive s : Type := { lol : nat }.
-
-Run TemplateProgram (tmQuoteInductive "s" >>= fun i => print_nf (is_recursive i)).
-*)
