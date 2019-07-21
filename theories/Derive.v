@@ -27,18 +27,27 @@ Definition enable_debug o :=
    ; mk_instance_name := mk_instance_name o
   |}.
 
+(* Construct the [term] for one branch of the [match].
+   - [ctx]: the context outside of the [match];
+   - [cname]: the name of the constructor;
+   - [cfields]: the fields of the constructor, as a [context];
+   - [_]: the type of the scrutinee for this branch.
+ *)
 Definition serializeConstr (o : options)
     (ctx : context) (cname : ident) (cfields : context) (_ : term)
   : TM term :=
   when (debug o) (print_nf ("Ceres: Serialize constructor", cname, ctx, cfields)) ;;
   let ctx0 := ctx ,,, cfields in
   let n0 := List.length ctx0 in
+  (* Loop to serialize each field. *)
   let fix serializeFields acc cfields' cn' :=
       match cfields' with
       | {| decl_type := t0 |} :: ct2 =>
         if isSort t0 then
+          (* Don't try to serialize types. *)
           serializeFields acc ct2 (S cn')
         else (
+          (* Run instance resolution for every field. *)
           let t1 := lift0 (S cn') t0 in
           let q_constraint :=
             it_mkProd_or_LetIn ctx0 (mkApp q_Serialize t1) in
