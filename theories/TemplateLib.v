@@ -120,7 +120,9 @@ Definition tmInferInstanceQ
   oinst <- tmInferInstance rs constraint ;;
   when debug (tmPrint oinst) ;;
   match oinst with
-  | None => tmFail "Instance not found"
+  | None =>
+    tmPrint ("Ceres: Searching for", constraint) ;;
+    tmFail "Ceres: Instance not found"
   | Some inst => tmQuote inst
   end.
 

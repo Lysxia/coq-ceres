@@ -30,7 +30,7 @@ Definition enable_debug o :=
 Definition serializeConstr (o : options)
     (ctx : context) (cname : ident) (cfields : context) (_ : term)
   : TM term :=
-  when (debug o) (tmPrint "XX" ;; print_nf (cname, ctx, cfields)) ;;
+  when (debug o) (print_nf ("Ceres: Serialize constructor", cname, ctx, cfields)) ;;
   let ctx0 := ctx ,,, cfields in
   let n0 := List.length ctx0 in
   let fix serializeFields acc cfields' cn' :=
@@ -42,9 +42,8 @@ Definition serializeConstr (o : options)
           let t1 := lift0 (S cn') t0 in
           let q_constraint :=
             it_mkProd_or_LetIn ctx0 (mkApp q_Serialize t1) in
-          when (debug o) (tmPrint 0 ;; print_nf q_constraint) ;;
+          when (debug o) (print_nf ("Ceres: Quoted constraint", q_constraint)) ;;
           q_inst <- tmInferInstanceQ (debug o) None q_constraint ;;
-          when (debug o) (tmPrint 1) ;;
           let q_inst' := mkApps q_inst (List.map tRel (rev' (seq 0 n0))) in
           let t := mkApps q_sexp_of [t1; q_inst' ; tRel cn'] in
           serializeFields (t :: acc) ct2 (S cn')
@@ -83,9 +82,11 @@ Definition deriveSerializeWith (o : options) (SA : Type) : TM unit :=
   q_A <- match q_SA' with
     | tApp (tConst name _) [a] =>
       assert_else (eq_string name name_Serialize)
-        "Expected instance head of the form (Serialize _) (wrong class name)" ;;
+        ("Ceres: Expected Serialize at the head, found " ++ name);;
       tmReturn a
-    | _ => tmFail "Expected instance head of the form (Serialize _)"
+    | q =>
+      tmPrint ("Ceres: Wrong head", q) ;;
+      tmFail "Ceres: Expected Serialize at the head"
     end ;;
   match q_A with
   | tInd i _ | tApp (tInd i _) _ =>
@@ -97,7 +98,9 @@ Definition deriveSerializeWith (o : options) (SA : Type) : TM unit :=
     tmDefinitionRed iname None body ;;
     tmExistingInstance iname;;
     tmReturn tt
-  | _ => tmFail "not an inductive"
+  | q =>
+    tmPrint ("Ceres: Bad type", q) ;;
+    tmFail "Ceres: Not an inductive type"
   end.
 
 Definition deriveSerialize : Type -> TM unit := deriveSerializeWith o0.
