@@ -11,10 +11,13 @@ Module Import TMNotations.
 Notation TM := TemplateMonad.
 Notation "x <- u ;; k" := (tmBind u (fun x => k))
   (at level 60, u at next level, right associativity) : template_scope.
-Infix ">>=" := tmBind (at level 60) : template_scope.
-Notation "u ;; v" := (tmBind u (fun _ => v)) (at level 60) : template_scope.
+Infix ">>=" := tmBind (at level 50, left associativity) : template_scope.
+Notation "u ;; v" := (tmBind u (fun _ => v)) (at level 60, right associativity) : template_scope.
 Delimit Scope template_scope with template.
 Open Scope template_scope.
+
+Notation tInd_ s := (tInd (mkInd s _) _).
+Notation tCon_ s n := (tConstruct (mkInd s _) n _).
 
 End TMNotations.
 
@@ -40,6 +43,9 @@ Definition tmTraverse {A B} (f : A -> TM B)
       ys <- _traverse xs ;;
       tmReturn (y :: ys)
     end.
+
+Definition when (b : bool) (u : TM unit) : TM unit :=
+  if b then u else tmReturn tt.
 
 (* [match x : y return z with ... end]
    - [x]: Scrutinee
@@ -78,9 +84,6 @@ Definition tMatch
     tmReturn (tCase (i, 0) motive x branches)
   | _ => tmFail "Not matching an inductive"
   end.
-
-Local Notation tInd_ s := (tInd (mkInd s _) _).
-Local Notation tCon_ s n := (tConstruct (mkInd s _) n _).
 
 Definition getName {A : Type} (a : A) : TM kername :=
   qa <- tmQuote a ;;
@@ -129,16 +132,6 @@ Fixpoint is_recursive_ctor_typen (n : nat) (t : term) : bool :=
 
 Definition is_recursive_ctor_type : term -> bool :=
   is_recursive_ctor_typen 0.
-
-Fixpoint is_recursive_proj_typen (n : nat) (t : term) : bool :=
-  match t with
-  | tProd x tx tf =>
-    is_recursive_proj_typen (S n) tf
-  | t0 => closedn n t0
-  end.
-
-Definition is_recursive_proj_type (t : term) : bool :=
-  is_recursive_proj_typen O t.
 
 Definition is_recursive (tyDef : mutual_inductive_body) : bool :=
   existsb (fun body =>
