@@ -47,6 +47,31 @@ Definition tmTraverse {A B} (f : A -> TM B)
 Definition when (b : bool) (u : TM unit) : TM unit :=
   if b then u else tmReturn tt.
 
+Definition _tMatch
+    (tyDef : mutual_inductive_body) (i : inductive) (ti : term) (ys : list term)
+    (x : term) (z : term)
+    (branch : ident -> context -> term -> TM term)
+  : TM term :=
+  tyBody <- get_ind_body tyDef ;;
+  let params := firstn (ind_npars tyDef) ys in
+  let tyBody' :=
+    subst0 (rev' params) (remove_arity (ind_npars tyDef) (ind_type tyBody)) in
+  let (ctx', ty0) := decompose_prod_assum [] tyBody' in
+  let motive := it_mkLambda_or_LetIn ctx'
+    (let n := List.length ctx' in
+     tLambda
+       nAnon
+       (mkApps (lift0 n (tApp ti params)) (List.map tRel (rev' (seq 0 n))))
+       (lift0 n z)) in
+  let mkBranch : _ -> TM (nat * term) := fun '(i, t, a) =>
+    let t'' := subst0 (rev' (ti :: params)) (remove_arity (ind_npars tyDef) t) in
+    let '(ctx, t') := decompose_prod_assum [] t'' in
+    tb <- branch i ctx t' ;;
+    let u := it_mkLambda_or_LetIn ctx tb in
+    tmReturn (a, u) in
+  branches <- tmTraverse mkBranch (ind_ctors tyBody) ;;
+  tmReturn (tCase (i, 0) motive x branches).
+
 (* [match x : y return z with ... end]
    - [x]: Scrutinee
    - [y]: Type of scrutinee
@@ -63,25 +88,7 @@ Definition tMatch
   | tApp (tInd i _ as ti) ys =>
     let name := inductive_mind i in
     tyDef <- tmQuoteInductive name ;;
-    tyBody <- get_ind_body tyDef ;;
-    let params := firstn (ind_npars tyDef) ys in
-    let tyBody' :=
-      subst0 (rev' params) (remove_arity (ind_npars tyDef) (ind_type tyBody)) in
-    let (ctx', ty0) := decompose_prod_assum [] tyBody' in
-    let motive := it_mkLambda_or_LetIn ctx' 
-      (let n := List.length ctx' in
-       tLambda
-         nAnon
-         (mkApps (lift0 n (tApp ti params)) (List.map tRel (rev' (seq 0 n))))
-         (lift0 n z)) in
-    let mkBranch : _ -> TM (nat * term) := fun '(i, t, a) =>
-      let t'' := subst0 (rev' (ti :: params)) (remove_arity (ind_npars tyDef) t) in
-      let '(ctx, t') := decompose_prod_assum [] t'' in
-      tb <- branch i ctx t' ;;
-      let u := it_mkLambda_or_LetIn ctx tb in
-      tmReturn (a, u) in
-    branches <- tmTraverse mkBranch (ind_ctors tyBody) ;;
-    tmReturn (tCase (i, 0) motive x branches)
+    _tMatch tyDef i ti ys x z branch
   | _ => tmFail "Not matching an inductive"
   end.
 
@@ -94,12 +101,6 @@ Definition getName {A : Type} (a : A) : TM kername :=
 
 Definition assert_else (b : bool) (s : string) : TM unit :=
   if b then tmReturn tt else tmFail s.
-
-Definition unwrap_or {A} (err : TM A) (o : option A) : TM A :=
-  match o with
-  | Some b => tmReturn b
-  | None => err
-  end.
 
 Definition isSort : term -> bool := fun t =>
   match t with
