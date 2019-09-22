@@ -24,11 +24,11 @@ Definition to_string {A} `{Serialize A} : A -> string :=
 
 (** Integer representations. *)
 Class Integral (A : Type) :=
-  Z_of : A -> Z.
+  to_Z : A -> Z.
 
 (** Integers are serializable. *)
 Instance Serialize_Integral {A : Type} `(Integral A) : Serialize A :=
-  Z_of.
+  to_Z.
 
 Instance Integral_nat : Integral nat := Z.of_nat.
 Instance Integral_N : Integral N := Z.of_N.
