@@ -8,7 +8,7 @@ From Coq Require Import
 
 From Ceres Require Import
   S
-  S_Format
+  Format
   String.
 (* end hide *)
 
