@@ -1,12 +1,8 @@
 (** * String utilities *)
 
 (* begin hide *)
-Require Import Coq.Arith.Arith.
-Require Import Coq.ZArith.ZArith.
-Require Import Coq.NArith.NArith.
-Require Import Coq.Strings.Ascii.
-Require Import Coq.Strings.String.
-Require Import Coq.Init.Decimal.
+From Coq Require Import
+  Arith ZArith NArith Ascii String Decimal DecimalString.
 (* end hide *)
 
 Infix "::" := String : string_scope.
@@ -142,26 +138,7 @@ Definition unescape_string (s : string) : option string :=
 
 (** ** Convert numbers to string *)
 
-Fixpoint string_of_uint (n : uint) : string :=
-  match n with
-  | Nil => ""
-  | D0 n => "0" :: string_of_uint n
-  | D1 n => "1" :: string_of_uint n
-  | D2 n => "2" :: string_of_uint n
-  | D3 n => "3" :: string_of_uint n
-  | D4 n => "4" :: string_of_uint n
-  | D5 n => "5" :: string_of_uint n
-  | D6 n => "6" :: string_of_uint n
-  | D7 n => "7" :: string_of_uint n
-  | D8 n => "8" :: string_of_uint n
-  | D9 n => "9" :: string_of_uint n
-  end.
-
-Definition string_of_int (n : int) : string :=
-  match n with
-  | Pos n => string_of_uint n
-  | Neg n => "-" :: string_of_uint n
-  end.
+Import NilEmpty.
 
 Definition string_of_nat (n : nat) : string :=
   string_of_uint (Nat.to_uint n).
