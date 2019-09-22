@@ -47,7 +47,7 @@ Fixpoint sexp_of_atoms {A} (xs : list A) : sexp A :=
 (** * Default atoms *)
 
 (** Internal representation of [atom]. *)
-Local Variant _atom : Set :=
+Variant _atom : Set :=
 | _Num (n : Z)
 | _Str (s : string)
 | _Raw (s : string)
