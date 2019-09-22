@@ -119,6 +119,7 @@ Going the other way requires some additional error handling.
 Class Deserialize (A : Type) : Type := ...
 
 Definition from_sexp {A} `{Deserialize A} : sexp atom -> error + A.
+Definition from_string {A} `{Deserialize A} : string -> error + A.
 ```
 
 Again, a simplified interface for numeric types is thus provided,

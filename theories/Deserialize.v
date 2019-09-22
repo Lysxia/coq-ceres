@@ -66,9 +66,17 @@ Definition FromSexp (A : Type) := loc -> sexp atom -> error + A.
 Class Deserialize (A : Type) :=
   _from_sexp : FromSexp A.
 
-(** Deserialize an S-expression. *)
+(** Deserialize from an S-expression. *)
 Definition from_sexp `{Deserialize A} : sexp atom -> error + A :=
   _from_sexp nil.
+
+(** Deserialize from a string containing an S-expression. *)
+Definition from_string `{Deserialize A} : string -> error + A :=
+  fun s =>
+    match parse_one s with
+    | inl e => inl (ParseError e)
+    | inr x => from_sexp x
+    end.
 
 
 (** Context for consuming lists of S-expressions. *)
