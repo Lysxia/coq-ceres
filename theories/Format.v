@@ -13,14 +13,14 @@ From Ceres Require Import
 (** Helper for [string_of_sexp]. *)
 Local Definition dstring_of_sexp {A} (dstring_A : A -> DString.t)
   : sexp A -> DString.t
-  := fix _dstring_of (x : sexp A) : DString.t :=
+  := fix _to_dstring (x : sexp A) : DString.t :=
     match x with
     | Atom a => dstring_A a
     | List nil => "()"%string
     | List (x :: xs) => fun s0 =>
         (  "("
-        :: _dstring_of x
-             (fold_right (fun x => " "%char ++ _dstring_of x)%dstring
+        :: _to_dstring x
+             (fold_right (fun x => " "%char ++ _to_dstring x)%dstring
                 (")" :: s0)
                 xs))%string
     end%dstring.

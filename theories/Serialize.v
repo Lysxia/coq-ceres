@@ -17,7 +17,7 @@ Class Serialize (A : Type) :=
   to_sexp : A -> sexp atom.
 
 (** Serialize a value to a string. *)
-Definition string_of {A} `{Serialize A} : A -> string :=
+Definition to_string {A} `{Serialize A} : A -> string :=
   fun a => string_of_sexpa (to_sexp a).
 
 (** ** Serialize integers *)

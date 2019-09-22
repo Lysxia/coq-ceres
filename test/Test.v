@@ -4,7 +4,7 @@ From Ceres Require Import Ceres Parser.
 Import ListNotations.
 
 Definition s : unit + (nat * bool * unit) := inr (1, false, tt).
-Definition test_to_string_s : string_of s = "(inr ((1 false) tt))"%string
+Definition test_to_string_s : to_string s = "(inr ((1 false) tt))"%string
   := eq_refl.
 
 Definition roundtrip {A} `{Serialize A} `{Deserialize A} : A -> Prop :=
