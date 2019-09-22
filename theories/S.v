@@ -20,7 +20,7 @@ Declare Scope sexp_scope.
 Delimit Scope sexp_scope with sexp.
 Bind Scope sexp_scope with sexp.
 
-Notation "[]" := (List nil) : sexp_scope.
+Notation "[ ]" := (List nil) : sexp_scope.
 Notation "[ x ]" := (List (@cons (sexp _) x nil)) : sexp_scope.
 Notation "[ x ; y ; .. ; z ]"
   := (List (@cons (sexp _) x (@cons (sexp _) y .. (@cons (sexp _) z nil) .. )))
