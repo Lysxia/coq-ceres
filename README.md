@@ -91,22 +91,44 @@ Serializers can be defined as instances of the `Serialize` type class.
 
 ```coq
 Class Serialize (A : Type) : Type :=
-  sexp_of : A -> sexp atom.
+  to_sexp : A -> sexp atom.
 ```
 
 S-expressions can be serialized to a `string`. Thus, so can serializable types.
 
 ```coq
-Definition string_of {A : Type} `{Serialize A} : A -> string.
+Definition to_string {A : Type} `{Serialize A} : A -> string.
 ```
 
-For numeric types, it is sufficient to define a conversion to `Z`.
+For numeric types, it is sufficient to define a conversion to `Z` as an
+instance of `Integral`.
 
 ```coq
 Class Integral (A : Type) : Type :=
-  Z_of : A -> Z.
+  to_Z : A -> Z.
 
 Instance Serialize_Integral (A : Type) : Integral A -> Serialize A.
+```
+
+Deserialization
+---------------
+
+Going the other way requires some additional error handling.
+
+```coq
+Class Deserialize (A : Type) : Type := ...
+
+Definition from_sexp {A} `{Deserialize A} : sexp atom -> error + A.
+```
+
+Again, a simplified interface for numeric types is thus provided,
+with a `SemiIntegral` class.
+
+```coq
+Class SemiIntegral (A : Type) : Type :=
+  from_Z : Z -> option A.
+
+Instance Deserialize_SemiIntegral (A : Type) : SemiIntegral A -> Deserialize A.
 ```
 
 See also
