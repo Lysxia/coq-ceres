@@ -51,6 +51,9 @@ Delimit Scope s_msg_scope with s_message.
 Infix "++" := MsgApp : s_msg_scope.
 Coercion MsgStr : string >-> message.
 
+Definition type_error (tyname : string) (msg : message) : message :=
+  "could not read type '"%string ++ tyname ++ "', "%string ++ msg.
+
 Variant error :=
 | ParseError : Parser.error -> error
 | DeserError : loc -> message -> error
@@ -69,7 +72,7 @@ Definition from_sexp `{Deserialize A} : sexp atom -> error + A :=
 
 
 (** Context for consuming lists of S-expressions. *)
-Definition FromSexpList (A : Type) := loc -> list (sexp atom) -> error + A.
+Definition FromSexpList (A : Type) := loc -> (message -> message) -> list (sexp atom) -> error + A.
 
 (** Context for consuming lists with a statically-known expected length. *)
 Record FromSexpListN (m n : nat) (A : Type) := {
@@ -78,69 +81,73 @@ Record FromSexpListN (m n : nat) (A : Type) := {
 
 Module Deser.
 
-Definition _con {A : Type} (g : string -> loc -> error + A) (f : string -> FromSexpList A) : FromSexp A :=
+Definition _con {A : Type} (tyname : string)
+    (g : string -> loc -> error + A) (f : string -> FromSexpList A)
+  : FromSexp A :=
   fun l e =>
     match e with
-    | List (ARaw c :: es) => f c l es
-    | List (e0 :: es) => inl (DeserError (0 :: l) ("unexpected atom (expected constructor name)"%string))
-    | List nil => inl (DeserError l "unexpected empty list"%string)
+    | List (ARaw c :: es) => f c l (type_error tyname) es
+    | List (e0 :: es) => inl (DeserError (0 :: l) (type_error tyname "unexpected atom (expected constructor name)"%string))
+    | List nil => inl (DeserError l (type_error tyname "unexpected empty list"%string))
     | ARaw c => g c l
-    | Atom _ => inl (DeserError l "unexpected atom (expected list or nullary constructor name)"%string)
+    | Atom _ => inl (DeserError l (type_error tyname "unexpected atom (expected list or nullary constructor name)"%string))
     end.
 
 (** Deserialize with a custom function. *)
 Definition as_fun {A} (f : loc -> sexp atom -> error + A) : FromSexp A := f.
 
-Definition match_con {A} (ys : list (string * A)) (xs : list (string * FromSexpList A)) : FromSexp A :=
-  _con
+Definition match_con {A} (tyname : string)
+    (ys : list (string * A)) (xs : list (string * FromSexpList A))
+  : FromSexp A :=
+  _con tyname
     (fun c l =>
       let all_con := List.map fst ys in
       find_or String.eqb c ys inr
         (let msg :=
            match all_con with
-           | nil => MsgStr "Unexpected atom (expected list)"%string
+           | nil => MsgStr "unexpected atom (expected list)"%string
            | _ =>
-             ("Expected nullary constructor name, one of "%string ++ comma_sep all_con
+             ("expected nullary constructor name, one of "%string ++ comma_sep all_con
                ++ ", found "%string ++ c)%s_message
            end
-         in inl (DeserError l msg)))
+         in inl (DeserError l (type_error tyname msg))))
     (fun c =>
       let all_con := List.map fst xs in
       find_or String.eqb c xs (fun x => x)
-        (fun l _ =>
+        (fun l _ _ =>
           let msg :=
             match all_con with
-            | nil => MsgStr "Unexpected atom"%string
+            | nil => MsgStr "unexpected atom"%string
             | _ =>
-              ("Expected constructor name, one of "%string ++ comma_sep all_con
+              ("expected constructor name, one of "%string ++ comma_sep all_con
                 ++ ", found "%string ++ c)%s_message
             end
-          in inl (DeserError l msg))).
+          in inl (DeserError l (type_error tyname msg)))).
 
 Definition fields {A} {n} : FromSexpListN 0 n A -> FromSexpList A := fun p => _fields p.
 
 Definition ret {R} (r : R) {n : nat} : FromSexpListN n n R :=
-  {| _fields := fun l es =>
+  {| _fields := fun l mk_error es =>
       match es with
       | nil => inr r
       | _ =>
         let msg :=
-          ("Too many fields. Expected "%string ++ string_of_nat n
+          ("too many fields, expected "%string ++ string_of_nat n
             ++ ", got "%string ++ string_of_nat (n + List.length es))%s_message
-        in inl (DeserError l msg)
+        in inl (DeserError l (mk_error msg))
       end |}.
 
 Definition bind_field {A B} (pa : FromSexp A)
     {n m : nat} (f : A -> FromSexpListN (S n) m B)
   : FromSexpListN n m B :=
-  {| _fields := fun l es =>
+  {| _fields := fun l mk_error es =>
       match es with
-      | e :: es => bind_sum (pa (n :: l) e) (fun a => _fields (f a) l es)
+      | e :: es => bind_sum (pa (n :: l) e) (fun a => _fields (f a) l mk_error es)
       | nil =>
         let msg :=
-          ("Not enough fields. Expected "%string ++ string_of_nat m
+          ("not enough fields, expected "%string ++ string_of_nat m
             ++ ", got only "%string ++ string_of_nat n)%s_message
-        in inl (DeserError l msg)
+        in inl (DeserError l (mk_error msg))
       end |}.
 
 Module Import Notations.
@@ -221,13 +228,13 @@ Instance SemiIntegral_nat : SemiIntegral nat :=
 Import ListNotations.
 
 Instance Deserialize_bool : Deserialize bool :=
-  Deser.match_con
+  Deser.match_con "bool"
     [ ("false", false)
     ; ("true" , true)
     ]%string [].
 
 Instance Deserialize_sum {A B} `{Deserialize A} `{Deserialize B} : Deserialize (A + B) :=
-  Deser.match_con []
+  Deser.match_con "sum" []
     [ ("inl", Deser.con1_ inl)
     ; ("inr", Deser.con1_ inr)
     ]%string.
