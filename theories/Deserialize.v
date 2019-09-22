@@ -79,6 +79,9 @@ Record FromSexpListN (m n : nat) (A : Type) := {
   _fields : FromSexpList A
 }.
 
+Declare Scope deser_scope.
+Delimit Scope deser_scope with deser.
+
 Module Deser.
 
 Definition _con {A : Type} (tyname : string)
@@ -151,8 +154,10 @@ Definition bind_field {A B} (pa : FromSexp A)
       end |}.
 
 Module Import Notations.
-Notation "p >>= f" := (bind_field p f) (at level 50, left associativity).
+Notation "p >>= f" := (bind_field p f) (at level 50, left associativity) : deser_scope.
 End Notations.
+
+Local Open Scope deser_scope.
 
 Definition con0 {R} (r : R) : FromSexpList R := fields (ret r).
 
