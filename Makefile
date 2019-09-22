@@ -15,8 +15,8 @@ $(MF_COQ): _CoqProject
 	coq_makefile -f _CoqProject -o $(MF_COQ)
 
 clean:
-	if [ -e $(MF_COQ) ] ; then make -f $(MF_COQ) clean ; fi
-	$(RM) */*.{vo,glob} */.*.aux
+	if [ -e $(MF_COQ) ] ; then make -f $(MF_COQ) cleanall ; fi
+	$(RM) */*.{vo,glob} */.*.aux $(MF_COQ){,.conf}
 
 COQDOCJS_DIR := coqdocjs
 
