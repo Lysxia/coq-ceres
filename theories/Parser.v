@@ -120,7 +120,7 @@ Definition next_comment (s : parser_state) (c : ascii) : error + parser_state :=
   end.
 
 Definition raw_or_num (s : string) : atom :=
-  match NilZero.int_of_string s with
+  match NilZero.int_of_string (string_reverse s) with
   | None => Raw s
   | Some n => Num (Z.of_int n)
   end.
@@ -131,7 +131,7 @@ Definition next (s : parser_state) (p : pos) (c : ascii) : error + parser_state 
   | StrToken p0 tok e => next_str (parser_stack s) p0 tok e p c
   | NoToken => next' (parser_stack s) (fun _ => parser_stack s) "" p c
   | SimpleToken _ tok =>
-    next' (parser_stack s) (fun _ => Exp (Atom (Raw (string_reverse tok))) :: parser_stack s)%list tok p c
+    next' (parser_stack s) (fun _ => Exp (Atom (raw_or_num tok)) :: parser_stack s)%list tok p c
   | Comment => next_comment s c
   end.
 
@@ -147,7 +147,7 @@ Definition eof (s : parser_state) (p : pos) : error + list (sexp atom) :=
   match parser_cur_token s, parser_stack s with
   | StrToken p0 _ _, _ => inl (UnterminatedString p0)
   | (NoToken | Comment), s => stack_to_list nil s
-  | SimpleToken _ tok, s => stack_to_list (Atom (Raw (string_reverse tok)) :: nil) s
+  | SimpleToken _ tok, s => stack_to_list (Atom (raw_or_num tok) :: nil) s
   end.
 
 Fixpoint _parse_string (i : parser_state) (p : pos) (s : string) : error + list (sexp atom) :=
