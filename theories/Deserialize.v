@@ -204,10 +204,10 @@ Instance Deserialize_SemiIntegral `{SemiIntegral A} : Deserialize A :=
     | ANum n =>
       match from_Z n with
       | Some a => inr a
-      | None => inl (DeserError l ("Invalid number "%string ++ MsgSexp e))
+      | None => inl (DeserError l ("could not read integral type, invalid value "%string ++ MsgSexp e))
       end
-    | Atom _ => inl (DeserError l ("Expected a number, got a non-Num atom "%string ++ MsgSexp e))
-    | List _ => inl (DeserError l "Expected a number, got a list"%string)
+    | Atom _ => inl (DeserError l ("could not read integral type, got a non-Num atom "%string ++ MsgSexp e))
+    | List _ => inl (DeserError l "could not read integral type, got a list"%string)
     end.
 
 Instance SemiIntegral_Z : SemiIntegral Z := Some.
@@ -239,8 +239,8 @@ Instance Deserialize_prod {A B} `{Deserialize A} `{Deserialize B} : Deserialize 
       bind_sum (_from_sexp (0 :: l) e1) (fun a =>
       bind_sum (_from_sexp (1 :: l) e2) (fun b =>
       inr (a, b)))
-    | List _ => inl (DeserError l "Expected list of length 2, got list of a different length"%string)
-    | Atom _ => inl (DeserError l "Expected list of length 2, got atom"%string)
+    | List _ => inl (DeserError l "could not read 'prod', expected list of length 2, got list of a different length"%string)
+    | Atom _ => inl (DeserError l "could not read 'prod', expected list of length 2, got atom"%string)
     end.
 
 Instance Deserialize_Empty_set : Deserialize Empty_set :=
@@ -250,12 +250,32 @@ Instance Deserialize_unit : Deserialize unit :=
   fun l e =>
     match e with
     | ARaw "tt" => inr tt
-    | _ => inl (DeserError l "Expected atom ""tt"""%string)
+    | Atom _ => inl (DeserError l "could not read 'unit', expected atom ""tt"", got a different atom"%string)
+    | List _ => inl (DeserError l "could not read 'unit', expected atom ""tt"", got a list"%string)
     end.
 
 Instance Deserialize_string : Deserialize string :=
   fun l e =>
     match e with
     | AStr s => inr s
-    | _ => inl (DeserError l "Expected string"%string)
+    | Atom _ => inl (DeserError l "could not read 'string', got non-string atom"%string)
+    | List _ => inl (DeserError l "could not read 'string', got list"%string)
+    end.
+
+Fixpoint _sexp_to_list {A} (pa : FromSexp A) (xs : list A)
+  (n : nat) (l : loc) (ys : list (sexp atom)) : error + list A :=
+  match ys with
+  | nil => inr (rev' xs)
+  | y :: ys =>
+    match pa (n :: l) y with
+    | inl e => inl e
+    | inr x => _sexp_to_list pa (x :: xs) (S n) l ys
+    end
+  end.
+
+Instance Deserialize_list {A} `{Deserialize A} : Deserialize (list A) :=
+  fun l e =>
+    match e with
+    | Atom _ => inl (DeserError l "could not read 'list', got atom"%string)
+    | List es => _sexp_to_list _from_sexp nil 0 l es
     end.

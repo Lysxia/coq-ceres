@@ -58,3 +58,6 @@ Instance Serialize_unit : Serialize unit
   := fun _ => Raw "tt".
 
 Instance Serialize_string : Serialize string := Str.
+
+Instance Serialize_list {A} `{Serialize A} : Serialize (list A)
+  := fun xs => List (List.map to_sexp xs).

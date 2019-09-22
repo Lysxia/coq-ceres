@@ -28,5 +28,8 @@ Proof. reflexivity. Qed.
 Lemma roundtrip_sum : Forall roundtrip [inl tt; inr 0].
 Proof. repeat constructor. Qed.
 
+Lemma roundtrip_list : Forall roundtrip [[]; [0]; [0;1]; [0;1;2]].
+Proof. repeat constructor. Qed.
+
 Lemma roundtrip_s : roundtrip s.
 Proof. reflexivity. Qed.
