@@ -14,11 +14,11 @@ From Ceres Require Import
 
 (** Serialization to S-expressions. *)
 Class Serialize (A : Type) :=
-  sexp_of : A -> sexp atom.
+  to_sexp : A -> sexp atom.
 
 (** Serialize a value to a string. *)
 Definition string_of {A} `{Serialize A} : A -> string :=
-  fun a => string_of_sexpa (sexp_of a).
+  fun a => string_of_sexpa (to_sexp a).
 
 (** ** Serialize integers *)
 
@@ -43,13 +43,13 @@ Instance Serialize_sum {A B} `(Serialize A) `(Serialize B)
   : Serialize (A + B)
   := fun ab =>
     match ab with
-    | inl a => [ Raw "inl" ; sexp_of a ]%sexp
-    | inr b => [ Raw "inr" ; sexp_of b ]%sexp
+    | inl a => [ Raw "inl" ; to_sexp a ]%sexp
+    | inr b => [ Raw "inr" ; to_sexp b ]%sexp
     end.
 
 Instance Serialize_product {A B} `(Serialize A) `(Serialize B)
   : Serialize (A * B)
-  := fun ab => [ sexp_of (fst ab) ; sexp_of (snd ab) ]%sexp.
+  := fun ab => [ to_sexp (fst ab) ; to_sexp (snd ab) ]%sexp.
 
 Instance Serialize_Empty_set : Serialize Empty_set
   := fun v => match v with end.
