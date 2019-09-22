@@ -5,3 +5,4 @@ theories/Format.v
 theories/Serialize.v
 theories/Ceres.v
 theories/Parser.v
+theories/Deserialize.v

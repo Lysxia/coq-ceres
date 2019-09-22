@@ -3,4 +3,5 @@
 (** Exported by default. *)
 From Ceres Require Export
   S
-  Serialize.
+  Serialize
+  Deserialize.
