@@ -11,13 +11,27 @@ Require Import Coq.Init.Decimal.
 
 Infix "::" := String : string_scope.
 
-Definition newline : string := "010"%char :: "".
+Fixpoint _string_reverse (r s : string) : string :=
+  match s with
+  | "" => r
+  | c :: s => _string_reverse (c :: r) s
+  end%string.
+
+Definition string_reverse : string -> string := _string_reverse "".
+
+Notation newline := ("010" :: "")%string.
 
 (** Is a character printable? The character is given by its ASCII code. *)
-Definition printable (n : nat) : bool :=
+Definition is_printable (n : nat) : bool :=
   (  (n <? 32)%nat (* 32 = SPACE *)
   || (126 <? n)%nat (* 126 = ~ *)
   ).
+
+Definition is_whitespace (c : ascii) : bool :=
+  match c with
+  | " " | "010" | "013" => true
+  | _ => false
+  end%char.
 
 (** ** Escape string *)
 
@@ -50,7 +64,7 @@ Local Fixpoint _escape_string (s : string) : string :=
       "\" :: "\" :: escaped_s'
     else
       let n := nat_of_ascii c in
-      if printable n then
+      if is_printable n then
         "\" :: three_digit n ++ escaped_s'
       else
         String c escaped_s'
@@ -167,17 +181,20 @@ Definition string_of_bool (b : bool) : string :=
 Module DString.
 
 (** Difference lists for fast append. *)
-Definition dstring : Type := string -> string.
+Definition t : Type := string -> string.
 
-Definition dstring_of_string (s : string) : dstring := fun s' => (s ++ s')%string.
-Coercion dstring_of_string : string >-> dstring.
-
-Definition dstring_of_ascii (c : ascii) : dstring := fun s => (c :: s)%string.
-Coercion dstring_of_ascii : ascii >-> dstring.
-
-Definition from_dstring : dstring -> string -> string := id.
-
-Delimit Scope dstring_scope with dstring.
-Notation "a ++ b" := (fun s => from_dstring a (from_dstring b s)) : dstring_scope.
+Definition of_string (s : string) : t := fun s' => (s ++ s')%string.
+Definition of_ascii (c : ascii) : t := fun s => (c :: s)%string.
+Definition app_string : t -> string -> string := id.
 
 End DString.
+
+Coercion DString.of_string : string >-> DString.t.
+Coercion DString.of_ascii : ascii >-> DString.t.
+
+Declare Scope dstring_scope.
+Delimit Scope dstring_scope with dstring.
+Bind Scope dstring_scope with DString.t.
+Notation "a ++ b" := (fun s => DString.app_string a (DString.app_string b s))
+  : dstring_scope.
+

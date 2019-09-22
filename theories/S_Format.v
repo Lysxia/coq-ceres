@@ -8,13 +8,12 @@ Require Import Coq.Strings.String.
 From Ceres Require Import
   String
   S.
-Import Ceres.String.DString.
 (* end hide *)
 
 (** Helper for [string_of_sexp]. *)
-Local Definition dstring_of_sexp {A} (dstring_A : A -> dstring)
-  : sexp A -> dstring
-  := fix _dstring_of (x : sexp A) : dstring :=
+Local Definition dstring_of_sexp {A} (dstring_A : A -> DString.t)
+  : sexp A -> DString.t
+  := fix _dstring_of (x : sexp A) : DString.t :=
     match x with
     | Atom a => dstring_A a
     | List nil => "()"%string
