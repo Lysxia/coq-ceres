@@ -1,5 +1,5 @@
 From Coq Require Import List NArith ZArith String.
-From Ceres Require Import Ceres.
+From Ceres Require Import Ceres Parser.
 
 Import ListNotations.
 
@@ -32,4 +32,28 @@ Lemma roundtrip_list : Forall roundtrip [[]; [0]; [0;1]; [0;1;2]].
 Proof. repeat constructor. Qed.
 
 Lemma roundtrip_s : roundtrip s.
+Proof. reflexivity. Qed.
+
+Lemma parse_1 : parse_string "a" = inr [ARaw "a"].
+Proof. reflexivity. Qed.
+
+Lemma parse_2 : parse_string """a""" = inr [AStr "a"].
+Proof. reflexivity. Qed.
+
+Lemma parse_3 : parse_string "3" = inr [ANum 3].
+Proof. reflexivity. Qed.
+
+Lemma parse_4 : parse_string "-3" = inr [ANum (-3)].
+Proof. reflexivity. Qed.
+
+Lemma parse_5 : parse_string "(a)" = inr [List [ARaw "a"]].
+Proof. reflexivity. Qed.
+
+Lemma parse_6 : parse_string "(a b)" = inr [List [ARaw "a"; ARaw "b"]].
+Proof. reflexivity. Qed.
+
+Lemma parse_7 : parse_string "(a b c)" = inr [List [ARaw "a"; ARaw "b"; ARaw "c"]].
+Proof. reflexivity. Qed.
+
+Lemma parse_8 : parse_string "(a (b c) d)" = inr [List [ARaw "a"; List [ARaw "b"; ARaw "c"]; ARaw "d"]].
 Proof. reflexivity. Qed.
