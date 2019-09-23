@@ -46,10 +46,12 @@ This exports:
 
 - `Ceres.S`: the core definitions for S-expressions.
 - `Ceres.Serialize`: the `Serialize` type class.
+- `Ceres.Deserialize`: the `Deserialize` type class.
 
 Other modules in the library:
 
 - `Ceres.S_Format`: format S-expressions as strings.
+- `Ceres.Parser`: S-expression parser.
 - `Ceres.String`: general string utilities.
 
 Core definitions
