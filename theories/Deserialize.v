@@ -16,24 +16,33 @@ Generalizable Variables A.
 Set Implicit Arguments.
 (* end hide *)
 
-Fixpoint comma_sep (xs : list string) : string :=
+(** ** General-purpose internal helpers *)
+
+(** Separate elements with commas. *)
+Fixpoint _comma_sep (xs : list string) : string :=
   match xs with
   | nil => ""
   | x :: nil => x
-  | x :: xs => x ++ ", " ++ comma_sep xs
+  | x :: xs => x ++ ", " ++ _comma_sep xs
   end.
 
-Fixpoint find_or {A B C} (eqb : A -> A -> bool) (a : A) (xs : list (A * B)) (f : B -> C) (b : C) : C :=
+(** Find an element by key in an association list. *)
+Fixpoint _find_or {A B C} (eqb : A -> A -> bool) (a : A) (xs : list (A * B)) (f : B -> C) (b : C) : C :=
   match xs with
   | nil => b
-  | (x, y) :: xs => if eqb a x then f y else find_or eqb a xs f b
+  | (x, y) :: xs => if eqb a x then f y else _find_or eqb a xs f b
   end.
 
-Definition bind_sum {A B C} (x : A + B) (f : B -> A + C) : A + C :=
+(** The bind of the [sum A] monad. *)
+Definition _bind_sum {A B C} (x : A + B) (f : B -> A + C) : A + C :=
   match x with
   | inl a => inl a
   | inr b => f b
   end.
+
+(** * Deserialization *)
+
+(** ** Errors *)
 
 (** Location inside an S-expression. *)
 Definition loc : Set := list nat.
@@ -51,18 +60,24 @@ Delimit Scope s_msg_scope with s_message.
 Infix "++" := MsgApp : s_msg_scope.
 Coercion MsgStr : string >-> message.
 
+(** Prefix an error with some type information. *)
 Definition type_error (tyname : string) (msg : message) : message :=
   "could not read type '"%string ++ tyname ++ "', "%string ++ msg.
 
+(** Errors which may occur when deserializing S-expressions. *)
 Variant error :=
-| ParseError : Parser.error -> error
-| DeserError : loc -> message -> error
+| ParseError : Parser.error -> error     (* Errors from parsing [string -> sexp atom] *)
+| DeserError : loc -> message -> error   (* Errors from deserializing [sexp atom -> A] *)
 .
+
+(** ** Deserialization context *)
 
 (** Context for deserializing values of type [A], with implicit handling of error locations. *)
 Definition FromSexp (A : Type) := loc -> sexp atom -> error + A.
 
-(** Deserialization from S-expressions *)
+(** ** The [Deserialize] class *)
+
+(** Class of types which can be deserialized from S-expressions. *)
 Class Deserialize (A : Type) :=
   _from_sexp : FromSexp A.
 
@@ -79,6 +94,11 @@ Definition from_string `{Deserialize A} : string -> error + A :=
     end.
 
 
+(** * Combinators for generic [Deserialize] instances *)
+
+(** The generic format implemented here encodes a constructor [C x y z]
+    as the expression [(C x y z)]. *)
+
 (** Context for consuming lists of S-expressions. *)
 Definition FromSexpList (A : Type) := loc -> (message -> message) -> list (sexp atom) -> error + A.
 
@@ -90,6 +110,7 @@ Record FromSexpListN (m n : nat) (A : Type) := {
 (* Declare Scope deser_scope. *)
 Delimit Scope deser_scope with deser.
 
+(** These combinators are meant to be used qualified. *)
 Module Deser.
 
 Definition _con {A : Type} (tyname : string)
@@ -107,34 +128,43 @@ Definition _con {A : Type} (tyname : string)
 (** Deserialize with a custom function. *)
 Definition as_fun {A} (f : loc -> sexp atom -> error + A) : FromSexp A := f.
 
+(** Deserialize an ADT based on the name of its constructor.
+    The first argument [tyname : string] is the name of the type being parsed, for error messages.
+    The second argument [c0 : list (string * A)] is a mapping of nullary constructors,
+    which are encoded as a plain atom, associating a name to its value.
+    The third argument [c1 : list (string * FromSexpList A)] is a mapping of
+    non-nullary constructors, associating a name to a deserializer for the fields of
+    the corresponding constructor.
+  *)
 Definition match_con {A} (tyname : string)
-    (ys : list (string * A)) (xs : list (string * FromSexpList A))
+    (c0 : list (string * A)) (c1 : list (string * FromSexpList A))
   : FromSexp A :=
   _con tyname
     (fun c l =>
-      let all_con := List.map fst ys in
-      find_or String.eqb c ys inr
+      let all_con := List.map fst c0 in
+      _find_or String.eqb c c0 inr
         (let msg :=
            match all_con with
            | nil => MsgStr "unexpected atom (expected list)"%string
            | _ =>
-             ("expected nullary constructor name, one of "%string ++ comma_sep all_con
+             ("expected nullary constructor name, one of "%string ++ _comma_sep all_con
                ++ ", found "%string ++ c)%s_message
            end
          in inl (DeserError l (type_error tyname msg))))
     (fun c =>
-      let all_con := List.map fst xs in
-      find_or String.eqb c xs (fun x => x)
+      let all_con := List.map fst c1 in
+      _find_or String.eqb c c1 (fun x => x)
         (fun l _ _ =>
           let msg :=
             match all_con with
             | nil => MsgStr "unexpected atom"%string
             | _ =>
-              ("expected constructor name, one of "%string ++ comma_sep all_con
+              ("expected constructor name, one of "%string ++ _comma_sep all_con
                 ++ ", found "%string ++ c)%s_message
             end
           in inl (DeserError l (type_error tyname msg)))).
 
+(** Deserialize the fields of a constructor. *)
 Definition fields {A} {n} : FromSexpListN 0 n A -> FromSexpList A := fun p => _fields p.
 
 Definition ret {R} (r : R) {n : nat} : FromSexpListN n n R :=
@@ -153,7 +183,7 @@ Definition bind_field {A B} (pa : FromSexp A)
   : FromSexpListN n m B :=
   {| _fields := fun l mk_error es =>
       match es with
-      | e :: es => bind_sum (pa (n :: l) e) (fun a => _fields (f a) l mk_error es)
+      | e :: es => _bind_sum (pa (n :: l) e) (fun a => _fields (f a) l mk_error es)
       | nil =>
         let msg :=
           ("not enough fields, expected "%string ++ string_of_nat m
@@ -256,8 +286,8 @@ Instance Deserialize_prod {A B} `{Deserialize A} `{Deserialize B} : Deserialize 
   fun l e =>
     match e with
     | List (e1 :: e2 :: nil) =>
-      bind_sum (_from_sexp (0 :: l) e1) (fun a =>
-      bind_sum (_from_sexp (1 :: l) e2) (fun b =>
+      _bind_sum (_from_sexp (0 :: l) e1) (fun a =>
+      _bind_sum (_from_sexp (1 :: l) e2) (fun b =>
       inr (a, b)))
     | List _ => inl (DeserError l "could not read 'prod', expected list of length 2, got list of a different length"%string)
     | Atom _ => inl (DeserError l "could not read 'prod', expected list of length 2, got atom"%string)
