@@ -169,7 +169,7 @@ End DString.
 Coercion DString.of_string : string >-> DString.t.
 Coercion DString.of_ascii : ascii >-> DString.t.
 
-Declare Scope dstring_scope.
+(* Declare Scope dstring_scope. *)
 Delimit Scope dstring_scope with dstring.
 Bind Scope dstring_scope with DString.t.
 Notation "a ++ b" := (fun s => DString.app_string a (DString.app_string b s))

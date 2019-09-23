@@ -45,7 +45,7 @@ Inductive message : Set :=
 | MsgSexp : sexp atom -> message
 .
 
-Declare Scope s_msg_scope.
+(* Declare Scope s_msg_scope. *)
 Bind Scope s_msg_scope with message.
 Delimit Scope s_msg_scope with s_message.
 Infix "++" := MsgApp : s_msg_scope.
@@ -87,7 +87,7 @@ Record FromSexpListN (m n : nat) (A : Type) := {
   _fields : FromSexpList A
 }.
 
-Declare Scope deser_scope.
+(* Declare Scope deser_scope. *)
 Delimit Scope deser_scope with deser.
 
 Module Deser.

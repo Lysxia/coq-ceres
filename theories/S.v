@@ -16,7 +16,7 @@ Inductive sexp (A : Type) :=
 Arguments Atom {A} a.
 Arguments List {A} xs.
 
-Declare Scope sexp_scope.
+(* Declare Scope sexp_scope. *)
 Delimit Scope sexp_scope with sexp.
 Bind Scope sexp_scope with sexp.
 
