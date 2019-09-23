@@ -18,14 +18,6 @@ Set Implicit Arguments.
 
 (** ** General-purpose internal helpers *)
 
-(** Separate elements with commas. *)
-Fixpoint _comma_sep (xs : list string) : string :=
-  match xs with
-  | nil => ""
-  | x :: nil => x
-  | x :: xs => x ++ ", " ++ _comma_sep xs
-  end.
-
 (** Find an element by key in an association list. *)
 Fixpoint _find_or {A B C} (eqb : A -> A -> bool) (a : A) (xs : list (A * B)) (f : B -> C) (b : C) : C :=
   match xs with
@@ -88,7 +80,7 @@ Definition from_sexp `{Deserialize A} : sexp atom -> error + A :=
 (** Deserialize from a string containing an S-expression. *)
 Definition from_string `{Deserialize A} : string -> error + A :=
   fun s =>
-    match parse_one s with
+    match parse_sexp s with
     | inl e => inl (ParseError e)
     | inr x => from_sexp x
     end.
@@ -147,7 +139,7 @@ Definition match_con {A} (tyname : string)
            match all_con with
            | nil => MsgStr "unexpected atom (expected list)"%string
            | _ =>
-             ("expected nullary constructor name, one of "%string ++ _comma_sep all_con
+             ("expected nullary constructor name, one of "%string ++ comma_sep all_con
                ++ ", found "%string ++ c)%s_message
            end
          in inl (DeserError l (type_error tyname msg))))
@@ -159,7 +151,7 @@ Definition match_con {A} (tyname : string)
             match all_con with
             | nil => MsgStr "unexpected atom"%string
             | _ =>
-              ("expected constructor name, one of "%string ++ _comma_sep all_con
+              ("expected constructor name, one of "%string ++ comma_sep all_con
                 ++ ", found "%string ++ c)%s_message
             end
           in inl (DeserError l (type_error tyname msg)))).

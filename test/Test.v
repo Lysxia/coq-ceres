@@ -34,26 +34,26 @@ Proof. repeat constructor. Qed.
 Lemma roundtrip_s : roundtrip s.
 Proof. reflexivity. Qed.
 
-Lemma parse_1 : parse_string "a" = inr [ARaw "a"].
+Lemma parse_1 : parse_sexps "a" = inr [ARaw "a"].
 Proof. reflexivity. Qed.
 
-Lemma parse_2 : parse_string """a""" = inr [AStr "a"].
+Lemma parse_2 : parse_sexps """a""" = inr [AStr "a"].
 Proof. reflexivity. Qed.
 
-Lemma parse_3 : parse_string "3" = inr [ANum 3].
+Lemma parse_3 : parse_sexps "3" = inr [ANum 3].
 Proof. reflexivity. Qed.
 
-Lemma parse_4 : parse_string "-3" = inr [ANum (-3)].
+Lemma parse_4 : parse_sexps "-3" = inr [ANum (-3)].
 Proof. reflexivity. Qed.
 
-Lemma parse_5 : parse_string "(a)" = inr [List [ARaw "a"]].
+Lemma parse_5 : parse_sexps "(a)" = inr [List [ARaw "a"]].
 Proof. reflexivity. Qed.
 
-Lemma parse_6 : parse_string "(a b)" = inr [List [ARaw "a"; ARaw "b"]].
+Lemma parse_6 : parse_sexps "(a b)" = inr [List [ARaw "a"; ARaw "b"]].
 Proof. reflexivity. Qed.
 
-Lemma parse_7 : parse_string "(a b c)" = inr [List [ARaw "a"; ARaw "b"; ARaw "c"]].
+Lemma parse_7 : parse_sexps "(a b c)" = inr [List [ARaw "a"; ARaw "b"; ARaw "c"]].
 Proof. reflexivity. Qed.
 
-Lemma parse_8 : parse_string "(a (b c) d)" = inr [List [ARaw "a"; List [ARaw "b"; ARaw "c"]; ARaw "d"]].
+Lemma parse_8 : parse_sexps "(a (b c) d)" = inr [List [ARaw "a"; List [ARaw "b"; ARaw "c"]; ARaw "d"]].
 Proof. reflexivity. Qed.

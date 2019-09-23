@@ -2,7 +2,7 @@
 
 (* begin hide *)
 From Coq Require Import
-  Arith ZArith NArith Ascii String Decimal DecimalString.
+  List Arith ZArith NArith Ascii String Decimal DecimalString.
 (* end hide *)
 
 Infix "::" := String : string_scope.
@@ -14,6 +14,14 @@ Fixpoint _string_reverse (r s : string) : string :=
   end%string.
 
 Definition string_reverse : string -> string := _string_reverse "".
+
+(** Separate elements with commas. *)
+Fixpoint comma_sep (xs : list string) : string :=
+  match xs with
+  | nil => ""
+  | x :: nil => x
+  | x :: xs => x ++ ", " ++ comma_sep xs
+  end.
 
 Notation newline := ("010" :: "")%string.
 
@@ -81,7 +89,7 @@ Definition digit_of_ascii (c : ascii) : option nat :=
     None.
 
 (** The inverse of [three digit]. *)
-Local Definition unthree_digit (c2 c1 c0 : ascii) : option ascii :=
+Local Definition _unthree_digit (c2 c1 c0 : ascii) : option ascii :=
   let doa := digit_of_ascii in
   match doa c2, doa c1, doa c0 with
   | Some n2, Some n1, Some n0 =>
@@ -114,7 +122,7 @@ Local Fixpoint _unescape_string (s : string) : option string :=
         else
           match s'' with
           | String c1 (String c0 s''') =>
-            match unthree_digit c2 c1 c0 with
+            match _unthree_digit c2 c1 c0 with
             | Some c' => option_map (String c')
                                     (_unescape_string s''')
             | None => None
