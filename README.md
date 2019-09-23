@@ -1,5 +1,4 @@
-Cérès
-=====
+# Cérès [![CircleCI](https://circleci.com/gh/Lysxia/coq-ceres.svg?style=shield)](https://circleci.com/gh/Lysxia/coq-ceres)
 
 Cérès is a Coq library for serialization to S-expressions.
 
