@@ -32,14 +32,14 @@ Definition is_whitespace (c : ascii) : bool :=
 (** ** Escape string *)
 
 (** The [ascii] units digit of a [nat]. *)
-Local Definition units_digit (n : nat) : ascii :=
+Local Definition _units_digit (n : nat) : ascii :=
   ascii_of_nat ((n mod 10) + 48 (* 0 *)).
 
 (** The hundreds, tens, and units digits of a [nat]. *)
-Local Definition three_digit (n : nat) : string :=
-  let n0 := units_digit n in
-  let n1 := units_digit (n / 10) in
-  let n2 := units_digit (n / 100) in
+Local Definition _three_digit (n : nat) : string :=
+  let n0 := _units_digit n in
+  let n1 := _units_digit (n / 10) in
+  let n2 := _units_digit (n / 100) in
   (n2 :: n1 :: n0 :: EmptyString).
 
 (** Helper for [escape_string] *)
@@ -61,7 +61,7 @@ Local Fixpoint _escape_string (s : string) : string :=
     else
       let n := nat_of_ascii c in
       if is_printable n then
-        "\" :: three_digit n ++ escaped_s'
+        "\" :: _three_digit n ++ escaped_s'
       else
         String c escaped_s'
   end.
