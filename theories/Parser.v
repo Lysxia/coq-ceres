@@ -6,14 +6,14 @@ From Coq Require Import ZArith NArith Ascii String Decimal DecimalString.
 From Ceres Require Import S String.
 (* end hide *)
 
-(** Position in a string *)
-Definition pos : Set := N.
+(** Location in a string *)
+Definition loc : Set := N.
 
-Definition pretty_pos (p : pos) : string := string_of_N p.
+Definition pretty_loc (p : loc) : string := string_of_N p.
 
 (** Symbols on the stack *)
 Variant symbol : Set :=
-| Open : pos -> symbol
+| Open : loc -> symbol
 | Exp : sexp atom -> symbol
 .
 
@@ -26,8 +26,8 @@ Variant escape : Set :=
 (** Tokenizer state. *)
 Variant partial_token : Set :=
 | NoToken : partial_token
-| SimpleToken : pos -> string -> partial_token
-| StrToken : pos -> string -> escape -> partial_token
+| SimpleToken : loc -> string -> partial_token
+| StrToken : loc -> string -> escape -> partial_token
 | Comment : partial_token
 .
 
@@ -45,19 +45,19 @@ Definition initial_state : parser_state :=
 
 (** Errors which may be raised by the parser. *)
 Variant error :=
-| UnmatchedClose : pos -> error
-| UnmatchedOpen : pos -> error
-| UnknownEscape : pos -> ascii -> error
-| UnterminatedString : pos -> error
+| UnmatchedClose : loc -> error
+| UnmatchedOpen : loc -> error
+| UnknownEscape : loc -> ascii -> error
+| UnterminatedString : loc -> error
 | EmptyInput : error
 .
 
 Definition pretty_error (e : error) :=
   match e with
-  | UnmatchedClose p => "Unmatched close parenthesis at position " ++ pretty_pos p
-  | UnmatchedOpen p => "Unmatched open parenthesis at position " ++ pretty_pos p
-  | UnknownEscape p c => "Unknown escape code '\" ++ c :: "' at position " ++ pretty_pos p
-  | UnterminatedString p => "Unterminated string starting at position " ++ pretty_pos p
+  | UnmatchedClose p => "Unmatched close parenthesis at location " ++ pretty_loc p
+  | UnmatchedOpen p => "Unmatched open parenthesis at location " ++ pretty_loc p
+  | UnknownEscape p c => "Unknown escape code '\" ++ c :: "' at location " ++ pretty_loc p
+  | UnterminatedString p => "Unterminated string starting at location " ++ pretty_loc p
   | EmptyInput => "Input is empty"
   end%string.
 
@@ -77,7 +77,7 @@ Definition new_sexp (d : list (sexp atom)) (s : list symbol) (t : partial_token)
   end.
 
 (** Parse next character of a string literal. *)
-Definition next_str (s0 : parser_state) (p0 : pos) (tok : string) (e : escape) (p : pos) (c : ascii)
+Definition next_str (s0 : parser_state) (p0 : loc) (tok : string) (e : escape) (p : loc) (c : ascii)
   : error + parser_state :=
   let '{| parser_done := d; parser_stack := s |} := s0 in
   let ret (tok' : string) e' := inr
@@ -96,7 +96,7 @@ Definition next_str (s0 : parser_state) (p0 : pos) (tok : string) (e : escape) (
   end.
 
 (** Close parenthesis: build up a list expression. *)
-Fixpoint _fold_stack (d : list (sexp atom)) (p : pos) (r : list (sexp atom)) (s : list symbol) : error + parser_state :=
+Fixpoint _fold_stack (d : list (sexp atom)) (p : loc) (r : list (sexp atom)) (s : list symbol) : error + parser_state :=
   match s with
   | nil => inl (UnmatchedClose p)
   | Open _ :: s => inr (new_sexp d s NoToken (List r))
@@ -104,7 +104,7 @@ Fixpoint _fold_stack (d : list (sexp atom)) (p : pos) (r : list (sexp atom)) (s 
   end%list.
 
 (** Parse next character outside of a string literal. *)
-Definition next' (s0 : parser_state) (s' : partial_token -> parser_state) (tok : string) (p : pos) (c : ascii)
+Definition next' (s0 : parser_state) (s' : partial_token -> parser_state) (tok : string) (p : loc) (c : ascii)
   : error + parser_state :=
   match c with
   | "("%char =>
@@ -147,7 +147,7 @@ Definition raw_or_num (s : string) : atom :=
   end.
 
 (** Consume one more character. *)
-Definition next (s0 : parser_state) (p : pos) (c : ascii) : error + parser_state :=
+Definition next (s0 : parser_state) (p : loc) (c : ascii) : error + parser_state :=
   match parser_cur_token s0 with
   | StrToken p0 tok e => next_str s0 p0 tok e p c
   | NoToken =>
@@ -172,7 +172,7 @@ Fixpoint _done_or_fail (r : list (sexp atom)) (s : list symbol) : error + list (
   end%list.
 
 (** End of the string/file, get the final result. *)
-Definition eof (s0 : parser_state) (p : pos) : error + list (sexp atom) :=
+Definition eof (s0 : parser_state) (p : loc) : error + list (sexp atom) :=
   match parser_cur_token s0 with
   | StrToken p0 _ _ => inl (UnterminatedString p0)
   | (NoToken | Comment) => _done_or_fail (parser_done s0) (parser_stack s0)
@@ -190,11 +190,11 @@ Definition get_done (s0 : parser_state) : list (sexp atom) * parser_state :=
     |}
   ).
 
-(** Parse a string and return the position and state at the end if no error occured (to
+(** Parse a string and return the location and state at the end if no error occured (to
     resume in another string, or finish with [eof]), or the last known good
-    position and state in case of an error (to read toplevel valid
+    location and state in case of an error (to read toplevel valid
     S-expressions from). *)
-Fixpoint parse_sexps_ (i : parser_state) (p : pos) (s : string) : option error * pos * parser_state :=
+Fixpoint parse_sexps_ (i : parser_state) (p : loc) (s : string) : option error * loc * parser_state :=
   match s with
   | "" => (None, p, i)
   | c :: s =>
