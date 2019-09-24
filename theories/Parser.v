@@ -32,12 +32,14 @@ Variant partial_token : Set :=
 .
 
 Record parser_state : Set :=
-  { parser_stack : list symbol
+  { parser_done : list (sexp atom)
+  ; parser_stack : list symbol
   ; parser_cur_token : partial_token
   }.
 
 Definition initial_state : parser_state :=
-  {| parser_stack := nil
+  {| parser_done := nil
+   ; parser_stack := nil
    ; parser_cur_token := NoToken
   |}.
 
@@ -59,11 +61,28 @@ Definition pretty_error (e : error) :=
   | EmptyInput => "Input is empty"
   end%string.
 
+Definition new_sexp (d : list (sexp atom)) (s : list symbol) (t : partial_token) (e : sexp atom)
+  : parser_state :=
+  match s with
+  | nil =>
+    {| parser_done := e :: d
+     ; parser_stack := nil
+     ; parser_cur_token := t
+    |}
+  | (_ :: _)%list =>
+    {| parser_done := d
+     ; parser_stack := Exp e :: s
+     ; parser_cur_token := t
+    |}
+  end.
+
 (** Parse next character of a string literal. *)
-Definition next_str (s : list symbol) (p0 : pos) (tok : string) (e : escape) (p : pos) (c : ascii)
+Definition next_str (s0 : parser_state) (p0 : pos) (tok : string) (e : escape) (p : pos) (c : ascii)
   : error + parser_state :=
+  let '{| parser_done := d; parser_stack := s |} := s0 in
   let ret (tok' : string) e' := inr
-    {| parser_stack := s
+    {| parser_done := d
+     ; parser_stack := s
      ; parser_cur_token := StrToken p0 tok' e'
     |} in
   match e, c with
@@ -72,48 +91,38 @@ Definition next_str (s : list symbol) (p0 : pos) (tok : string) (e : escape) (p 
   | EscBackslash, """"%char => ret ("""" :: tok)%string EscNone
   | EscBackslash, _ => inl (UnknownEscape p c)
   | EscNone, "\"%char => ret tok EscBackslash
-  | EscNone, """"%char => inr
-    {| parser_stack := Exp (Atom (Str (string_reverse tok))) :: s
-     ; parser_cur_token := NoToken
-    |}
+  | EscNone, """"%char => inr (new_sexp d s NoToken (Atom (Str (string_reverse tok))))
   | EscNone, c => ret (c :: tok)%string EscNone
   end.
 
 (** Close parenthesis: build up a list expression. *)
-Fixpoint _fold_stack (r : list (sexp atom)) (p : pos) (s : list symbol) : error + parser_state :=
+Fixpoint _fold_stack (d : list (sexp atom)) (p : pos) (r : list (sexp atom)) (s : list symbol) : error + parser_state :=
   match s with
   | nil => inl (UnmatchedClose p)
-  | Open _ :: s => inr
-    {| parser_stack := Exp (List r) :: s
-     ; parser_cur_token := NoToken
-    |}
-  | Exp e :: s => _fold_stack (e :: r) p s
+  | Open _ :: s => inr (new_sexp d s NoToken (List r))
+  | Exp e :: s => _fold_stack d p (e :: r) s
   end%list.
 
 (** Parse next character outside of a string literal. *)
-Definition next' (s : list symbol) (s' : unit -> list symbol) (tok : string) (p : pos) (c : ascii)
+Definition next' (s0 : parser_state) (s' : partial_token -> parser_state) (tok : string) (p : pos) (c : ascii)
   : error + parser_state :=
   match c with
-  | "("%char => inr
-    {| parser_stack := Open p :: s' tt
+  | "("%char =>
+    let s0 := s' NoToken in inr
+    {| parser_done := parser_done s0
+     ; parser_stack := Open p :: parser_stack s0
      ; parser_cur_token := NoToken
     |}
-  | ")"%char => _fold_stack nil p (s' tt)
-  | """"%char => inr
-    {| parser_stack := s' tt
-     ; parser_cur_token := StrToken p "" EscNone
-    |}
-  | ";"%char => inr
-    {| parser_stack := s' tt
-     ; parser_cur_token := Comment
-    |}
+  | ")"%char =>
+    let s0 := s' NoToken in
+    _fold_stack (parser_done s0) p nil (parser_stack s0)
+  | """"%char => inr (s' (StrToken p "" EscNone))
+  | ";"%char => inr (s' Comment)
   | _ =>
-    if is_whitespace c then inr
-      {| parser_stack := s' tt
-       ; parser_cur_token := NoToken
-      |}
+    if is_whitespace c then inr (s' NoToken)
     else inr
-      {| parser_stack := s
+      {| parser_done := parser_done s0
+       ; parser_stack := parser_stack s0
        ; parser_cur_token := SimpleToken p (c :: tok)
       |}
   end.
@@ -122,7 +131,8 @@ Definition next' (s : list symbol) (s' : unit -> list symbol) (tok : string) (p 
 Definition next_comment (s : parser_state) (c : ascii) : error + parser_state :=
   match c with
   | "010"%char => inr
-    {| parser_stack := parser_stack s
+    {| parser_done := parser_done s
+     ; parser_stack := parser_stack s
      ; parser_cur_token := NoToken
     |}
   | _ => inr s
@@ -137,48 +147,80 @@ Definition raw_or_num (s : string) : atom :=
   end.
 
 (** Consume one more character. *)
-Definition next (s : parser_state) (p : pos) (c : ascii) : error + parser_state :=
-  match parser_cur_token s with
-  | StrToken p0 tok e => next_str (parser_stack s) p0 tok e p c
-  | NoToken => next' (parser_stack s) (fun _ => parser_stack s) "" p c
+Definition next (s0 : parser_state) (p : pos) (c : ascii) : error + parser_state :=
+  match parser_cur_token s0 with
+  | StrToken p0 tok e => next_str s0 p0 tok e p c
+  | NoToken =>
+    let s' t :=
+      {| parser_done := parser_done s0
+       ; parser_stack := parser_stack s0
+       ; parser_cur_token := t
+      |}
+    in next' s0 s' "" p c
   | SimpleToken _ tok =>
-    next' (parser_stack s) (fun _ => Exp (Atom (raw_or_num tok)) :: parser_stack s)%list tok p c
-  | Comment => next_comment s c
+    let s' t := new_sexp (parser_done s0) (parser_stack s0) t (Atom (raw_or_num tok)) in
+    next' s0 s' tok p c
+  | Comment => next_comment s0 c
   end.
 
-(** Gather all toplevel S-expressions in a list, or fail if there is still an unmatched open parenthesis. *)
-Fixpoint _stack_to_list (r : list (sexp atom)) (s : list symbol) : error + list (sexp atom) :=
+(** Return all toplevel S-expressions, or fail if there is still an unmatched open parenthesis. *)
+Fixpoint _done_or_fail (r : list (sexp atom)) (s : list symbol) : error + list (sexp atom) :=
   match s with
-  | nil => inr r
-  | Exp e :: s => _stack_to_list (e :: r) s
+  | nil => inr (List.rev' r)
+  | Exp e :: s => _done_or_fail (e :: r) s
   | Open p :: _ => inl (UnmatchedOpen p)
   end%list.
 
 (** End of the string/file, get the final result. *)
-Definition eof (s : parser_state) (p : pos) : error + list (sexp atom) :=
-  match parser_cur_token s, parser_stack s with
-  | StrToken p0 _ _, _ => inl (UnterminatedString p0)
-  | (NoToken | Comment), s => _stack_to_list nil s
-  | SimpleToken _ tok, s => _stack_to_list (Atom (raw_or_num tok) :: nil) s
+Definition eof (s0 : parser_state) (p : pos) : error + list (sexp atom) :=
+  match parser_cur_token s0 with
+  | StrToken p0 _ _ => inl (UnterminatedString p0)
+  | (NoToken | Comment) => _done_or_fail (parser_done s0) (parser_stack s0)
+  | SimpleToken _ tok =>
+    let s0 := new_sexp (parser_done s0) (parser_stack s0) NoToken (Atom (raw_or_num tok))
+    in _done_or_fail (parser_done s0) (parser_stack s0)
   end.
 
-Fixpoint _parse_sexps (i : parser_state) (p : pos) (s : string) : error + list (sexp atom) :=
+(** Remove successfully parsed toplevel expressions from the parser state. *)
+Definition get_done (s0 : parser_state) : list (sexp atom) * parser_state :=
+  ( List.rev' (parser_done s0)
+  , {| parser_done := nil
+     ; parser_stack := parser_stack s0
+     ; parser_cur_token := parser_cur_token s0
+    |}
+  ).
+
+(** Parse a string and return the position and state at the end if no error occured (to
+    resume in another string, or finish with [eof]), or the last known good
+    position and state in case of an error (to read toplevel valid
+    S-expressions from). *)
+Fixpoint parse_sexps_ (i : parser_state) (p : pos) (s : string) : option error * pos * parser_state :=
   match s with
-  | "" => eof i p
+  | "" => (None, p, i)
   | c :: s =>
     match next i p c with
-    | inl e => inl e
-    | inr i => _parse_sexps i (N.succ p) s
+    | inl e => (Some e, p, i)
+    | inr i => parse_sexps_ i (N.succ p) s
     end
   end%string.
 
 (** Parse a string into a list of S-expressions. *)
-Definition parse_sexps : string -> error + list (sexp atom) := _parse_sexps initial_state 0%N.
+Definition parse_sexps (s : string) : error + list (sexp atom) :=
+  match parse_sexps_ initial_state 0%N s with
+  | (None, p, i) => eof i p
+  | (Some e, _, _) => inl e
+  end.
 
 (** Parse a string into one S-expression. Subsequent expressions, if any, are ignored. *)
 Definition parse_sexp (s : string) : error + sexp atom :=
-  match parse_sexps s with
-  | inl e => inl e
-  | inr nil => inl EmptyInput
-  | inr (e :: _)%list => inr e
+  let '(e, p, i) := parse_sexps_ initial_state 0%N s in
+  match List.rev' (parser_done i), e with
+  | (r :: _)%list, _ => inr r
+  | nil, Some e => inl e
+  | nil, None =>
+    match eof i p with
+    | inl e => inl e
+    | inr (r :: _)%list => inr r
+    | inr nil => inl EmptyInput
+    end
   end.
