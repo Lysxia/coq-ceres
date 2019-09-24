@@ -141,7 +141,8 @@ Definition next_comment (s : parser_state) (c : ascii) : error + parser_state :=
 (** Construct an atom. Make it a [Num] if it can be parsed as a number,
     [Raw] otherwise. *)
 Definition raw_or_num (s : string) : atom :=
-  match NilZero.int_of_string (string_reverse s) with
+  let s := string_reverse s in
+  match NilZero.int_of_string s with
   | None => Raw s
   | Some n => Num (Z.of_int n)
   end.

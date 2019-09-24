@@ -46,14 +46,18 @@ Proof. reflexivity. Qed.
 Lemma parse_4 : parse_sexps "-3" = inr [ANum (-3)].
 Proof. reflexivity. Qed.
 
-Lemma parse_5 : parse_sexps "(a)" = inr [List [ARaw "a"]].
+Lemma parse_5 : parse_sexps "(ab)" = inr [List [ARaw "ab"]].
 Proof. reflexivity. Qed.
 
-Lemma parse_6 : parse_sexps "(a b)" = inr [List [ARaw "a"; ARaw "b"]].
+Lemma parse_6 : parse_sexps "(ab cd)" = inr [List [ARaw "ab"; ARaw "cd"]].
 Proof. reflexivity. Qed.
 
 Lemma parse_7 : parse_sexps "(a b c)" = inr [List [ARaw "a"; ARaw "b"; ARaw "c"]].
 Proof. reflexivity. Qed.
 
-Lemma parse_8 : parse_sexps "(a (b c) d)" = inr [List [ARaw "a"; List [ARaw "b"; ARaw "c"]; ARaw "d"]].
+Lemma parse_8 : parse_sexps "ab cd" = inr [ARaw "ab"; ARaw "cd"].
+Proof. reflexivity. Qed.
+
+Lemma parse_9 : parse_sexps "ab (cd (ef gh) ij) kl"
+              = inr [ARaw "ab"; List [ARaw "cd"; List [ARaw "ef"; ARaw "gh"]; ARaw "ij"]; ARaw "kl"].
 Proof. reflexivity. Qed.
