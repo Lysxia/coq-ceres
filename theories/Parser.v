@@ -167,7 +167,7 @@ Definition next (s0 : parser_state) (p : loc) (c : ascii) : error + parser_state
 Fixpoint _done_or_fail (r : list (sexp atom)) (s : list symbol) : error + list (sexp atom) :=
   match s with
   | nil => inr (List.rev' r)
-  | Exp e :: s => _done_or_fail (e :: r) s
+  | Exp e :: s => _done_or_fail r s  (* Here the last symbol in [s] must be an [Open] *)
   | Open p :: _ => inl (UnmatchedOpen p)
   end%list.
 
