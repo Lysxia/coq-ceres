@@ -61,3 +61,19 @@ Proof. reflexivity. Qed.
 Lemma parse_9 : parse_sexps "ab (cd (ef gh) ij) kl"
               = inr [ARaw "ab"; List [ARaw "cd"; List [ARaw "ef"; ARaw "gh"]; ARaw "ij"]; ARaw "kl"].
 Proof. reflexivity. Qed.
+
+Local Open Scope N_scope.
+Local Open Scope sexp_scope.
+
+Lemma parse_10 :
+  let '(r1, p1, s0) := parse_sexps_ initial_state 0 "(1)(2)3" in
+  let (e1, s1) := get_one s0 in
+  let (e2, s2) := get_one s1 in
+  let (e3, s3) := get_one s2 in
+  let '(r2, p2, s4) := parse_sexps_ s2 p1 "4 )" in
+  let (e4, s5) := get_one s4 in
+  e1 = Some [ANum 1] /\
+  e2 = Some [ANum 2] /\
+  e3 = None /\
+  e4 = Some (ANum 34).
+Proof. split; split; split; reflexivity. Qed.
