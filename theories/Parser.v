@@ -191,6 +191,16 @@ Definition get_done (s0 : parser_state) : list (sexp atom) * parser_state :=
     |}
   ).
 
+Definition get_one (s0 : parser_state) : option (sexp atom) * parser_state :=
+  match parser_done s0 with
+  | nil => (None, s0)
+  | cons e _ as es =>
+    (Some (List.last es e),
+     {| parser_done      := List.removelast  es;
+        parser_stack     := parser_stack     s0;
+        parser_cur_token := parser_cur_token s0 |})
+  end.
+
 (** Parse a string and return the location and state at the end if no error occured (to
     resume in another string, or finish with [eof]), or the last known good
     location and state in case of an error (to read toplevel valid
