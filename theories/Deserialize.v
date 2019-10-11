@@ -321,3 +321,5 @@ Instance Deserialize_list {A} `{Deserialize A} : Deserialize (list A) :=
     | Atom _ => inl (DeserError l "could not read 'list', got atom"%string)
     | List es => _sexp_to_list _from_sexp nil 0 l es
     end.
+
+Instance Deserialize_sexp : Deserialize (sexp atom) := fun _ => inr.
