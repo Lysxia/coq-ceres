@@ -61,3 +61,5 @@ Instance Serialize_string : Serialize string := Str.
 
 Instance Serialize_list {A} `{Serialize A} : Serialize (list A)
   := fun xs => List (List.map to_sexp xs).
+
+Instance Serialize_sexp : Serialize (sexp atom) := id.
