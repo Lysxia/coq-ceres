@@ -285,6 +285,11 @@ Instance Deserialize_bool : Deserialize bool :=
     ; ("true" , true)
     ]%string [].
 
+Instance Deserialize_option {A} `{Deserialize A} : Deserialize (option A) :=
+  Deser.match_con "option"
+    [ ("None", None) ]%string
+    [ ("Some", Deser.con1_ Some) ]%string.
+
 Instance Deserialize_sum {A B} `{Deserialize A} `{Deserialize B} : Deserialize (A + B) :=
   Deser.match_con "sum" []
     [ ("inl", Deser.con1_ inl)
