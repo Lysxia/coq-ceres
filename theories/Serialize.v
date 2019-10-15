@@ -39,6 +39,13 @@ Instance Integral_Z : Integral Z := id.
 Instance Serialize_bool : Serialize bool
   := fun b => Raw (string_of_bool b).
 
+Instance Serialize_option {A} `(Serialize A) : Serialize (option A)
+  := fun oa =>
+    match oa with
+    | None => Raw "None"
+    | Some a => [ Raw "Some" ; to_sexp a ]%sexp
+    end.
+
 Instance Serialize_sum {A B} `(Serialize A) `(Serialize B)
   : Serialize (A + B)
   := fun ab =>
