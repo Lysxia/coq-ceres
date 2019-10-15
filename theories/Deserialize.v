@@ -121,12 +121,28 @@ Definition _con {A : Type} (tyname : string)
 Definition as_fun {A} (f : loc -> sexp atom -> error + A) : FromSexp A := f.
 
 (** Deserialize an ADT based on the name of its constructor.
-    The first argument [tyname : string] is the name of the type being parsed, for error messages.
-    The second argument [c0 : list (string * A)] is a mapping of nullary constructors,
+  - The first argument [tyname : string] is the name of the type being parsed, for error messages.
+  - The second argument [c0 : list (string * A)] is a mapping of nullary constructors,
     which are encoded as a plain atom, associating a name to its value.
-    The third argument [c1 : list (string * FromSexpList A)] is a mapping of
+  - The third argument [c1 : list (string * FromSexpList A)] is a mapping of
     non-nullary constructors, associating a name to a deserializer for the fields of
     the corresponding constructor.
+[[
+(* Example type *)
+Inductive example A : Type :=
+| Ex0 : example A
+| Ex1 : A -> example A
+| Ex2 : A -> A -> example A
+.
+
+Instance Deserialize_example {A} `{Deserialize A} : Deserialize (example A) :=
+  Deser.match_con "example"      (* Name of the type. *)
+    [ ("Ex0", Ex0)               (* Nullary constructors in the first list: [("name", constructor)]. *)
+    ]%string
+    [ ("Ex1", Deser.con1_ Ex1)   (* In the second list, [("name", conN_ constructor)] *)
+    , ("Ex2", Deser.con2_ Ex2)   (* where [N] is the arity of [constructor]. *)
+    ]%string.
+]]
   *)
 Definition match_con {A} (tyname : string)
     (c0 : list (string * A)) (c1 : list (string * FromSexpList A))
@@ -189,6 +205,7 @@ End Notations.
 
 Local Open Scope deser_scope.
 
+(** Note: prefer using the first list in [match_con] for nullary constructors. *)
 Definition con0 {R} (r : R) : FromSexpList R := fields (ret r).
 
 Definition con1 {A R} (f : A -> R) : FromSexp A -> FromSexpList R := fun pa =>

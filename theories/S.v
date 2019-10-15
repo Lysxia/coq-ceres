@@ -50,7 +50,7 @@ Fixpoint sexp_of_atoms {A} (xs : list A) : sexp A :=
 Variant _atom : Set :=
 | _Num (n : Z)
 | _Str (s : string)
-| _Raw (s : string)
+| _Raw (s : string)  (* Should fit in this alphabet: [A-Za-z0-9-_.'] *)
 .
 
 (** Default type of atoms. [sexp atom] thus provides a uniform format to
