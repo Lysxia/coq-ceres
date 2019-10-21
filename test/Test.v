@@ -1,5 +1,5 @@
 From Coq Require Import List NArith ZArith String.
-From Ceres Require Import Ceres Parser.
+From Ceres Require Import Ceres CeresParser.
 
 Import ListNotations.
 

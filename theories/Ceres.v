@@ -2,6 +2,6 @@
 
 (** Exported by default. *)
 From Ceres Require Export
-  S
-  Serialize
-  Deserialize.
+  CeresS
+  CeresSerialize
+  CeresDeserialize.

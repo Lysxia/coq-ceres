@@ -7,9 +7,9 @@ From Coq Require Import
   String.
 
 From Ceres Require Import
-  S
-  Format
-  String.
+  CeresS
+  CeresFormat
+  CeresString.
 (* end hide *)
 
 (** Serialization to S-expressions. *)

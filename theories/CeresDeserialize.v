@@ -7,9 +7,9 @@ From Coq Require Import
   String.
 
 From Ceres Require Import
-  S
-  Parser
-  String.
+  CeresS
+  CeresParser
+  CeresString.
 
 Generalizable Variables A.
 
@@ -58,7 +58,7 @@ Definition type_error (tyname : string) (msg : message) : message :=
 
 (** Errors which may occur when deserializing S-expressions. *)
 Variant error :=
-| ParseError : Parser.error -> error     (* Errors from parsing [string -> sexp atom] *)
+| ParseError : CeresParser.error -> error     (* Errors from parsing [string -> sexp atom] *)
 | DeserError : loc -> message -> error   (* Errors from deserializing [sexp atom -> A] *)
 .
 
@@ -150,7 +150,7 @@ Definition match_con {A} (tyname : string)
   _con tyname
     (fun c l =>
       let all_con := List.map fst c0 in
-      _find_or String.eqb c c0 inr
+      _find_or CeresString.eqb c c0 inr
         (let msg :=
            match all_con with
            | nil => MsgStr "unexpected atom (expected list)"%string
@@ -161,7 +161,7 @@ Definition match_con {A} (tyname : string)
          in inl (DeserError l (type_error tyname msg))))
     (fun c =>
       let all_con := List.map fst c1 in
-      _find_or String.eqb c c1 (fun x => x)
+      _find_or CeresString.eqb c c1 (fun x => x)
         (fun l _ _ =>
           let msg :=
             match all_con with

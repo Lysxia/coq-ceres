@@ -1,10 +1,8 @@
 (** * S-expressions *)
 
 (* begin hide *)
-Require Import Coq.Lists.List.
-Require Import Coq.ZArith.ZArith.
-Require Import Coq.Strings.Ascii.
-Require Import Coq.Strings.String.
+From Coq Require Import
+  List ZArith Ascii String.
 (* end hide *)
 
 (** S-expressions, parameterized by the type of atoms. *)

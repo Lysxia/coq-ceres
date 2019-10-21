@@ -22,8 +22,6 @@ Fixpoint eqb s1 s2 : bool :=
   | _,_ => false
   end.
 
-Infix "=?" := eqb : string_scope.
-
 Fixpoint _string_reverse (r s : string) : string :=
   match s with
   | "" => r
