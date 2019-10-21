@@ -1,13 +1,11 @@
 
 (* begin hide *)
-Require Import Coq.Lists.List.
-Require Import Coq.ZArith.ZArith.
-Require Import Coq.Strings.Ascii.
-Require Import Coq.Strings.String.
+From Coq Require Import
+  List ZArith Ascii String.
 
 From Ceres Require Import
-  String
-  S.
+  CeresString
+  CeresS.
 (* end hide *)
 
 (** Helper for [string_of_sexp]. *)

@@ -3,7 +3,7 @@
 (* begin hide *)
 From Coq Require Import ZArith NArith Ascii String Decimal DecimalString.
 
-From Ceres Require Import S String.
+From Ceres Require Import CeresS CeresString.
 (* end hide *)
 
 (** Location in a string *)
