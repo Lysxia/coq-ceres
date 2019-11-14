@@ -66,7 +66,7 @@ Inductive sexp_ (A : Type) :=
 ```
 
 The library offers a default `atom` type, so that the main S-expression type is
-`sexp`.
+`sexp := sexp_ atom`.
 
 ```coq
 Variant atom : Set :=
