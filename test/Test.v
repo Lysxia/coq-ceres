@@ -2,9 +2,10 @@ From Coq Require Import List NArith ZArith String.
 From Ceres Require Import Ceres CeresParser.
 
 Import ListNotations.
+Local Open Scope string.
 
 Definition s : unit + (nat * bool * unit) := inr (1, false, tt).
-Definition test_to_string_s : to_string s = "(inr ((1 false) tt))"%string
+Definition test_to_string_s : to_string s = "(inr ((1 false) tt))"
   := eq_refl.
 
 Definition roundtrip {A} `{Serialize A} `{Deserialize A} : A -> Prop :=
@@ -34,32 +35,32 @@ Proof. repeat constructor. Qed.
 Lemma roundtrip_s : roundtrip s.
 Proof. reflexivity. Qed.
 
-Lemma parse_1 : parse_sexps "a" = inr [ARaw "a"].
+Lemma parse_1 : parse_sexps "a" = inr [Atom "a"].
 Proof. reflexivity. Qed.
 
-Lemma parse_2 : parse_sexps """a""" = inr [AStr "a"].
+Lemma parse_2 : parse_sexps """a""" = inr [Atom (Str "a")].
 Proof. reflexivity. Qed.
 
-Lemma parse_3 : parse_sexps "3" = inr [ANum 3].
+Lemma parse_3 : parse_sexps "3" = inr [Atom 3%Z].
 Proof. reflexivity. Qed.
 
-Lemma parse_4 : parse_sexps "-3" = inr [ANum (-3)].
+Lemma parse_4 : parse_sexps "-3" = inr [Atom (-3)%Z].
 Proof. reflexivity. Qed.
 
-Lemma parse_5 : parse_sexps "(ab)" = inr [List [ARaw "ab"]].
+Lemma parse_5 : parse_sexps "(ab)" = inr [List [Atom "ab"]].
 Proof. reflexivity. Qed.
 
-Lemma parse_6 : parse_sexps "(ab cd)" = inr [List [ARaw "ab"; ARaw "cd"]].
+Lemma parse_6 : parse_sexps "(ab cd)" = inr [List [Atom "ab"; Atom "cd"]].
 Proof. reflexivity. Qed.
 
-Lemma parse_7 : parse_sexps "(a b c)" = inr [List [ARaw "a"; ARaw "b"; ARaw "c"]].
+Lemma parse_7 : parse_sexps "(a b c)" = inr [List [Atom "a"; Atom "b"; Atom "c"]].
 Proof. reflexivity. Qed.
 
-Lemma parse_8 : parse_sexps "ab cd" = inr [ARaw "ab"; ARaw "cd"].
+Lemma parse_8 : parse_sexps "ab cd" = inr [Atom "ab"; Atom "cd"].
 Proof. reflexivity. Qed.
 
 Lemma parse_9 : parse_sexps "ab (cd (ef gh) ij) kl"
-              = inr [ARaw "ab"; List [ARaw "cd"; List [ARaw "ef"; ARaw "gh"]; ARaw "ij"]; ARaw "kl"].
+              = inr [Atom "ab"; List [Atom "cd"; List [Atom "ef"; Atom "gh"]; Atom "ij"]; Atom "kl"].
 Proof. reflexivity. Qed.
 
 Local Open Scope N_scope.
@@ -72,8 +73,8 @@ Lemma parse_10 :
   let (e3, s3) := get_one s2 in
   let '(r2, p2, s4) := parse_sexps_ s2 p1 "4 )" in
   let (e4, s5) := get_one s4 in
-  e1 = Some [ANum 1] /\
-  e2 = Some [ANum 2] /\
+  e1 = Some [Atom 1%Z] /\
+  e2 = Some [Atom 2%Z] /\
   e3 = None /\
-  e4 = Some (ANum 34).
+  e4 = Some (Atom 34%Z).
 Proof. split; split; split; reflexivity. Qed.

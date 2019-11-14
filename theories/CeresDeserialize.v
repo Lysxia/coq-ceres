@@ -43,7 +43,7 @@ Definition loc : Set := list nat.
 Inductive message : Set :=
 | MsgApp : message -> message -> message
 | MsgStr : string -> message
-| MsgSexp : sexp atom -> message
+| MsgSexp : sexp -> message
 .
 
 (* Declare Scope s_msg_scope. *)
@@ -58,14 +58,14 @@ Definition type_error (tyname : string) (msg : message) : message :=
 
 (** Errors which may occur when deserializing S-expressions. *)
 Variant error :=
-| ParseError : CeresParser.error -> error     (* Errors from parsing [string -> sexp atom] *)
-| DeserError : loc -> message -> error   (* Errors from deserializing [sexp atom -> A] *)
+| ParseError : CeresParser.error -> error     (* Errors from parsing [string -> sexp] *)
+| DeserError : loc -> message -> error   (* Errors from deserializing [sexp -> A] *)
 .
 
 (** ** Deserialization context *)
 
 (** Context for deserializing values of type [A], with implicit handling of error locations. *)
-Definition FromSexp (A : Type) := loc -> sexp atom -> error + A.
+Definition FromSexp (A : Type) := loc -> sexp -> error + A.
 
 (** ** The [Deserialize] class *)
 
@@ -74,7 +74,7 @@ Class Deserialize (A : Type) :=
   _from_sexp : FromSexp A.
 
 (** Deserialize from an S-expression. *)
-Definition from_sexp `{Deserialize A} : sexp atom -> error + A :=
+Definition from_sexp `{Deserialize A} : sexp -> error + A :=
   _from_sexp nil.
 
 (** Deserialize from a string containing an S-expression. *)
@@ -92,7 +92,7 @@ Definition from_string `{Deserialize A} : string -> error + A :=
     as the expression [(C x y z)]. *)
 
 (** Context for consuming lists of S-expressions. *)
-Definition FromSexpList (A : Type) := loc -> (message -> message) -> list (sexp atom) -> error + A.
+Definition FromSexpList (A : Type) := loc -> (message -> message) -> list sexp -> error + A.
 
 (** Context for consuming lists with a statically-known expected length. *)
 Record FromSexpListN (m n : nat) (A : Type) := {
@@ -110,15 +110,15 @@ Definition _con {A : Type} (tyname : string)
   : FromSexp A :=
   fun l e =>
     match e with
-    | List (ARaw c :: es) => f c l (type_error tyname) es
+    | List (Atom_ (Raw c) :: es) => f c l (type_error tyname) es
     | List (e0 :: es) => inl (DeserError (0 :: l) (type_error tyname "unexpected atom (expected constructor name)"%string))
     | List nil => inl (DeserError l (type_error tyname "unexpected empty list"%string))
-    | ARaw c => g c l
-    | Atom _ => inl (DeserError l (type_error tyname "unexpected atom (expected list or nullary constructor name)"%string))
+    | Atom_ (Raw c) => g c l
+    | Atom_ _ => inl (DeserError l (type_error tyname "unexpected atom (expected list or nullary constructor name)"%string))
     end.
 
 (** Deserialize with a custom function. *)
-Definition as_fun {A} (f : loc -> sexp atom -> error + A) : FromSexp A := f.
+Definition as_fun {A} (f : loc -> sexp -> error + A) : FromSexp A := f.
 
 (** Deserialize an ADT based on the name of its constructor.
   - The first argument [tyname : string] is the name of the type being parsed, for error messages.
@@ -260,12 +260,12 @@ Class SemiIntegral (A : Type) :=
 Instance Deserialize_SemiIntegral `{SemiIntegral A} : Deserialize A :=
   fun l e =>
     match e with
-    | ANum n =>
+    | Atom_ (Num n) =>
       match from_Z n with
       | Some a => inr a
       | None => inl (DeserError l ("could not read integral type, invalid value "%string ++ MsgSexp e))
       end
-    | Atom _ => inl (DeserError l ("could not read integral type, got a non-Num atom "%string ++ MsgSexp e))
+    | Atom_ _ => inl (DeserError l ("could not read integral type, got a non-Num atom "%string ++ MsgSexp e))
     | List _ => inl (DeserError l "could not read integral type, got a list"%string)
     end.
 
@@ -304,7 +304,7 @@ Instance Deserialize_prod {A B} `{Deserialize A} `{Deserialize B} : Deserialize 
       _bind_sum (_from_sexp (1 :: l) e2) (fun b =>
       inr (a, b)))
     | List _ => inl (DeserError l "could not read 'prod', expected list of length 2, got list of a different length"%string)
-    | Atom _ => inl (DeserError l "could not read 'prod', expected list of length 2, got atom"%string)
+    | Atom_ _ => inl (DeserError l "could not read 'prod', expected list of length 2, got atom"%string)
     end.
 
 Instance Deserialize_Empty_set : Deserialize Empty_set :=
@@ -313,21 +313,21 @@ Instance Deserialize_Empty_set : Deserialize Empty_set :=
 Instance Deserialize_unit : Deserialize unit :=
   fun l e =>
     match e with
-    | ARaw "tt" => inr tt
-    | Atom _ => inl (DeserError l "could not read 'unit', expected atom ""tt"", got a different atom"%string)
+    | Atom_ (Raw "tt") => inr tt
+    | Atom_ _ => inl (DeserError l "could not read 'unit', expected atom ""tt"", got a different atom"%string)
     | List _ => inl (DeserError l "could not read 'unit', expected atom ""tt"", got a list"%string)
     end.
 
 Instance Deserialize_string : Deserialize string :=
   fun l e =>
     match e with
-    | AStr s => inr s
-    | Atom _ => inl (DeserError l "could not read 'string', got non-string atom"%string)
+    | Atom_ (Str s) => inr s
+    | Atom_ _ => inl (DeserError l "could not read 'string', got non-string atom"%string)
     | List _ => inl (DeserError l "could not read 'string', got list"%string)
     end.
 
 Fixpoint _sexp_to_list {A} (pa : FromSexp A) (xs : list A)
-  (n : nat) (l : loc) (ys : list (sexp atom)) : error + list A :=
+  (n : nat) (l : loc) (ys : list sexp) : error + list A :=
   match ys with
   | nil => inr (rev' xs)
   | y :: ys =>
@@ -340,8 +340,8 @@ Fixpoint _sexp_to_list {A} (pa : FromSexp A) (xs : list A)
 Instance Deserialize_list {A} `{Deserialize A} : Deserialize (list A) :=
   fun l e =>
     match e with
-    | Atom _ => inl (DeserError l "could not read 'list', got atom"%string)
+    | Atom_ _ => inl (DeserError l "could not read 'list', got atom"%string)
     | List es => _sexp_to_list _from_sexp nil 0 l es
     end.
 
-Instance Deserialize_sexp : Deserialize (sexp atom) := fun _ => inr.
+Instance Deserialize_sexp : Deserialize sexp := fun _ => inr.

@@ -22,13 +22,13 @@ This S-expression...
   (code 418))
 ```
 
-... corresponds to this `sexp atom` in Coq.
+... corresponds to this `sexp` in Coq.
 
 ```coq
-Definition example : sexp atom :=
-  [ Raw "example"
-  ; [ Raw "message" ; Str "I'm a teapot" ]
-  ; [ Raw "code" ; Num 418%Z ]
+Definition example : sexp :=
+  [ Atom "example"
+  ; [ Atom "message" ; Atom (Str "I'm a teapot") ]
+  ; [ Atom "code" ; Atom 418%Z ]
   ].
 ```
 
@@ -59,30 +59,33 @@ Core definitions
 The type of S-expressions. It is parameterized by the type of atoms.
 
 ```coq
-Inductive sexp (A : Type) :=
-| Atom (a : A)
-| List (xs : list (sexp A))
+Inductive sexp_ (A : Type) :=
+| Atom_ (a : A)
+| List (xs : list (sexp_ A))
 .
 ```
 
 The library offers a default `atom` type, so that the main S-expression type is
-`sexp atom`.
+`sexp`.
 
 ```coq
-Definition atom : Set.
+Variant atom : Set :=
+| Num (n : Z)       (* Integers. *)
+| Str (s : string)  (* Literal strings. *)
+| Raw (s : string)  (* Simple atoms (e.g., ADT tags). *)
+                    (* Should fit in this alphabet: [A-Za-z0-9-_.']. *)
+.
 
-(* Constructors *)
-Definition Num : Z -> atom.
-Definition Str : string -> atom.
-Definition Raw : string -> atom.
+Notation sexp := (sexp_ atom).
+Notation Atom := (@Atom_ atom).
+
+Coercion Num : Z >-> atom.
+Coercion Raw : string >-> atom.
 
 (* Destructors *)
 Definition get_Num : atom -> option Z.
 Definition get_Str : atom -> option string.
 Definition get_Raw : atom -> option string.
-
-(* Coercion Num : Z >-> atom. *)
-(* Coercion Atom : atom >-> sexp. *)
 ```
 
 Serialization
@@ -92,7 +95,7 @@ Serializers can be defined as instances of the `Serialize` type class.
 
 ```coq
 Class Serialize (A : Type) : Type :=
-  to_sexp : A -> sexp atom.
+  to_sexp : A -> sexp.
 ```
 
 S-expressions can be serialized to a `string`. Thus, so can serializable types.
@@ -119,7 +122,7 @@ Going the other way requires some additional error handling.
 ```coq
 Class Deserialize (A : Type) : Type := ...
 
-Definition from_sexp {A} `{Deserialize A} : sexp atom -> error + A.
+Definition from_sexp {A} `{Deserialize A} : sexp -> error + A.
 Definition from_string {A} `{Deserialize A} : string -> error + A.
 ```
 
