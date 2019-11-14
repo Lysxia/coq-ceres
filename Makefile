@@ -1,4 +1,4 @@
-.PHONY: coq test build install clean html
+.PHONY: coq test build install clean html cleanall
 
 MF_COQ := Makefile.coq
 
@@ -11,12 +11,18 @@ install: build
 test: build
 	coqc -Q theories/ Ceres test/Test.v
 
+_CoqProject:
+	ln -s _CoqProject.classic _CoqProject
+
 $(MF_COQ): _CoqProject
 	coq_makefile -f _CoqProject -o $(MF_COQ)
 
 clean:
 	if [ -e $(MF_COQ) ] ; then make -f $(MF_COQ) cleanall ; fi
 	$(RM) */*.{vo,glob} */.*.aux $(MF_COQ){,.conf}
+
+cleanall: clean
+	$(RM) _CoqProject
 
 COQDOCJS_DIR := coqdocjs
 
