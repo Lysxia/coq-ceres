@@ -2,7 +2,7 @@
 
 (* begin hide *)
 From Coq Require Import
-  List ZArith Ascii String.
+  DecidableClass List ZArith Ascii String.
 
 From Ceres Require Import
   CeresString.
@@ -135,6 +135,35 @@ Definition eqb_atom (x1 x2 : atom) : bool :=
 
 Definition eqb_sexp : sexp -> sexp -> bool :=
   eqb_sexp_ eqb_atom.
+
+Program Instance Decidable_eq_atom : forall (x1 x2 : atom), Decidable (x1 = x2) :=
+  { Decidable_witness := eqb_atom x1 x2 }.
+Next Obligation with auto.
+  split; intros.
+  - destruct x1, x2; try discriminate H; simpl in H...
+    1: apply Z.eqb_eq in H; subst...
+    all: f_equal; apply CeresString.Decidable_eq_string_obligation_1...
+  - generalize dependent x2.
+    induction x1; destruct x2; intros; try discriminate H; rewrite H; simpl.
+    1: apply Z.eqb_refl.
+    all: apply CeresString.Decidable_eq_string_obligation_1...
+Qed.
+
+Program Instance Decidable_eq_sexp : forall (s1 s2 : sexp), Decidable (s1 = s2) :=
+  { Decidable_witness := eqb_sexp s1 s2 }.
+Next Obligation with auto.
+  split; intros.
+  - generalize dependent s2.
+    induction s1; intros; destruct s2; try discriminate H; simpl in *...
+    + f_equal...
+      apply Decidable_spec...
+    + f_equal.
+      admit.
+  - generalize dependent s1.
+    induction s2; intros; subst; simpl...
+    + apply Decidable_eq_atom_obligation_1...
+    + admit.
+Admitted.
 
 (** ** Example *)
 Section Example.

@@ -2,25 +2,71 @@
 
 (* begin hide *)
 From Coq Require Import
-  Bool List Arith ZArith NArith Ascii String Decimal DecimalString.
+  Bool DecidableClass List Arith ZArith NArith Ascii String Decimal DecimalString.
 (* end hide *)
 
 Infix "::" := String : string_scope.
 
 Local Open Scope lazy_bool_scope.
 
+Definition ascii_eqb (a b : ascii) : bool :=
+ match a, b with
+ | Ascii a0 a1 a2 a3 a4 a5 a6 a7,
+   Ascii b0 b1 b2 b3 b4 b5 b6 b7 =>
+    Bool.eqb a0 b0 &&& Bool.eqb a1 b1 &&& Bool.eqb a2 b2 &&& Bool.eqb a3 b3
+    &&& Bool.eqb a4 b4 &&& Bool.eqb a5 b5 &&& Bool.eqb a6 b6 &&& Bool.eqb a7 b7
+ end.
+
+Program Instance Decidable_eq_ascii : forall (a b : ascii), Decidable (a = b) :=
+  { Decidable_witness := ascii_eqb a b }.
+Next Obligation with auto.
+  split; intros.
+  - destruct a, b; simpl in H.
+    destruct (eqb b0 b  ) eqn:H0,
+             (eqb b1 b8 ) eqn:H1,
+             (eqb b2 b9 ) eqn:H2,
+             (eqb b3 b10) eqn:H3,
+             (eqb b4 b11) eqn:H4,
+             (eqb b5 b12) eqn:H5,
+             (eqb b6 b13) eqn:H6,
+             (eqb b7 b14) eqn:H7;
+    try discriminate H.
+    f_equal; apply eqb_prop...
+  - rewrite H.
+    destruct b.
+    simpl.
+    repeat rewrite eqb_reflx...
+Qed.
+
 Fixpoint eqb s1 s2 : bool :=
   match s1, s2 with
   | EmptyString, EmptyString => true
-  | String c1 s1', String c2 s2' =>
-    match c1, c2 with
-    | Ascii a0 a1 a2 a3 a4 a5 a6 a7,
-      Ascii b0 b1 b2 b3 b4 b5 b6 b7 =>
-      Bool.eqb a0 b0 &&& Bool.eqb a1 b1 &&& Bool.eqb a2 b2 &&& Bool.eqb a3 b3
-  &&& Bool.eqb a4 b4 &&& Bool.eqb a5 b5 &&& Bool.eqb a6 b6 &&& Bool.eqb a7 b7
-    end &&& eqb s1' s2'
+  | String c1 s1', String c2 s2' => ascii_eqb c1 c2 &&& eqb s1' s2'
   | _,_ => false
   end.
+
+Program Instance Decidable_eq_string : forall (s1 s2 : string), Decidable (s1 = s2) :=
+  { Decidable_witness := eqb s1 s2 }.
+Next Obligation with auto.
+  split.
+  - generalize dependent s2.
+    induction s1.
+    + induction s2; intros...
+      discriminate H.
+    + induction s2; intros; try discriminate H.
+      simpl in H.
+      destruct (ascii_eqb a a0) eqn:Heqa.
+      * f_equal...
+        apply Decidable_spec...
+      * discriminate H.
+  - intros.
+    generalize dependent s1.
+    induction s2; intros; subst...
+    simpl.
+    replace (ascii_eqb a a) with true...
+    symmetry.
+    apply Decidable_eq_ascii_obligation_1...
+Qed.
 
 Fixpoint _string_reverse (r s : string) : string :=
   match s with
