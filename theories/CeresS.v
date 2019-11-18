@@ -3,6 +3,9 @@
 (* begin hide *)
 From Coq Require Import
   List ZArith Ascii String.
+
+From Ceres Require Import
+  CeresString.
 (* end hide *)
 
 (** S-expressions, parameterized by the type of atoms. *)
@@ -85,6 +88,53 @@ Definition get_Raw (a : atom) : option string :=
   | Raw s => Some s
   | _ => None
   end.
+
+(** ** Equality *)
+
+(* The inductive type [sexp] has recursive occurences
+   nested in [list : Type -> Type].
+
+   A common formula to define a recursive function [f_sexp] on [sexp]
+   (here, [eqb_sexp]) is to first define a recursive function
+   [f_list] on [list A] parameterized by a function [f] on [A],
+   which is going to be [f_sexp] in the definition of [f_sexp].
+
+   There are some more details to be careful about in order to make
+   the definition of [f_sexp] well-founded. In [f_list], the
+   parameter [f] should be bound _outside_ of the [fix]
+   expression, which only binds lists, ensuring that when the
+   definition of [f_list] is unfolded in [f_sexp], [f] gets
+   substituted with recursive occurences of [f_sexp].
+ *)
+
+Definition eqb_list {A B} (f : A -> B -> bool)
+  : list A -> list B -> bool :=
+  fix eqb_list_ (xs : list A) (ys : list B) :=
+    match xs, ys with
+    | nil, nil => true
+    | x :: xs, y :: ys => (f x y && eqb_list_ xs ys)%bool
+    | _, _ => false
+    end.
+
+Definition eqb_sexp_ {A B} (a_eqb : A -> B -> bool)
+  : sexp_ A -> sexp_ B -> bool :=
+  fix eqb_sexp__ (s1 : sexp_ A) (s2 : sexp_ B) : bool :=
+    match s1, s2 with
+    | Atom_ a1, Atom_ a2 => a_eqb a1 a2
+    | List xs1, List xs2 => eqb_list eqb_sexp__ xs1 xs2
+    | _, _ => false
+    end.
+
+Definition eqb_atom (x1 x2 : atom) : bool :=
+  match x1, x2 with
+  | Raw s1, Raw s2 => CeresString.eqb s1 s2
+  | Str s1, Str s2 => CeresString.eqb s1 s2
+  | Num z1, Num z2 => Z.eqb z1 z2
+  | _, _ => false
+  end.
+
+Definition eqb_sexp : sexp -> sexp -> bool :=
+  eqb_sexp_ eqb_atom.
 
 (** ** Example *)
 Section Example.
