@@ -9,7 +9,8 @@ Infix "::" := String : string_scope.
 
 Local Open Scope lazy_bool_scope.
 
-Definition ascii_eqb (a b : ascii) : bool :=
+(* Backport #8063 to Coq 8.8 *)
+Definition eqb_ascii (a b : ascii) : bool :=
  match a, b with
  | Ascii a0 a1 a2 a3 a4 a5 a6 a7,
    Ascii b0 b1 b2 b3 b4 b5 b6 b7 =>
@@ -17,9 +18,11 @@ Definition ascii_eqb (a b : ascii) : bool :=
     &&& Bool.eqb a4 b4 &&& Bool.eqb a5 b5 &&& Bool.eqb a6 b6 &&& Bool.eqb a7 b7
  end.
 
-Program Instance Decidable_eq_ascii : forall (a b : ascii), Decidable (a = b) :=
-  { Decidable_witness := ascii_eqb a b }.
-Next Obligation with auto.
+Definition eqb_eq {A} (eqb : A -> A -> bool) :=
+  forall a b, eqb a b = true <-> a = b.
+
+Lemma eqb_eq_ascii : eqb_eq eqb_ascii.
+Proof with auto.
   split; intros.
   - destruct a, b; simpl in H.
     destruct (eqb b0 b  ) eqn:H0,
@@ -36,37 +39,46 @@ Next Obligation with auto.
     destruct b.
     simpl.
     repeat rewrite eqb_reflx...
-Qed.
+Defined.
 
-Fixpoint eqb s1 s2 : bool :=
+Instance Decidable_eq_ascii : forall (a b : ascii), Decidable (a = b).
+Proof.
+  exact (fun a b : ascii =>
+           {| Decidable_witness := eqb_ascii a b;
+              Decidable_spec := eqb_eq_ascii a b |}).
+Defined.
+
+Fixpoint eqb_string s1 s2 : bool :=
   match s1, s2 with
   | EmptyString, EmptyString => true
-  | String c1 s1', String c2 s2' => ascii_eqb c1 c2 &&& eqb s1' s2'
+  | String c1 s1', String c2 s2' => eqb_ascii c1 c2 &&& eqb_string s1' s2'
   | _,_ => false
   end.
 
-Program Instance Decidable_eq_string : forall (s1 s2 : string), Decidable (s1 = s2) :=
-  { Decidable_witness := eqb s1 s2 }.
-Next Obligation with auto.
-  split.
-  - generalize dependent s2.
-    induction s1.
-    + induction s2; intros...
-      discriminate H.
-    + induction s2; intros; try discriminate H.
-      simpl in H.
-      destruct (ascii_eqb a a0) eqn:Heqa.
-      * f_equal...
-        apply Decidable_spec...
-      * discriminate H.
-  - intros.
-    generalize dependent s1.
-    induction s2; intros; subst...
+Lemma eqb_eq_string : eqb_eq eqb_string.
+Proof with auto.
+  intro s1.
+  induction s1; intros []; split; intro H; try discriminate...
+  - simpl in H.
+    apply andb_prop in H.
+    destruct H.
+    apply eqb_eq_ascii in H.
+    apply IHs1 in H0.
+    f_equal...
+  - inversion H; subst.
     simpl.
-    replace (ascii_eqb a a) with true...
-    symmetry.
-    apply Decidable_eq_ascii_obligation_1...
-Qed.
+    apply andb_true_intro.
+    split.
+    + apply eqb_eq_ascii...
+    + apply IHs1...
+Defined.
+
+Instance Decidable_eq_string : forall (s1 s2 : string), Decidable (s1 = s2).
+Proof.
+  exact (fun s1 s2 : string =>
+           {| Decidable_witness := eqb_string s1 s2;
+              Decidable_spec := eqb_eq_string s1 s2 |}).
+Defined.
 
 Fixpoint _string_reverse (r s : string) : string :=
   match s with

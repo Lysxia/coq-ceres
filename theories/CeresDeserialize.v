@@ -150,7 +150,7 @@ Definition match_con {A} (tyname : string)
   _con tyname
     (fun c l =>
       let all_con := List.map fst c0 in
-      _find_or CeresString.eqb c c0 inr
+      _find_or CeresString.eqb_string c c0 inr
         (let msg :=
            match all_con with
            | nil => MsgStr "unexpected atom (expected list)"%string
@@ -161,7 +161,7 @@ Definition match_con {A} (tyname : string)
          in inl (DeserError l (type_error tyname msg))))
     (fun c =>
       let all_con := List.map fst c1 in
-      _find_or CeresString.eqb c c1 (fun x => x)
+      _find_or CeresString.eqb_string c c1 (fun x => x)
         (fun l _ _ =>
           let msg :=
             match all_con with
