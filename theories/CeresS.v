@@ -6,6 +6,8 @@ From Coq Require Import
 
 From Ceres Require Import
   CeresString.
+
+Unset Elimination Schemes.
 (* end hide *)
 
 (** S-expressions, parameterized by the type of atoms. *)
@@ -136,34 +138,87 @@ Definition eqb_atom (x1 x2 : atom) : bool :=
 Definition eqb_sexp : sexp -> sexp -> bool :=
   eqb_sexp_ eqb_atom.
 
-Program Instance Decidable_eq_atom : forall (x1 x2 : atom), Decidable (x1 = x2) :=
-  { Decidable_witness := eqb_atom x1 x2 }.
-Next Obligation with auto.
+Definition eqb_eq {A} (eqb : A -> A -> bool) :=
+  forall a b, eqb a b = true <-> a = b.
+
+Lemma eqb_eq_list {A} (eqb : A -> A -> bool) (xs : list A)
+      (Heqb : Forall (fun a : A => forall b : A, eqb a b = true <-> a = b) xs) :
+  forall (xs' : list A),
+    eqb_list eqb xs xs' = true <-> xs = xs'.
+Proof with auto.
+  induction xs; intros []; split; intros H; try discriminate H...
+  - simpl in *.
+    apply andb_prop in H.
+    destruct H.
+    inversion Heqb; subst.
+    apply IHxs in H0...
+    f_equal...
+    apply H3...
+  - inversion H; subst...
+    simpl.
+    apply andb_true_intro.
+    inversion Heqb; subst.
+    split.
+    + apply H2...
+    + apply IHxs...
+Defined.
+
+Lemma eqb_eq_atom : eqb_eq eqb_atom.
+Proof with auto.
   split; intros.
-  - destruct x1, x2; try discriminate H; simpl in H...
+  - destruct a, b; try discriminate H; simpl in H...
     1: apply Z.eqb_eq in H; subst...
     all: f_equal; apply CeresString.Decidable_eq_string_obligation_1...
-  - generalize dependent x2.
-    induction x1; destruct x2; intros; try discriminate H; rewrite H; simpl.
+  - subst.
+    destruct b...
     1: apply Z.eqb_refl.
     all: apply CeresString.Decidable_eq_string_obligation_1...
-Qed.
+Defined.
+
+Instance Decidable_eq_atom : forall (x1 x2 : atom), Decidable (x1 = x2).
+Proof.
+  intros.
+  refine {| Decidable_witness := eqb_atom x1 x2 |}.
+  apply eqb_eq_atom.
+Defined.
+
+Lemma Forall_list : forall {X} (P : X -> Prop),
+    (forall x, P x) -> forall (xs : list X), Forall P xs.
+Proof with auto.
+  intros.
+  induction xs...
+Defined.
+
+Lemma sexp__ind : forall (A : Type) (P : sexp_ A -> Prop),
+    (forall a : A, P (Atom_ a)) ->
+    (forall xs : list (sexp_ A), Forall P xs -> P (List xs)) ->
+    forall s : sexp_ A, P s.
+Proof.
+  intros A P Ha Hxs.
+  fix self 1.
+  intros [].
+  - auto.
+  - apply Hxs.
+    apply Forall_list.
+    assumption.
+Defined.
 
 Program Instance Decidable_eq_sexp : forall (s1 s2 : sexp), Decidable (s1 = s2) :=
   { Decidable_witness := eqb_sexp s1 s2 }.
 Next Obligation with auto.
-  split; intros.
-  - generalize dependent s2.
-    induction s1; intros; destruct s2; try discriminate H; simpl in *...
-    + f_equal...
-      apply Decidable_spec...
-    + f_equal.
-      admit.
-  - generalize dependent s1.
-    induction s2; intros; subst; simpl...
-    + apply Decidable_eq_atom_obligation_1...
-    + admit.
-Admitted.
+  generalize dependent s2.
+  induction s1; split; destruct s2; intros; try discriminate.
+  - f_equal...
+    apply eqb_eq_atom...
+  - apply eqb_eq_atom.
+    inversion H...
+  - f_equal.
+    simpl in H0.
+    apply eqb_eq_list in H0...
+  - simpl.
+    apply eqb_eq_list...
+    inversion H0...
+Defined.
 
 (** ** Example *)
 Section Example.
