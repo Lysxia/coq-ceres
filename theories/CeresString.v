@@ -2,25 +2,83 @@
 
 (* begin hide *)
 From Coq Require Import
-  Bool List Arith ZArith NArith Ascii String Decimal DecimalString.
+  Bool DecidableClass List Arith ZArith NArith Ascii String Decimal DecimalString.
 (* end hide *)
 
 Infix "::" := String : string_scope.
 
 Local Open Scope lazy_bool_scope.
 
-Fixpoint eqb s1 s2 : bool :=
+(* Backport #8063 to Coq 8.8 *)
+Definition eqb_ascii (a b : ascii) : bool :=
+ match a, b with
+ | Ascii a0 a1 a2 a3 a4 a5 a6 a7,
+   Ascii b0 b1 b2 b3 b4 b5 b6 b7 =>
+    Bool.eqb a0 b0 &&& Bool.eqb a1 b1 &&& Bool.eqb a2 b2 &&& Bool.eqb a3 b3
+    &&& Bool.eqb a4 b4 &&& Bool.eqb a5 b5 &&& Bool.eqb a6 b6 &&& Bool.eqb a7 b7
+ end.
+
+Definition eqb_eq {A} (eqb : A -> A -> bool) :=
+  forall a b, eqb a b = true <-> a = b.
+
+Lemma eqb_eq_ascii : eqb_eq eqb_ascii.
+Proof with auto.
+  split; intros.
+  - destruct a, b; simpl in H.
+    destruct (eqb b0 b  ) eqn:H0,
+             (eqb b1 b8 ) eqn:H1,
+             (eqb b2 b9 ) eqn:H2,
+             (eqb b3 b10) eqn:H3,
+             (eqb b4 b11) eqn:H4,
+             (eqb b5 b12) eqn:H5,
+             (eqb b6 b13) eqn:H6,
+             (eqb b7 b14) eqn:H7;
+    try discriminate H.
+    f_equal; apply eqb_prop...
+  - rewrite H.
+    destruct b.
+    simpl.
+    repeat rewrite eqb_reflx...
+Defined.
+
+Instance Decidable_eq_ascii : forall (a b : ascii), Decidable (a = b).
+Proof.
+  exact (fun a b : ascii =>
+           {| Decidable_witness := eqb_ascii a b;
+              Decidable_spec := eqb_eq_ascii a b |}).
+Defined.
+
+Fixpoint eqb_string s1 s2 : bool :=
   match s1, s2 with
   | EmptyString, EmptyString => true
-  | String c1 s1', String c2 s2' =>
-    match c1, c2 with
-    | Ascii a0 a1 a2 a3 a4 a5 a6 a7,
-      Ascii b0 b1 b2 b3 b4 b5 b6 b7 =>
-      Bool.eqb a0 b0 &&& Bool.eqb a1 b1 &&& Bool.eqb a2 b2 &&& Bool.eqb a3 b3
-  &&& Bool.eqb a4 b4 &&& Bool.eqb a5 b5 &&& Bool.eqb a6 b6 &&& Bool.eqb a7 b7
-    end &&& eqb s1' s2'
+  | String c1 s1', String c2 s2' => eqb_ascii c1 c2 &&& eqb_string s1' s2'
   | _,_ => false
   end.
+
+Lemma eqb_eq_string : eqb_eq eqb_string.
+Proof with auto.
+  intro s1.
+  induction s1; intros []; split; intro H; try discriminate...
+  - simpl in H.
+    apply andb_prop in H.
+    destruct H.
+    apply eqb_eq_ascii in H.
+    apply IHs1 in H0.
+    f_equal...
+  - inversion H; subst.
+    simpl.
+    apply andb_true_intro.
+    split.
+    + apply eqb_eq_ascii...
+    + apply IHs1...
+Defined.
+
+Instance Decidable_eq_string : forall (s1 s2 : string), Decidable (s1 = s2).
+Proof.
+  exact (fun s1 s2 : string =>
+           {| Decidable_witness := eqb_string s1 s2;
+              Decidable_spec := eqb_eq_string s1 s2 |}).
+Defined.
 
 Fixpoint _string_reverse (r s : string) : string :=
   match s with
