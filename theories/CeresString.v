@@ -18,6 +18,13 @@ Definition eqb_ascii (a b : ascii) : bool :=
     &&& Bool.eqb a4 b4 &&& Bool.eqb a5 b5 &&& Bool.eqb a6 b6 &&& Bool.eqb a7 b7
  end.
 
+(* [Bool.eqb_spec], which doesn't exist on Coq 8.8 *)
+Lemma eqb_eq_bool x y : reflect (x = y) (Bool.eqb x y).
+Proof.
+  destruct (Bool.eqb _ _) eqn:H;
+    constructor; [ apply eqb_prop | apply eqb_false_iff ]; auto.
+Defined.
+
 Definition eqb_eq {A} (eqb : A -> A -> bool) :=
   forall a b, eqb a b = true <-> a = b.
 
@@ -25,19 +32,11 @@ Lemma eqb_eq_ascii : eqb_eq eqb_ascii.
 Proof with auto.
   split; intros.
   - destruct a, b; simpl in H.
-    destruct (eqb b0 b  ) eqn:H0,
-             (eqb b1 b8 ) eqn:H1,
-             (eqb b2 b9 ) eqn:H2,
-             (eqb b3 b10) eqn:H3,
-             (eqb b4 b11) eqn:H4,
-             (eqb b5 b12) eqn:H5,
-             (eqb b6 b13) eqn:H6,
-             (eqb b7 b14) eqn:H7;
-    try discriminate H.
-    f_equal; apply eqb_prop...
-  - rewrite H.
-    destruct b.
-    simpl.
+    do 8 (
+      match type of H with
+      | context [ Bool.eqb ?x ?y ] => destruct (eqb_eq_bool x y); try discriminate; subst
+      end)...
+  - subst; destruct b; simpl.
     repeat rewrite eqb_reflx...
 Defined.
 

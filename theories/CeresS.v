@@ -138,37 +138,35 @@ Definition eqb_atom (x1 x2 : atom) : bool :=
 Definition eqb_sexp : sexp -> sexp -> bool :=
   eqb_sexp_ eqb_atom.
 
+Ltac magic :=
+  simpl in *;
+  repeat
+    match goal with
+    | [ H : Forall _ (_ :: _) |- _ ] => inversion_clear H
+    | [ |- andb _ _ = true ] => apply andb_true_intro
+    | [ H : ?x :: ?xs = ?y :: ?ys |- _ ] => inversion H; clear H; subst
+    | [ H : ?t = true |- _ ] =>
+      match t with
+      | andb _ _ => apply andb_prop in H; destruct H
+      | Z.eqb _ _ => apply Z.eqb_eq in H; subst
+      | eqb_string _ _ => apply eqb_eq_string in H; subst
+      end
+    | [ H : _ |- _ ] => solve [ apply H; auto ]
+    end; auto.
+
 Lemma eqb_eq_list {A} (eqb : A -> A -> bool) (xs : list A)
       (Heqb : Forall (fun a : A => forall b : A, eqb a b = true <-> a = b) xs)
   : forall (xs' : list A), eqb_list eqb xs xs' = true <-> xs = xs'.
 Proof with auto.
-  induction xs; intros []; split; intros H; try discriminate H...
-  - simpl in *.
-    apply andb_prop in H.
-    destruct H.
-    inversion Heqb; subst.
-    apply IHxs in H0...
-    f_equal...
-    apply H3...
-  - inversion H; subst...
-    simpl.
-    apply andb_true_intro.
-    inversion Heqb; subst.
-    split.
-    + apply H2...
-    + apply IHxs...
+  induction xs; intros []; split; intros; try discriminate;
+    magic; [ f_equal | split ]; magic.
 Defined.
 
 Lemma eqb_eq_atom : eqb_eq eqb_atom.
 Proof with auto.
   split; intros.
-  - destruct a, b; try discriminate H; simpl in H...
-    1: apply Z.eqb_eq in H; subst...
-    all: f_equal; apply eqb_eq_string...
-  - subst.
-    destruct b...
-    1: apply Z.eqb_refl.
-    all: apply eqb_eq_string...
+  - destruct a, b; try discriminate; magic.
+  - subst; destruct b; simpl; try apply Z.eqb_refl; try apply eqb_eq_string...
 Defined.
 
 Instance Decidable_eq_atom : forall (x1 x2 : atom), Decidable (x1 = x2).
@@ -178,12 +176,9 @@ Proof.
               Decidable_spec := eqb_eq_atom x1 x2 |}).
 Defined.
 
-Lemma Forall_list : forall {X} (P : X -> Prop),
+Lemma forall_Forall : forall {X} (P : X -> Prop),
     (forall x, P x) -> forall (xs : list X), Forall P xs.
-Proof with auto.
-  intros.
-  induction xs...
-Defined.
+Proof. intros; induction xs; auto. Defined.
 
 Lemma sexp__ind : forall (A : Type) (P : sexp_ A -> Prop),
     (forall a : A, P (Atom_ a)) ->
@@ -195,7 +190,7 @@ Proof.
   intros [].
   - auto.
   - apply Hxs.
-    apply Forall_list.
+    apply forall_Forall.
     assumption.
 Defined.
 
@@ -203,17 +198,10 @@ Lemma eqb_eq_sexp_ {A} {eqb_A : A -> A -> bool}
       (Heqb_eq : eqb_eq eqb_A) : eqb_eq (eqb_sexp_ eqb_A).
 Proof with auto.
   intro s1.
-  induction s1; intros []; split; intro; try discriminate.
-  - f_equal.
-    apply Heqb_eq...
-  - apply Heqb_eq...
-    inversion H...
-  - f_equal.
-    simpl in H0.
-    apply eqb_eq_list in H0...
-  - simpl.
-    apply eqb_eq_list...
-    inversion H0...
+  induction s1; intros []; split; intro HH; try discriminate; try injection HH; intros.
+  1,2: try f_equal; apply Heqb_eq; auto.
+  - f_equal; simpl in *; apply eqb_eq_list in HH...
+  - simpl; eapply eqb_eq_list; auto.
 Defined.
 
 Definition eqb_eq_sexp : eqb_eq eqb_sexp := eqb_eq_sexp_ eqb_eq_atom.
