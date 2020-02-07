@@ -1,0 +1,4 @@
+(coq.theory
+  (name Ceres)
+  (public_name coq-ceres)
+  (synopsis "Library for serialization to S-expressions"))
