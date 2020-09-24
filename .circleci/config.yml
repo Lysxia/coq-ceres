@@ -29,6 +29,14 @@ jobs:
     <<: *defaults
     docker:
     - image: coqorg/coq:8.10
+  coq.8.11:
+    <<: *defaults
+    docker:
+    - image: coqorg/coq:8.11
+  coq.8.12:
+    <<: *defaults
+    docker:
+    - image: coqorg/coq:8.12
   coq.dev:
     <<: *defaults
     docker:
@@ -41,4 +49,6 @@ workflows:
     - coq.8.8
     - coq.8.9
     - coq.8.10
+    - coq.8.11
+    - coq.8.12
     - coq.dev

@@ -4,6 +4,7 @@
 From Coq Require Import
   List
   ZArith
+  Ascii
   String.
 
 From Ceres Require Import
@@ -63,6 +64,9 @@ Instance Serialize_Empty_set : Serialize Empty_set
 
 Instance Serialize_unit : Serialize unit
   := fun _ => Atom "tt"%string.
+
+Instance Serialize_ascii : Serialize ascii
+  := fun a => Atom (Str (String a "")).
 
 Instance Serialize_string : Serialize string
   := fun s => Atom (Str s).
