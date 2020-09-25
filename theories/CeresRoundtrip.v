@@ -1,5 +1,7 @@
 From Coq Require Import
+  ZArith
   List
+  Ascii
   String.
 From Ceres Require Import
   CeresS
@@ -27,6 +29,73 @@ Class SerDeClass (A : Type) `{Serialize A} `{Deserialize A} : Prop :=
 
 Class DeSerClass (A : Type) `{Serialize A} `{Deserialize A} : Prop :=
   de_ser_class : forall l, @DeSer A to_sexp (_from_sexp l).
+
+(**)
+
+Class SerDeIntegral (A : Type) `{Integral A} `{SemiIntegral A} : Prop :=
+  ser_de_integral : forall (a : A), from_Z (to_Z a) = Some a.
+
+Class DeSerIntegral (A : Type) `{Integral A} `{SemiIntegral A} : Prop :=
+  de_ser_integral : forall z a, from_Z z = Some a -> to_Z a = z.
+
+Instance SerDeClass_Integral {A} `{SerDeIntegral A} : SerDeClass A.
+Proof.
+  intros l a; cbn; rewrite ser_de_integral; reflexivity.
+Qed.
+
+Instance DeSerClass_Integral {A} `{DeSerIntegral A} : DeSerClass A.
+Proof.
+  intros l [ [] | ] a; cbn; try discriminate.
+  destruct from_Z eqn:Ez; try discriminate.
+  intros E; injection E; intros [].
+  apply (f_equal Atom), (f_equal Num). apply de_ser_integral; assumption.
+Qed.
+
+Instance SerDe_Z : SerDeIntegral Z.
+Proof.
+  intros a. reflexivity.
+Qed.
+
+Instance SerDe_N : SerDeIntegral N.
+Proof.
+  intros a. unfold from_Z, SemiIntegral_N.
+  replace (Z.ltb _ _) with false.
+  - rewrite N2Z.id; reflexivity.
+  - symmetry; apply Z.ltb_ge.
+    apply N2Z.is_nonneg.
+Qed.
+
+Instance SerDe_nat : SerDeIntegral nat.
+Proof.
+  intros a. unfold from_Z, SemiIntegral_nat.
+  replace (Z.ltb _ _) with false.
+  - rewrite Nat2Z.id; reflexivity.
+  - symmetry; apply Z.ltb_ge.
+    apply Nat2Z.is_nonneg.
+Qed.
+
+Instance DeSer_Z : DeSerIntegral Z.
+Proof.
+  intros a b H; injection H; intros []; reflexivity.
+Qed.
+
+Instance DeSer_N : DeSerIntegral N.
+Proof.
+  intros z n. unfold from_Z, SemiIntegral_N.
+  destruct (Z.ltb_spec z 0); try discriminate.
+  intros E; injection E; clear E.
+  intros []; rewrite Z2N.id; auto.
+Qed.
+
+Instance DeSer_nat : DeSerIntegral nat.
+Proof.
+  intros z n.  unfold from_Z, SemiIntegral_nat.
+  destruct (Z.ltb_spec z 0); try discriminate.
+  intros E; injection E; clear E.
+  intros []; rewrite Z2Nat.id; auto.
+Qed.
+
+(**)
 
 Lemma de__con {A} (tyname : string)
     (g : string -> loc -> error + A) (f : string -> FromSexpList A)
@@ -249,4 +318,27 @@ Qed.
 Instance SerDeClass_list {A} `{SerDeClass A} : SerDeClass (list A).
 Proof.
   intros l a. apply ser_de_class_list.
+Qed.
+
+Instance SerDeClass_string : SerDeClass string.
+Proof.
+  intros l a. reflexivity.
+Qed.
+
+Instance DeSerClass_string : DeSerClass string.
+Proof.
+  intros l [ [] | ]; cbn; try discriminate.
+  intros ? E; injection E; intros []; reflexivity.
+Qed.
+
+Instance SerDeClass_ascii : SerDeClass ascii.
+Proof.
+  intros l a. reflexivity.
+Qed.
+
+Instance DeSerClass_ascii : DeSerClass ascii.
+Proof.
+  intros l [ [ | s | ] | ]; cbn; try discriminate.
+  destruct s as [ | ? [] ]; cbn; try discriminate.
+  intros ? E; injection E; intros []; reflexivity.
 Qed.

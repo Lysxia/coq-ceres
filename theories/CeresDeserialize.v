@@ -4,6 +4,7 @@
 From Coq Require Import
   List
   ZArith
+  Ascii
   String.
 
 From Ceres Require Import
@@ -329,6 +330,17 @@ Instance Deserialize_string : Deserialize string :=
     | Atom_ _ => inl (DeserError l "could not read 'string', got non-string atom"%string)
     | List _ => inl (DeserError l "could not read 'string', got list"%string)
     end.
+
+Instance Deserialize_ascii : Deserialize ascii :=
+  fun l e =>
+    match e with
+    | Atom_ (Str (c :: "")) => inr c
+    | Atom_ (Str "") => inl (DeserError l "could not read 'ascii', got empty string")
+    | Atom_ (Str (_ :: _ :: _)) =>
+      inl (DeserError l "could not read 'ascii', got string of length greater than 1")
+    | Atom_ _ => inl (DeserError l "could not read 'ascii', got non-string atom")
+    | List _ => inl (DeserError l "could not read 'ascii', got lost")
+    end%string.
 
 Fixpoint _sexp_to_list {A} (pa : FromSexp A) (xs : list A)
   (n : nat) (l : loc) (ys : list sexp) : error + list A :=
