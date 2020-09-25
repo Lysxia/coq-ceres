@@ -107,6 +107,16 @@ Proof.
   intros l []; cbn; [ rewrite H1 | ]; reflexivity.
 Qed.
 
+Instance SerDeClass_sum {A B} `{SerDeClass A} `{SerDeClass B} : SerDeClass (A + B).
+Proof.
+  intros l []; cbn; rewrite ser_de_class; reflexivity.
+Qed.
+
+Instance SerDeClass_prod {A B} `{SerDeClass A} `{SerDeClass B} : SerDeClass (A * B).
+Proof.
+  intros l []; cbn; rewrite 2 ser_de_class; reflexivity.
+Qed.
+
 Section DeRetField.
 
 Context {R} (r : R) {n : nat}.
@@ -170,4 +180,73 @@ Proof.
     de_field Ea. cbn.
     apply H1 in Ea1.
     rewrite Ea1; assumption.
+Qed.
+
+Instance DeSerClass_sum {A B} `{DeSerClass A} `{DeSerClass B} : DeSerClass (A + B).
+Proof.
+  intros l e a Ee; apply de_match_con in Ee.
+  destruct Ee as [ Ee | Ee ]; elim_Exists Ee; cbn [fst snd] in *.
+  - destruct Ee as [es [Ee Ea]].
+    de_field Ea. cbn.
+    apply de_ser_class in Ea1.
+    rewrite Ea1; assumption.
+  - destruct Ee as [es [Ee Ea]].
+    de_field Ea. cbn.
+    apply de_ser_class in Ea1.
+    rewrite Ea1; assumption.
+Qed.
+
+Instance DeSerClass_prod {A B} `{DeSerClass A} `{DeSerClass B} : DeSerClass (A * B).
+Proof.
+  intros l [ ea | [ | ea [ | eb [ | ] ] ] ] a; cbn; try discriminate.
+  destruct (_from_sexp _ ea) eqn:Ea; cbn; try discriminate.
+  destruct (_from_sexp _ eb) eqn:Eb; cbn; try discriminate.
+  intros Eab; injection Eab; intros [].
+  unfold to_sexp, Serialize_product; cbn.
+  repeat f_equal; [ revert Ea | revert Eb ]; eapply de_ser_class.
+Qed.
+
+Lemma app_cons_assoc {A} (xs : list A) (x : A) (ys : list A)
+  : xs ++ x :: ys = (xs ++ [x]) ++ ys.
+Proof.
+  rewrite <- app_assoc; reflexivity.
+Qed.
+
+Lemma de_ser_class_list {A} `{DeSerClass A} (es : list sexp)
+  : forall fs xs n l a,
+      map to_sexp (rev xs) = fs ->
+      _sexp_to_list _from_sexp xs n l es = inr a -> to_sexp a = List (fs ++ es).
+Proof.
+  induction es as [ | e es ]; cbn; intros fs xs n l a E1 E2.
+  - apply (f_equal List).
+    injection E2; intros [].
+    rewrite rev_alt in E1. rewrite app_nil_r. assumption.
+  - destruct _from_sexp as [ | a'] eqn:E3 in E2; try discriminate.
+    apply IHes with (fs := fs ++ [e]) in E2; cbn.
+    + rewrite app_cons_assoc; assumption.
+    + rewrite map_app; cbn.
+      f_equal; [ assumption | f_equal ].
+      eapply de_ser_class. eassumption.
+Qed.
+
+Instance DeSerClass_list {A} `{DeSerClass A} : DeSerClass (list A).
+Proof.
+  intros l [e | es] a; cbn; try discriminate.
+  apply de_ser_class_list with (fs := []).
+  reflexivity.
+Qed.
+
+Lemma ser_de_class_list {A} `{SerDeClass A} (a : list A)
+  : forall (xs : list A) (n : nat) (l : loc),
+      _sexp_to_list _from_sexp xs n l (map to_sexp a) = inr (rev xs ++ a).
+Proof.
+  induction a as [ | y ys ]; intros; cbn.
+  - rewrite rev_alt, app_nil_r; reflexivity.
+  - rewrite ser_de_class. rewrite app_cons_assoc.
+    apply IHys.
+Qed.
+
+Instance SerDeClass_list {A} `{SerDeClass A} : SerDeClass (list A).
+Proof.
+  intros l a. apply ser_de_class_list.
 Qed.

@@ -230,16 +230,20 @@ Definition con5 {A B C D E R} (f : A -> B -> C -> D -> E -> R)
     fields (pa >>= fun a => pb >>= fun b => pc >>= fun c => pd >>= fun d => pe >>= fun e =>
     ret (f a b c d e)).
 
-Definition con1_ {A R} (f : A -> R) : forall `{Deserialize A}, FromSexpList R := con1 f.
-Definition con2_ {A B R} (f : A -> B -> R)
-  : forall `{Deserialize A} `{Deserialize B}, FromSexpList R := con2 f.
+Definition con1_ {A R} (f : A -> R) `{Deserialize A} : FromSexpList R :=
+  con1 f _from_sexp.
+Definition con2_ {A B R} (f : A -> B -> R) `{Deserialize A} `{Deserialize B} : FromSexpList R :=
+  con2 f _from_sexp _from_sexp.
 Definition con3_ {A B C R} (f : A -> B -> C -> R)
-  : forall `{Deserialize A} `{Deserialize B} `{Deserialize C}, FromSexpList R := con3 f.
+    `{Deserialize A} `{Deserialize B} `{Deserialize C} : FromSexpList R :=
+  con3 f _from_sexp _from_sexp _from_sexp.
 Definition con4_ {A B C D R} (f : A -> B -> C -> D -> R)
-  : forall `{Deserialize A} `{Deserialize B} `{Deserialize C} `{Deserialize D}, FromSexpList R := con4 f.
+    `{Deserialize A} `{Deserialize B} `{Deserialize C} `{Deserialize D} : FromSexpList R :=
+  con4 f _from_sexp _from_sexp _from_sexp _from_sexp.
 Definition con5_ {A B C D E R} (f : A -> B -> C -> D -> E -> R)
-  : forall `{Deserialize A} `{Deserialize B} `{Deserialize C} `{Deserialize D} `{Deserialize E}, FromSexpList R :=
-  con5 f.
+    `{Deserialize A} `{Deserialize B} `{Deserialize C} `{Deserialize D} `{Deserialize E}
+  : FromSexpList R :=
+  con5 f  _from_sexp _from_sexp _from_sexp _from_sexp _from_sexp.
 
 Class DeserFromSexpList (A R : Type) (n m : nat) :=
   _from_sexp_list : A -> FromSexpListN n m R.
