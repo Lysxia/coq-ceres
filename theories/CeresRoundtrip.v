@@ -125,6 +125,13 @@ Proof.
       * right; constructor; [ constructor; auto | auto ].
 Qed.
 
+(* For backwards compatibility. [List.Exists_impl] which was added on 8.10. *)
+Lemma List_Exists_impl {A} (P Q : A -> Prop) (xs : list A)
+  : (forall x, P x -> Q x) -> List.Exists P xs -> List.Exists Q xs.
+Proof.
+  induction 2; intros; auto.
+Qed.
+
 Theorem de_match_con {A} (tyname : string)
     (c0 : list (string * A)) (c1 : list (string * FromSexpList A))
     l (e : sexp) (a : A)
@@ -137,13 +144,13 @@ Proof.
   unfold Deser.match_con.
   intros DESER. apply de__con in DESER. destruct DESER as [ (c & Ee & Ea ) | (c & es & Ee & Ea) ].
   - apply _find_or_spec in Ea. destruct Ea as [ Ea | [] ]; [ | discriminate ].
-    left. revert Ea; apply List.Exists_impl.
+    left. revert Ea; apply List_Exists_impl.
     intros [] [Es Ea]; cbn in *.
     apply CeresString.eqb_eq_string in Es.
     injection Ea; intros.
     subst. auto.
   - apply _find_or_spec in Ea. destruct Ea as [ Ea | [] ]; [ | discriminate ].
-    right. revert Ea; apply List.Exists_impl.
+    right. revert Ea; apply List_Exists_impl.
     intros [] [Es Ea]; cbn in *.
     apply CeresString.eqb_eq_string in Es.
     exists es.

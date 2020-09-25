@@ -361,12 +361,3 @@ Instance Deserialize_list {A} `{Deserialize A} : Deserialize (list A) :=
     end.
 
 Instance Deserialize_sexp : Deserialize sexp := fun _ => inr.
-
-(**)
-
-(* Test that recursive deserializers are supported. *)
-Definition Deserialize_unary : Deserialize nat :=
-  fix deser_nat (l : loc) (e : sexp) {struct e} :=
-    Deser.match_con "nat"
-      [ ("Z", 0%nat) ]%string
-      [ ("S", Deser.con1 S deser_nat) ]%string l e.
