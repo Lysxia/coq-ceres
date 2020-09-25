@@ -159,10 +159,10 @@ Definition match_con {A} (tyname : string)
                ++ ", found "%string ++ c)%s_message
            end
          in inl (DeserError l (type_error tyname msg))))
-    (fun c =>
+    (fun c l err es =>
       let all_con := List.map fst c1 in
-      _find_or CeresString.eqb_string c c1 (fun x => x)
-        (fun l _ _ =>
+      _find_or CeresString.eqb_string c c1 (fun x (_ : unit) => x l err es)
+        (fun (_ : unit) =>
           let msg :=
             match all_con with
             | nil => MsgStr "unexpected atom"%string
@@ -170,7 +170,7 @@ Definition match_con {A} (tyname : string)
               ("expected constructor name, one of "%string ++ comma_sep all_con
                 ++ ", found "%string ++ c)%s_message
             end
-          in inl (DeserError l (type_error tyname msg)))).
+          in inl (DeserError l (type_error tyname msg))) tt).
 
 (** Deserialize the fields of a constructor. *)
 Definition fields {A} {n} : FromSexpListN 0 n A -> FromSexpList A := fun p => _fields p.
@@ -345,3 +345,12 @@ Instance Deserialize_list {A} `{Deserialize A} : Deserialize (list A) :=
     end.
 
 Instance Deserialize_sexp : Deserialize sexp := fun _ => inr.
+
+(**)
+
+(* Test that recursive deserializers are supported. *)
+Definition Deserialize_unary : Deserialize nat :=
+  fix deser_nat (l : loc) (e : sexp) {struct e} :=
+    Deser.match_con "nat"
+      [ ("Z", 0%nat) ]%string
+      [ ("S", Deser.con1 S deser_nat) ]%string l e.
