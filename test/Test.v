@@ -85,5 +85,5 @@ Proof. split; split; split; reflexivity. Qed.
 Definition Deserialize_unary : Deserialize nat :=
   fix deser_nat l (e : sexp) {struct e} :=
     Deser.match_con (A := nat) "nat"
-      [ ("Z", 0%nat) ]%list
-      [ ("S", Deser.con1 S deser_nat) ]%list l e.
+      [ ("Z", 0%nat) ]
+      [ ("S", Deser.con1 S deser_nat) ] l e.

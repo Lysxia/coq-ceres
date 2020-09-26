@@ -151,8 +151,8 @@ the decreasing argument, but immediately pass it as the last argument of
 Definition Deserialize_unary : Deserialize nat :=
   fix deser_nat (l : loc) (e : sexp) {struct e} :=
     Deser.match_con "nat"
-      [ ("Z", 0%nat) ]%string
-      [ ("S", Deser.con1 S deser_nat) ]%string l e.
+      [ ("Z", 0%nat) ]
+      [ ("S", Deser.con1 S deser_nat) ] l e.
 ```
 
 See also
