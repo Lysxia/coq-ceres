@@ -136,8 +136,40 @@ Class SemiIntegral (A : Type) : Type :=
 Instance Deserialize_SemiIntegral (A : Type) : SemiIntegral A -> Deserialize A.
 ```
 
-Generic types
--------------
+Roundtrip properties
+--------------------
+
+The module `CeresRoundtrip` defines some roundtripping properties
+and lemmas to help prove them.
+
+```coq
+Class SerDeClass {A} `{Serialize A} `{Deserialize A} : Prop.
+Class DeSerClass {A} `{Serialize A} `{Deserialize A} : Prop.
+```
+
+Generic encoding
+----------------
+
+There are no strong requirements on the encodings implemented by `Serialize`
+and `Deserialize` instances, but some utilities are provided for the following
+default encoding for inductive types:
+
+- Nullary constructors are atoms `con`.
+- Non-nullary constructors encoded as lists `(con x y z)`.
+
+Serialization is straightforward by pattern-matching.
+
+For deserialization, the module `CeresDeserialize.Deser` provides
+some utilities.
+
+### Standard types
+
+- `unit`, `bool`, `sum` and `option` follow that standard encoding.
+- `(x, y) : prod A B` is encoded as `(X Y)` where `X` and `Y` are the encodings of `x` and `y`.
+- `[x; y; z] : list A` is encoded as `(X Y Z)`.
+- `"somestring" : string` is encoded as `"somestring"`.
+- `"c" : ascii` is encoded as `"c"`.
+- `33 : Z` (or `N`, `nat`) is encoded as `33`.
 
 ### Recursive types
 
