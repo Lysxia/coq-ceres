@@ -155,7 +155,7 @@ and `Deserialize` instances, but some utilities are provided for the following
 default encoding for inductive types:
 
 - Nullary constructors are atoms `con`.
-- Non-nullary constructors encoded as lists `(con x y z)`.
+- Non-nullary constructors are lists `(con x y z)`.
 
 Serialization is straightforward by pattern-matching.
 
