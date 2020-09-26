@@ -78,3 +78,12 @@ Lemma parse_10 :
   e3 = None /\
   e4 = Some (Atom 34%Z).
 Proof. split; split; split; reflexivity. Qed.
+
+(**)
+
+(* Test that recursive deserializers are supported. *)
+Definition Deserialize_unary : Deserialize nat :=
+  fix deser_nat l (e : sexp) {struct e} :=
+    Deser.match_con (A := nat) "nat"
+      [ ("Z", 0%nat) ]%list
+      [ ("S", Deser.con1 S deser_nat) ]%list l e.

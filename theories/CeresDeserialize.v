@@ -4,6 +4,7 @@
 From Coq Require Import
   List
   ZArith
+  Ascii
   String.
 
 From Ceres Require Import
@@ -159,10 +160,10 @@ Definition match_con {A} (tyname : string)
                ++ ", found "%string ++ c)%s_message
            end
          in inl (DeserError l (type_error tyname msg))))
-    (fun c =>
+    (fun c l err es =>
       let all_con := List.map fst c1 in
-      _find_or CeresString.eqb_string c c1 (fun x => x)
-        (fun l _ _ =>
+      _find_or CeresString.eqb_string c c1 (fun x (_ : unit) => x l err es)
+        (fun (_ : unit) =>
           let msg :=
             match all_con with
             | nil => MsgStr "unexpected atom"%string
@@ -170,7 +171,7 @@ Definition match_con {A} (tyname : string)
               ("expected constructor name, one of "%string ++ comma_sep all_con
                 ++ ", found "%string ++ c)%s_message
             end
-          in inl (DeserError l (type_error tyname msg)))).
+          in inl (DeserError l (type_error tyname msg))) tt).
 
 (** Deserialize the fields of a constructor. *)
 Definition fields {A} {n} : FromSexpListN 0 n A -> FromSexpList A := fun p => _fields p.
@@ -230,16 +231,20 @@ Definition con5 {A B C D E R} (f : A -> B -> C -> D -> E -> R)
     fields (pa >>= fun a => pb >>= fun b => pc >>= fun c => pd >>= fun d => pe >>= fun e =>
     ret (f a b c d e)).
 
-Definition con1_ {A R} (f : A -> R) : forall `{Deserialize A}, FromSexpList R := con1 f.
-Definition con2_ {A B R} (f : A -> B -> R)
-  : forall `{Deserialize A} `{Deserialize B}, FromSexpList R := con2 f.
+Definition con1_ {A R} (f : A -> R) `{Deserialize A} : FromSexpList R :=
+  con1 f _from_sexp.
+Definition con2_ {A B R} (f : A -> B -> R) `{Deserialize A} `{Deserialize B} : FromSexpList R :=
+  con2 f _from_sexp _from_sexp.
 Definition con3_ {A B C R} (f : A -> B -> C -> R)
-  : forall `{Deserialize A} `{Deserialize B} `{Deserialize C}, FromSexpList R := con3 f.
+    `{Deserialize A} `{Deserialize B} `{Deserialize C} : FromSexpList R :=
+  con3 f _from_sexp _from_sexp _from_sexp.
 Definition con4_ {A B C D R} (f : A -> B -> C -> D -> R)
-  : forall `{Deserialize A} `{Deserialize B} `{Deserialize C} `{Deserialize D}, FromSexpList R := con4 f.
+    `{Deserialize A} `{Deserialize B} `{Deserialize C} `{Deserialize D} : FromSexpList R :=
+  con4 f _from_sexp _from_sexp _from_sexp _from_sexp.
 Definition con5_ {A B C D E R} (f : A -> B -> C -> D -> E -> R)
-  : forall `{Deserialize A} `{Deserialize B} `{Deserialize C} `{Deserialize D} `{Deserialize E}, FromSexpList R :=
-  con5 f.
+    `{Deserialize A} `{Deserialize B} `{Deserialize C} `{Deserialize D} `{Deserialize E}
+  : FromSexpList R :=
+  con5 f  _from_sexp _from_sexp _from_sexp _from_sexp _from_sexp.
 
 Class DeserFromSexpList (A R : Type) (n m : nat) :=
   _from_sexp_list : A -> FromSexpListN n m R.
@@ -325,6 +330,17 @@ Instance Deserialize_string : Deserialize string :=
     | Atom_ _ => inl (DeserError l "could not read 'string', got non-string atom"%string)
     | List _ => inl (DeserError l "could not read 'string', got list"%string)
     end.
+
+Instance Deserialize_ascii : Deserialize ascii :=
+  fun l e =>
+    match e with
+    | Atom_ (Str (c :: "")) => inr c
+    | Atom_ (Str "") => inl (DeserError l "could not read 'ascii', got empty string")
+    | Atom_ (Str (_ :: _ :: _)) =>
+      inl (DeserError l "could not read 'ascii', got string of length greater than 1")
+    | Atom_ _ => inl (DeserError l "could not read 'ascii', got non-string atom")
+    | List _ => inl (DeserError l "could not read 'ascii', got lost")
+    end%string.
 
 Fixpoint _sexp_to_list {A} (pa : FromSexp A) (xs : list A)
   (n : nat) (l : loc) (ys : list sexp) : error + list A :=

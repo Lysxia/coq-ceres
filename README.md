@@ -136,6 +136,25 @@ Class SemiIntegral (A : Type) : Type :=
 Instance Deserialize_SemiIntegral (A : Type) : SemiIntegral A -> Deserialize A.
 ```
 
+Generic types
+-------------
+
+### Recursive types
+
+Recursive serializers and deserializers can be defined using explicit fixpoints.
+
+For deserializers, that means to bind the expression explicitly, since that's
+the decreasing argument, but immediately pass it as the last argument of
+`Deser.match_con`:
+
+```coq
+Definition Deserialize_unary : Deserialize nat :=
+  fix deser_nat (l : loc) (e : sexp) {struct e} :=
+    Deser.match_con "nat"
+      [ ("Z", 0%nat) ]%string
+      [ ("S", Deser.con1 S deser_nat) ]%string l e.
+```
+
 See also
 --------
 
