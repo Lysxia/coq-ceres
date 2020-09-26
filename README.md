@@ -49,6 +49,7 @@ This exports:
 
 Other modules in the library:
 
+- `CeresRoundtrip`: roundtrip properties
 - `CeresFormat`: format S-expressions as strings.
 - `CeresParser`: S-expression parser.
 - `CeresString`: general string utilities.
