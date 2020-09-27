@@ -18,6 +18,9 @@ Definition eqb_ascii (a b : ascii) : bool :=
     &&& Bool.eqb a4 b4 &&& Bool.eqb a5 b5 &&& Bool.eqb a6 b6 &&& Bool.eqb a7 b7
  end.
 
+Delimit Scope char2_scope with char2.
+Infix "=?" := eqb_ascii : char2_scope.
+
 (* [Bool.eqb_spec], which doesn't exist on Coq 8.8 *)
 Lemma eqb_eq_bool x y : reflect (x = y) (Bool.eqb x y).
 Proof.

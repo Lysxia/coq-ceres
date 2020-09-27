@@ -106,26 +106,26 @@ Fixpoint _fold_stack (d : list sexp) (p : loc) (r : list sexp) (s : list symbol)
 (** Parse next character outside of a string literal. *)
 Definition next' (i : parser_state) (s' : partial_token -> parser_state) (tok : string) (p : loc) (c : ascii)
   : error + parser_state :=
-  match c with
-  | "("%char =>
+  (if "(" =? c then
     let i := s' NoToken in inr
     {| parser_done := parser_done i
      ; parser_stack := Open p :: parser_stack i
      ; parser_cur_token := NoToken
     |}
-  | ")"%char =>
+  else if ")" =? c then
     let i := s' NoToken in
     _fold_stack (parser_done i) p nil (parser_stack i)
-  | """"%char => inr (s' (StrToken p "" EscNone))
-  | ";"%char => inr (s' Comment)
-  | _ =>
+  else if """" =? c then
+    inr (s' (StrToken p "" EscNone))
+  else if ";" =? c then
+    inr (s' Comment)
+  else
     if is_whitespace c then inr (s' NoToken)
     else inr
       {| parser_done := parser_done i
        ; parser_stack := parser_stack i
        ; parser_cur_token := SimpleToken p (c :: tok)
-      |}
-  end.
+      |})%char2.
 
 (** Parse next character in a comment. *)
 Definition next_comment (i : parser_state) (c : ascii) : error + parser_state :=
