@@ -5,6 +5,27 @@ From Coq Require Import
   Bool DecidableClass List Arith ZArith NArith Ascii String Decimal DecimalString.
 (* end hide *)
 
+(* Booleans *)
+
+Inductive reflect_eq {A} (x : A) : A -> bool -> Prop :=
+| reflect_eq_true : reflect_eq x x true
+| reflect_eq_false y : x <> y -> reflect_eq x y false
+.
+
+(* [Bool.eqb_spec], which doesn't exist on Coq 8.8 *)
+Lemma eqb_eq_bool x y : reflect (x = y) (Bool.eqb x y).
+Proof.
+  destruct (Bool.eqb _ _) eqn:H;
+    constructor; [ apply eqb_prop | apply eqb_false_iff ]; auto.
+Defined.
+
+Lemma eqb_eq_bool' x y : reflect_eq x y (Bool.eqb x y).
+Proof.
+  destruct x, y; constructor; discriminate.
+Qed.
+
+(* Strings and characters *)
+
 Infix "::" := String : string_scope.
 
 Local Open Scope lazy_bool_scope.
@@ -21,13 +42,6 @@ Definition eqb_ascii (a b : ascii) : bool :=
 Delimit Scope char2_scope with char2.
 Infix "=?" := eqb_ascii : char2_scope.
 
-(* [Bool.eqb_spec], which doesn't exist on Coq 8.8 *)
-Lemma eqb_eq_bool x y : reflect (x = y) (Bool.eqb x y).
-Proof.
-  destruct (Bool.eqb _ _) eqn:H;
-    constructor; [ apply eqb_prop | apply eqb_false_iff ]; auto.
-Defined.
-
 Definition eqb_eq {A} (eqb : A -> A -> bool) :=
   forall a b, eqb a b = true <-> a = b.
 
@@ -42,6 +56,18 @@ Proof with auto.
   - subst; destruct b; simpl.
     repeat rewrite eqb_reflx...
 Defined.
+
+Lemma eqb_eq_ascii' c0 c1 :
+  reflect_eq c0 c1 (c0 =? c1)%char2.
+Proof.
+  destruct c0, c1; cbn.
+  repeat
+    match goal with
+    | [ |- context E [ Bool.eqb ?x ?y ] ] =>
+      destruct (eqb_eq_bool' x y); try (constructor; congruence)
+    end.
+Qed.
+
 
 Instance Decidable_eq_ascii : forall (a b : ascii), Decidable (a = b).
 Proof.
