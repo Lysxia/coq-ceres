@@ -5,5 +5,6 @@ theories/CeresFormat.v
 theories/CeresSerialize.v
 theories/CeresParser.v
 theories/CeresDeserialize.v
+theories/CeresParserRoundtrip.v
 theories/CeresRoundtrip.v
 theories/Ceres.v
