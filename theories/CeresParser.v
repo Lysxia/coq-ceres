@@ -1,9 +1,12 @@
 (** * S-expression parser *)
 
 (* begin hide *)
-From Coq Require Import ZArith NArith Ascii String Decimal DecimalString.
+From Coq Require Import Bool List ZArith NArith Ascii String Decimal DecimalString.
 
 From Ceres Require Import CeresS CeresString.
+
+Import ListNotations.
+Local Open Scope lazy_bool_scope.
 (* end hide *)
 
 (** Location in a string *)
@@ -31,11 +34,20 @@ Variant partial_token : Set :=
 | Comment : partial_token
 .
 
-Record parser_state : Set :=
+Record parser_state_ {T : Type} : Type :=
   { parser_done : list sexp
   ; parser_stack : list symbol
-  ; parser_cur_token : partial_token
+  ; parser_cur_token : T
   }.
+Arguments parser_state_ : clear implicits.
+
+Definition set_cur_token {T U} (i : parser_state_ T) (u : U) : parser_state_ U :=
+  {| parser_done := parser_done i
+   ; parser_stack := parser_stack i
+   ; parser_cur_token := u
+  |}.
+
+Definition parser_state := parser_state_ partial_token.
 
 Definition initial_state : parser_state :=
   {| parser_done := nil
@@ -50,6 +62,7 @@ Variant error :=
 | UnknownEscape : loc -> ascii -> error
 | UnterminatedString : loc -> error
 | EmptyInput : error
+| InvalidChar : ascii -> loc -> error
 .
 
 Definition pretty_error (e : error) :=
@@ -59,10 +72,14 @@ Definition pretty_error (e : error) :=
   | UnknownEscape p c => "Unknown escape code '\" ++ c :: "' at location " ++ pretty_loc p
   | UnterminatedString p => "Unterminated string starting at location " ++ pretty_loc p
   | EmptyInput => "Input is empty"
+  | InvalidChar c p => "Invalid character " ++ "TODO" ++ " at location " ++ pretty_loc p
   end%string.
 
-Definition new_sexp (d : list sexp) (s : list symbol) (t : partial_token) (e : sexp)
-  : parser_state :=
+Definition is_atom_char (c : ascii) : bool :=
+  (is_alphanum c ||| string_elem c "=-+*/:!@#$%^&_<>").
+
+Definition new_sexp {T : Set} (d : list sexp) (s : list symbol) (e : sexp) (t : T)
+  : parser_state_ T :=
   match s with
   | nil =>
     {| parser_done := e :: d
@@ -91,7 +108,7 @@ Definition next_str (i : parser_state) (p0 : loc) (tok : string) (e : escape) (p
   | EscBackslash, """"%char => ret ("""" :: tok)%string EscNone
   | EscBackslash, _ => inl (UnknownEscape p c)
   | EscNone, "\"%char => ret tok EscBackslash
-  | EscNone, """"%char => inr (new_sexp d s NoToken (Atom (Str (string_reverse tok))))
+  | EscNone, """"%char => inr (new_sexp d s (Atom (Str (string_reverse tok))) NoToken)
   | EscNone, c => ret (c :: tok)%string EscNone
   end.
 
@@ -99,33 +116,27 @@ Definition next_str (i : parser_state) (p0 : loc) (tok : string) (e : escape) (p
 Fixpoint _fold_stack (d : list sexp) (p : loc) (r : list sexp) (s : list symbol) : error + parser_state :=
   match s with
   | nil => inl (UnmatchedClose p)
-  | Open _ :: s => inr (new_sexp d s NoToken (List r))
+  | Open _ :: s => inr (new_sexp d s (List r) NoToken)
   | Exp e :: s => _fold_stack d p (e :: r) s
   end%list.
 
 (** Parse next character outside of a string literal. *)
-Definition next' (i : parser_state) (s' : partial_token -> parser_state) (tok : string) (p : loc) (c : ascii)
+Definition next' {T} (i : parser_state_ T) (p : loc) (c : ascii)
   : error + parser_state :=
-  (if "(" =? c then
-    let i := s' NoToken in inr
+  (if "(" =? c then inr
     {| parser_done := parser_done i
      ; parser_stack := Open p :: parser_stack i
      ; parser_cur_token := NoToken
     |}
   else if ")" =? c then
-    let i := s' NoToken in
     _fold_stack (parser_done i) p nil (parser_stack i)
   else if """" =? c then
-    inr (s' (StrToken p "" EscNone))
+    inr (set_cur_token i (StrToken p "" EscNone))
   else if ";" =? c then
-    inr (s' Comment)
-  else
-    if is_whitespace c then inr (s' NoToken)
-    else inr
-      {| parser_done := parser_done i
-       ; parser_stack := parser_stack i
-       ; parser_cur_token := SimpleToken p (c :: tok)
-      |})%char2.
+    inr (set_cur_token i Comment)
+  else if is_whitespace c then
+    inr (set_cur_token i NoToken)
+  else inl (InvalidChar c p))%char2.
 
 (** Parse next character in a comment. *)
 Definition next_comment (i : parser_state) (c : ascii) : error + parser_state :=
@@ -152,15 +163,15 @@ Definition next (i : parser_state) (p : loc) (c : ascii) : error + parser_state 
   match parser_cur_token i with
   | StrToken p0 tok e => next_str i p0 tok e p c
   | NoToken =>
-    let s' t :=
-      {| parser_done := parser_done i
-       ; parser_stack := parser_stack i
-       ; parser_cur_token := t
-      |}
-    in next' i s' "" p c
+    if is_atom_char c
+    then inr (set_cur_token i (SimpleToken p (c :: "")))
+    else next' i p c
   | SimpleToken _ tok =>
-    let s' t := new_sexp (parser_done i) (parser_stack i) t (Atom (raw_or_num tok)) in
-    next' i s' tok p c
+    if is_atom_char c
+    then inr (set_cur_token i (SimpleToken p (c :: tok)))
+    else
+      let i' := new_sexp (parser_done i) (parser_stack i) (Atom (raw_or_num tok)) tt in
+      next' i' p c
   | Comment => next_comment i c
   end.
 
@@ -178,7 +189,7 @@ Definition eof (i : parser_state) (p : loc) : error + list sexp :=
   | StrToken p0 _ _ => inl (UnterminatedString p0)
   | (NoToken | Comment) => _done_or_fail (parser_done i) (parser_stack i)
   | SimpleToken _ tok =>
-    let i := new_sexp (parser_done i) (parser_stack i) NoToken (Atom (raw_or_num tok))
+    let i := new_sexp (parser_done i) (parser_stack i) (Atom (raw_or_num tok)) tt
     in _done_or_fail (parser_done i) (parser_stack i)
   end.
 

@@ -35,6 +35,8 @@ Proof. repeat constructor. Qed.
 Lemma roundtrip_s : roundtrip s.
 Proof. reflexivity. Qed.
 
+Require Import Ascii.
+
 Lemma parse_1 : parse_sexps "a" = inr [Atom "a"].
 Proof. reflexivity. Qed.
 

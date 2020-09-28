@@ -24,6 +24,24 @@ Proof.
   destruct x, y; constructor; discriminate.
 Qed.
 
+Definition compcomp (x y : comparison) : comparison :=
+  match x with
+  | Eq => y
+  | Lt => Lt
+  | Gt => Gt
+  end.
+
+Delimit Scope compare_scope with compare.
+Infix "::" := compcomp : compare_scope.
+
+Definition compb (x y : bool) : comparison :=
+  match x, y with
+  | false, false => Eq
+  | false, true => Lt
+  | true, false => Gt
+  | true, true => Eq
+  end.
+
 (* Strings and characters *)
 
 Infix "::" := String : string_scope.
@@ -39,8 +57,24 @@ Definition eqb_ascii (a b : ascii) : bool :=
     &&& Bool.eqb a4 b4 &&& Bool.eqb a5 b5 &&& Bool.eqb a6 b6 &&& Bool.eqb a7 b7
  end.
 
+(* Note: the most significant bit is on the right. *)
+Definition ascii_compare (a b : ascii) : comparison :=
+ match a, b with
+ | Ascii a0 a1 a2 a3 a4 a5 a6 a7,
+   Ascii b0 b1 b2 b3 b4 b5 b6 b7 =>
+    (  compb a7 b7 :: compb a6 b6 :: compb a5 b5 :: compb a4 b4
+    :: compb a3 b3 :: compb a2 b2 :: compb a1 b1 :: compb a0 b0)%compare
+ end.
+
+Definition leb_ascii (a b : ascii) : bool :=
+  match ascii_compare a b with
+  | Gt => false
+  | _ => true
+  end.
+
 Delimit Scope char2_scope with char2.
 Infix "=?" := eqb_ascii : char2_scope.
+Infix "<=?" := leb_ascii : char2_scope.
 
 Definition eqb_eq {A} (eqb : A -> A -> bool) :=
   forall a b, eqb a b = true <-> a = b.
@@ -108,6 +142,12 @@ Proof.
               Decidable_spec := eqb_eq_string s1 s2 |}).
 Defined.
 
+Fixpoint string_elem (c : ascii) (s : string) : bool :=
+  match s with
+  | "" => false
+  | c' :: s => eqb_ascii c c' ||| string_elem c s
+  end%string.
+
 Fixpoint _string_reverse (r s : string) : string :=
   match s with
   | "" => r
@@ -126,6 +166,10 @@ Fixpoint comma_sep (xs : list string) : string :=
 
 Notation newline := ("010" :: "")%string.
 
+Section AsciiTest.
+
+Local Open Scope char2_scope.
+
 (** Is a character printable? The character is given by its ASCII code. *)
 Definition is_printable (n : nat) : bool :=
   (  (n <? 32)%nat (* 32 = SPACE *)
@@ -137,6 +181,22 @@ Definition is_whitespace (c : ascii) : bool :=
   | " " | "010" | "013" => true
   | _ => false
   end%char.
+
+Definition is_digit (c : ascii) : bool :=
+  ("0" <=? c) &&& (c <=? "9").
+
+Definition is_upper (c : ascii) : bool :=
+  ("A" <=? c) &&& (c <=? "Z").
+
+Definition is_lower (c : ascii) : bool :=
+  ("a" <=? c) &&& (c <=? "z").
+
+Definition is_alphanum (c : ascii) : bool :=
+  is_upper c |||
+  is_lower c |||
+  is_digit c.
+
+End AsciiTest.
 
 (** ** Escape string *)
 
