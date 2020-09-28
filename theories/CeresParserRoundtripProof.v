@@ -61,8 +61,8 @@ Qed.
 
 Lemma after_atom_string_snoc c s s' more :
   is_atom_char c = false ->
-  after_atom_string s more ->
-  after_atom_string (s ++ c :: s') false.
+  after_atom_string more s ->
+  after_atom_string false (s ++ c :: s').
 Proof.
   intros Hc []; constructor; auto.
 Qed.

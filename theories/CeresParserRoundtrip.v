@@ -24,30 +24,55 @@ End Token.
 
 (* * Lexer *)
 
+(* Here we specify how to convert strings of bytes to streams of tokens. *)
+
+(* [whitespaces s] holds when [s] consists of only whitespace,
+   as defined by [is_whitespace]. *)
 Definition whitespaces (s : string) : Prop :=
   string_forall is_whitespace s = true.
 
+(* [comment s] holds when [s] is a comment: starts with
+   a semicolon [';'], ends with a newline ['\n']. *)
 Inductive comment : string -> Prop :=
 | comment_mk s : comment (";" :: s ++ newline)
 .
 
+(* [atom_string s] holds when [s] is an atom. *)
 Definition atom_string (s : string) : Prop :=
   s <> ""%string /\ string_forall is_atom_char s = true.
 
-Inductive after_atom_string : string -> bool -> Prop :=
-| after_atom_nil : after_atom_string "" true
-| after_atom_cons c s more : is_atom_char c = false -> after_atom_string (c :: s) more
+(* [after_atom_string false s] if the non-empty string [s] may appear right
+   after an atom. This predicate is used to avoid ambiguity: two atoms
+   cannot follow each other immediately, they must at least be separated
+   by a space, so [ab] is unambiguously one atom, not two separate atoms [a]
+   and [b].  *)
+Inductive after_atom_string : bool -> string -> Prop :=
+| after_atom_nil : after_atom_string true ""
+| after_atom_cons c s more : is_atom_char c = false -> after_atom_string more (c :: s)
 .
 Hint Constructors after_atom_string : ceres.
 
+Lemma after_atom_string_nil_inv more : after_atom_string more "" -> more = true.
+Proof.
+  inversion 1; reflexivity.
+Qed.
+
+Lemma after_atom_string_cons more c s : is_atom_char c = false -> after_atom_string more (c :: s).
+Proof.
+  destruct more; auto with ceres.
+Qed.
+
+(* [string_string s0 s1] if the string [s1] encodes the raw string [s0]
+   (i.e., [s1] contains the bytes you would find in a file).
+ *)
 Definition string_string (s0 : string) (s1 : string) : Prop :=
   s1 = ("""" :: _escape_string "" s0 ++ """")%string.
 
 (* Lexer relation: [token_string more ts s] if the string [s] can be split into tokens [ts].
    - Handling of spaces and comments.
    - Corner cases for spaces around atoms (["ab"] should not be parsed as ["a"] then ["b"]).
-   - [more] is true if the last token is an [Token.Atom] and there are no more
-     characters after it, in which case we need to be careful to append something.
+   - [more] is [true] if the last token is an [Token.Atom] and there are no more
+     characters after it, in which case we need to be careful when appending something.
  *)
 Inductive token_string (more : bool) : list Token.t -> string -> Prop :=
 | token_string_nil : token_string more [] ""
@@ -56,7 +81,7 @@ Inductive token_string (more : bool) : list Token.t -> string -> Prop :=
 | token_string_close ts s
   : token_string more ts s -> token_string more (Token.Close :: ts) (")" :: s)
 | token_string_atom ts s1 s
-  : atom_string s1 -> after_atom_string s more ->
+  : atom_string s1 -> after_atom_string more s ->
     token_string more ts s -> token_string more (Token.Atom s1 :: ts) (s1 ++ s)
 | token_string_string ts s0 s1 s
   : string_string s0 s1 -> token_string more ts s -> token_string more (Token.Str s0 :: ts) (s1 ++ s)
@@ -85,6 +110,11 @@ Qed.
 
 (* * Parser *)
 
+(* Here we specify how to turn tokens into trees, S-expressions. *)
+
+(* Lift parser relation on single elements [A] to a parser relation on lists
+   of elements [list A].
+   Remark: This is like the monadic bind on lists, but using relations instead of functions. *)
 Inductive list_tokens {A B} (tks : A -> list B -> Prop) : list A -> list B -> Prop :=
 | list_tokens_nil : list_tokens tks [] []
 | list_tokens_cons x xs y ys
@@ -92,6 +122,7 @@ Inductive list_tokens {A B} (tks : A -> list B -> Prop) : list A -> list B -> Pr
 .
 Hint Constructors list_tokens : ceres.
 
+(* Parser relation on atoms. Each atom is a single token. *)
 Inductive atom_token : atom -> Token.t -> Prop :=
 | atom_token_Raw s : atom_token (Raw s) (Token.Atom s)
 | atom_token_Num s z
@@ -101,6 +132,7 @@ Inductive atom_token : atom -> Token.t -> Prop :=
 .
 Hint Constructors atom_token : ceres.
 
+(* Parser relation on S-expressions. This is the main definition of this file. *)
 Inductive sexp_tokens : sexp -> list Token.t -> Prop :=
 | sexp_tokens_Atom a t : atom_token a t -> sexp_tokens (Atom_ a) [t]
 | sexp_tokens_List es ts
@@ -109,15 +141,19 @@ Inductive sexp_tokens : sexp -> list Token.t -> Prop :=
 .
 Hint Constructors sexp_tokens : ceres.
 
+(* Parser relation on lists of S-expressions (without the outer parentheses). *)
 Notation list_sexp_tokens := (list_tokens sexp_tokens).
 
+(* A predicate on the right component of a sum. It is [True] for [inl] elements. *)
 Definition on_right {A B} (x : A + B) (P : B -> Prop) : Prop :=
   match x with
   | inl _ => True
   | inr b => P b
   end.
 
-(* If the parser succeeds, then the expressions relate to the input string. *)
+(* Soundness: if the parser succeeds, then the expressions relate to the input string.
+   ("Parse then print" roundtrip.)
+ *)
 Definition PARSE_SEXPS_SOUND : Prop :=
   forall (s : string) (es : list sexp),
     on_right (parse_sexps s) (fun es =>
