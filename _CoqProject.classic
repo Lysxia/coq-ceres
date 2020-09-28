@@ -7,5 +7,6 @@ theories/CeresSerialize.v
 theories/CeresParser.v
 theories/CeresDeserialize.v
 theories/CeresParserRoundtrip.v
+theories/CeresParserRoundtripProof.v
 theories/CeresRoundtrip.v
 theories/Ceres.v
