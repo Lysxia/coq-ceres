@@ -69,13 +69,18 @@ Hint Constructors token_string : core.
 
 Inductive more_ok : bool -> string -> Prop :=
 | more_ok_false s : more_ok false s
-| more_ok_true c s : (* TODO c is not an Atom character *) more_ok true (c :: s)
+| more_ok_true c s : is_atom_char c = false -> more_ok true (c :: s)
 .
 Hint Constructors more_ok : core.
 
 Lemma more_ok_nil_inv more : more_ok more "" -> more = false.
 Proof.
   inversion 1; reflexivity.
+Qed.
+
+Lemma more_ok_cons more c s : is_atom_char c = false -> more_ok more (c :: s).
+Proof.
+  destruct more; auto.
 Qed.
 
 (* * Parser *)
@@ -143,27 +148,32 @@ Definition escape_to_string (e : escape) : string :=
   | EscNone => ""
   end.
 
-Definition nonewline (s : string) : Prop.
-Admitted.
+Definition no_newline (s : string) : Prop :=
+  string_elem "010" s = false.
 
-Definition is_atom_string (s : string) : Prop.
-Admitted.
+Definition is_atom_string (s : string) : Prop :=
+  string_forall is_atom_char s = true.
 
 Lemma is_atom_singleton (c : ascii)
   : is_atom_char c = true -> is_atom_string (c :: "").
-Proof.
-Admitted.
+Proof. unfold is_atom_string; cbn; intros E; rewrite E; reflexivity. Qed.
 Hint Resolve is_atom_singleton : ceres.
 
 Lemma is_atom_app (s : string) (c : ascii)
   : is_atom_string s -> is_atom_char c = true -> is_atom_string (s ++ c :: "").
 Proof.
-Admitted.
+  unfold is_atom_string; induction s; cbn; intros Hs Hc.
+  - rewrite Hc; auto.
+  - destruct (is_atom_char a); discriminate + rewrite IHs; auto.
+Qed.
 Hint Resolve is_atom_app : ceres.
 
 Inductive str_token_string (tok : string) (e : escape) : string -> Prop :=
 | str_token_string_mk : str_token_string tok e ("""" :: string_reverse tok ++ escape_to_string e)
 .
+
+Lemma str_token_string_new : str_token_string "" EscNone """".
+Proof. constructor. Qed.
 
 Inductive partial_token_string : partial_token -> string -> Prop :=
 | partial_token_string_NoToken
@@ -176,7 +186,7 @@ Inductive partial_token_string : partial_token -> string -> Prop :=
   : str_token_string tok e s' ->
     partial_token_string (StrToken p tok e) s'
 | partial_token_string_Comment s
-  : nonewline s ->
+  : no_newline s ->
     partial_token_string Comment (";" :: s)
 .
 Hint Constructors partial_token_string : core.
@@ -259,12 +269,20 @@ Proof.
   rewrite app_nil_r; auto.
 Qed.
 
+Lemma token_string_spaces_app more ts s c
+  : token_string more ts s ->
+    is_whitespace c = true ->
+    token_string false ts (s ++ c :: "").
+Proof.
+Admitted.
+
 Lemma next_sound' {T} (i : parser_state_ T) (more : bool) s0 p c
   : parser_state_string_ more (parser_done i) (parser_stack i) s0 ->
+    is_atom_char c = false ->
     on_right (next' i p c) (fun i' =>
       parser_state_string i' (s0 ++ c :: "")).
 Proof.
-  intros [ts00 ts01 Hs0 Hdone Hstack].
+  intros [ts00 ts01 Hs0 Hdone Hstack] IAC_c.
   unfold next'; match_ascii; cbn.
   + (* "(" *)
     rewrite <- (string_app_nil_r (_ ++ "(")).
@@ -276,19 +294,15 @@ Proof.
   + (* ")" *)
     eauto using _fold_stack_sound.
   + (* """" *)
-    eapply parser_state_string_mk; cbn; eauto.
-    1,2: admit.
+    eapply parser_state_string_mk; cbn; eauto using str_token_string_new, more_ok_cons.
   + (* ";" *)
-    eapply parser_state_string_mk; cbn; eauto.
-    1,2: admit.
+    eapply parser_state_string_mk; cbn; eauto using more_ok_cons.
   + (* else *)
     destruct (is_whitespace y) eqn:Ews; cbn.
     * rewrite <- (string_app_nil_r (_ ++ y :: "")).
-      eapply parser_state_string_mk; cbn; eauto.
-      eapply parser_state_string_mk_; cbn; eauto.
-      admit.
+      eauto using token_string_spaces_app.
     * auto.
-Admitted.
+Qed.
 
 Lemma more_ok_atom more s c
   : more_ok more s ->
@@ -296,7 +310,8 @@ Lemma more_ok_atom more s c
     is_atom_char c = true ->
     more_ok more (s ++ c :: "").
 Proof.
-Admitted.
+  intros []; cbn; auto.
+Qed.
 Hint Resolve more_ok_atom : ceres.
 
 Lemma string_reverse_cons_ c s1 s'
