@@ -73,8 +73,10 @@ Definition pretty_error (e : error) :=
   | UnknownEscape p c => "Unknown escape code '\" ++ c :: "' at location " ++ pretty_loc p
   | UnterminatedString p => "Unterminated string starting at location " ++ pretty_loc p
   | EmptyInput => "Input is empty"
-  | InvalidChar c p => "Invalid character " ++ "TODO" ++ " at location " ++ pretty_loc p
-  | InvalidStringChar c p => "Invalid character inside string " ++ "TODO" ++ " at location " ++ pretty_loc p
+  | InvalidChar c p =>
+    "Invalid character " ++ escape_string (c :: "") ++ " at location " ++ pretty_loc p
+  | InvalidStringChar c p =>
+    "Invalid character inside string " ++ escape_string (c :: "") ++ " at location " ++ pretty_loc p
   end%string.
 
 Definition is_atom_char (c : ascii) : bool :=
