@@ -162,6 +162,11 @@ Fixpoint _string_reverse (r s : string) : string :=
 
 Definition string_reverse : string -> string := _string_reverse "".
 
+Lemma string_app_nil_r (s : string) : (s ++ "")%string = s.
+Proof.
+  induction s; [ auto | cbn; rewrite IHs; auto ].
+Qed.
+
 (** Separate elements with commas. *)
 Fixpoint comma_sep (xs : list string) : string :=
   match xs with

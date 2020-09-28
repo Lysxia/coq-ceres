@@ -38,6 +38,7 @@ Inductive after_atom_string : string -> bool -> Prop :=
 | after_atom_nil : after_atom_string "" true
 | after_atom_cons c s more : is_atom_char c = false -> after_atom_string (c :: s) more
 .
+Hint Constructors after_atom_string : ceres.
 
 Inductive string_string (s0 : string) (s1 : string) : Prop :=
 (* TODO: s1 = "s0" *)
@@ -51,10 +52,6 @@ Inductive string_string (s0 : string) (s1 : string) : Prop :=
  *)
 Inductive token_string (more : bool) : list Token.t -> string -> Prop :=
 | token_string_nil : token_string more [] ""
-| token_string_spaces ts ws s
-  : whitespaces ws -> token_string more ts s -> token_string more ts (ws ++ s)
-| token_string_comment ts c s
-  : comment c -> token_string more ts s -> token_string more ts (c ++ s)
 | token_string_open ts s
   : token_string more ts s -> token_string more (Token.Open :: ts) ("(" :: s)
 | token_string_close ts s
@@ -64,6 +61,10 @@ Inductive token_string (more : bool) : list Token.t -> string -> Prop :=
     token_string more ts s -> token_string more (Token.Atom s1 :: ts) (s1 ++ s)
 | token_string_string ts s0 s1 s
   : string_string s0 s1 -> token_string more ts s -> token_string more (Token.Str s0 :: ts) (s1 ++ s)
+| token_string_spaces ts ws s
+  : whitespaces ws -> token_string more ts s -> token_string more ts (ws ++ s)
+| token_string_comment ts c s
+  : comment c -> token_string more ts s -> token_string more ts (c ++ s)
 .
 Hint Constructors token_string : ceres.
 
@@ -119,7 +120,10 @@ Admitted.
 Lemma whitespace_no_atom c
   : is_whitespace c = true -> is_atom_char c = false.
 Proof.
-Admitted.
+  repeat match goal with
+  | [ c : _ |- _ ] => destruct c; clear c; try discriminate
+  end; cbn; reflexivity.
+Qed.
 Hint Resolve whitespace_no_atom : ceres.
 
 Lemma list_sexp_tokens_singleton e ts
@@ -152,13 +156,14 @@ Lemma after_atom_string_snoc c s more :
   after_atom_string s more ->
   after_atom_string (s ++ c :: "") false.
 Proof.
-Admitted.
+  intros Hc []; constructor; auto.
+Qed.
 
 Lemma token_string_open_snoc more ts s :
   token_string more ts s ->
   token_string false (ts ++ [Token.Open]) (s ++ "(").
 Proof.
-  induction 1; cbn; try rewrite (string_app_assoc _ _ "("%string); eauto with ceres.
+  induction 1; cbn; try rewrite (string_app_assoc _ _ "("%string); auto with ceres.
   eauto using token_string_atom, after_atom_string_snoc with ceres.
 Qed.
 
@@ -166,7 +171,7 @@ Lemma token_string_close_snoc more ts s :
   token_string more ts s ->
   token_string false (ts ++ [Token.Close]) (s ++ ")").
 Proof.
-  induction 1; cbn; try rewrite (string_app_assoc _ _ ")"%string); eauto with ceres.
+  induction 1; cbn; try rewrite (string_app_assoc _ _ ")"%string); auto with ceres.
   eauto using token_string_atom, after_atom_string_snoc with ceres.
 Qed.
 
@@ -175,7 +180,11 @@ Lemma token_string_atom_snoc ts s s1 :
   token_string false ts s ->
   token_string true (ts ++ [Token.Atom s1]) (s ++ s1).
 Proof.
-Admitted.
+  induction 2; cbn; try rewrite (string_app_assoc _ _ s1); auto with ceres.
+  - rewrite <- string_app_nil_r at 2. apply token_string_atom; auto with ceres.
+  - constructor; auto.
+    inversion H1; cbn. constructor; auto.
+Qed.
 
 (* * Parser state *)
 
@@ -247,7 +256,7 @@ Inductive parser_state_string_
     stack_tokens u ts01 ->
     parser_state_string_ more d u s0
 .
-Hint Constructors parser_state_string_.
+Hint Constructors parser_state_string_ : ceres.
 
 (* Invariant on the parsed prefix *)
 Inductive parser_state_string (i : parser_state) : string -> Prop :=
@@ -257,7 +266,7 @@ Inductive parser_state_string (i : parser_state) : string -> Prop :=
     partial_token_string (parser_cur_token i) s1 ->
     parser_state_string i (s0 ++ s1)
 .
-Hint Constructors parser_state_string.
+Hint Constructors parser_state_string : ceres.
 
 Definition on_right {A B} (x : A + B) (P : B -> Prop) : Prop :=
   match x with
@@ -271,11 +280,6 @@ Ltac match_ascii :=
     | [ |- context E [ eqb_ascii ?x ?y ] ] =>
       destruct (eqb_eq_ascii' x y)
     end.
-
-Lemma string_app_nil_r (s : string) : (s ++ "")%string = s.
-Proof.
-  induction s; [ auto | cbn; rewrite IHs; auto ].
-Qed.
 
 Lemma more_ok_atom_inv more s
   : more_ok more s ->
@@ -419,7 +423,7 @@ Proof.
       cbn; auto with ceres.
     rewrite app_assoc; apply token_string_open_snoc with (more := more); eauto.
   + (* ")" *)
-    eauto using _fold_stack_sound.
+    eauto using _fold_stack_sound with ceres.
   + (* """" *)
     eapply parser_state_string_mk; cbn; eauto using str_token_string_new, more_ok_cons with ceres.
   + (* ";" *)
@@ -482,20 +486,63 @@ Proof.
     admit.
   - (* Comment *)
     admit.
-Abort.
+Admitted.
 
-(*
-Lemma _parse_sexps_sound (s : string) (es : list sexp)
-  : parse_sexps_ s = inr es ->
-    exists ts,
-      list_sexp_tokens es ts /\ token_string ts s.
+Lemma eof_sound
+    (i : parser_state)
+    (p : loc)
+    (s : string)
+    (H : parser_state_string i s)
+  : on_right (eof i p) (fun es : list sexp =>
+      exists (more : bool) (ts : list Token.t),
+        list_sexp_tokens es ts /\ token_string more ts s).
 Proof.
-*)
+  unfold eof.
+  destruct H as [ more s0 s1 ].
+  destruct (parser_cur_token i) eqn:Ei; cbn; auto.
+  - inversion H1; subst; clear H1. rewrite string_app_nil_r.
+    admit.
+  - remember (new_sexp _ _ _ _) as i'.
+    admit.
+  - admit.
+Admitted.
+
+Lemma _parse_sexps_sound i p (s0 s : string)
+  : parser_state_string i s0 ->
+    match parse_sexps_ i p s with
+    | (None, p', i') =>
+      on_right (eof i' p') (fun es =>
+        exists more ts,
+          list_sexp_tokens es ts /\ token_string more ts (s0 ++ s))
+    | (Some _, _, _) => True
+    end.
+Proof.
+  revert i p s0; induction s as [ | c s ]; intros; cbn.
+  - rewrite string_app_nil_r. apply eof_sound; auto.
+  - pose proof next_sound as SOUND.
+    specialize (SOUND i s0 p c H).
+    destruct next as [ | i']; auto; cbn in SOUND.
+    specialize (IHs i' (N.succ p) _ SOUND).
+    destruct parse_sexps_ as [ [ [ | ] ] ? ]; auto.
+    destruct eof; auto; cbn in *.
+    destruct IHs as (more & ts & Hts & Hs0).
+    rewrite string_app_assoc in Hs0.
+    eauto.
+Qed.
+
+Lemma parser_state_empty : parser_state_string initial_state "".
+Proof.
+  change ""%string with ("" ++ "")%string.
+  repeat econstructor; cbn; auto with ceres.
+Qed.
 
 (* If the parser succeeds, then the expressions relate to the above *)
 Theorem parse_sexps_sound (s : string) (es : list sexp)
-  : parse_sexps s = inr es ->
-    exists more ts,
-      list_sexp_tokens es ts /\ token_string more ts s.
+  : on_right (parse_sexps s) (fun es =>
+      exists more ts,
+        list_sexp_tokens es ts /\ token_string more ts s).
 Proof.
-Abort.
+  unfold parse_sexps.
+  pose proof (_parse_sexps_sound initial_state 0%N "" s parser_state_empty) as SOUND.
+  destruct parse_sexps_ as [ [ [ | ] ] ? ]; cbn; auto.
+Qed.
