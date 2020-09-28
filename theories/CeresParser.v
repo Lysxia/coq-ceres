@@ -140,14 +140,12 @@ Definition next' {T} (i : parser_state_ T) (p : loc) (c : ascii)
 
 (** Parse next character in a comment. *)
 Definition next_comment (i : parser_state) (c : ascii) : error + parser_state :=
-  match c with
-  | "010"%char => inr
+  if eqb_ascii "010" c then inr
     {| parser_done := parser_done i
      ; parser_stack := parser_stack i
      ; parser_cur_token := NoToken
     |}
-  | _ => inr i
-  end.
+  else inr i.
 
 (** Construct an atom. Make it a [Num] if it can be parsed as a number,
     [Raw] otherwise. *)

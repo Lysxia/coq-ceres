@@ -537,6 +537,30 @@ Proof.
   apply string_reverse_cons_.
 Qed.
 
+Lemma next_comment_sound
+    (i : parser_state)
+    (c : ascii)
+    (more : bool)
+    (s0 : string)
+    (Hi : parser_state_string_ more (parser_done i) (parser_stack i) s0)
+    (Ei : parser_cur_token i = Comment)
+    (s1 : string)
+    (Hs : no_newline s1)
+  : on_right (next_comment i c) (fun i' : parser_state =>
+      parser_state_string i' (s0 ++ ";" :: s1 ++ c :: "")).
+Proof.
+  unfold next_comment.
+  match_ascii; cbn.
+  - rewrite <- (string_app_nil_r (_ ++ _ :: _)).
+    econstructor; eauto using more_ok_cons with ceres.
+    revert Hi.
+    apply parser_state_string_map, token_string_comment_snoc.
+  - econstructor; eauto using more_ok_cons with ceres.
+    rewrite Ei; constructor.
+    apply not_string_elem_app; auto.
+    apply not_string_elem_singleton; assumption.
+Qed.
+
 Lemma next_sound i s p c
   : parser_state_string i s ->
     on_right (next i p c) (fun i' =>
@@ -560,7 +584,8 @@ Proof.
   - (* StrToken *)
     admit.
   - (* Comment *)
-    admit.
+    rewrite string_app_assoc; cbn.
+    eauto using next_comment_sound.
 Admitted.
 
 Lemma _done_or_fail_sound d u

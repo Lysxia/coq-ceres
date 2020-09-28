@@ -2,6 +2,7 @@
 
 (* begin hide *)
 From Coq Require Import
+  Setoid
   Bool DecidableClass List Arith ZArith NArith Ascii String Decimal DecimalString.
 (* end hide *)
 
@@ -102,6 +103,12 @@ Proof.
     end.
 Qed.
 
+Lemma neqb_neq_ascii a b : eqb_ascii a b = false <-> a <> b.
+Proof.
+  etransitivity.
+  - symmetry; apply not_true_iff_false.
+  - apply not_iff_compat, eqb_eq_ascii.
+Qed.
 
 Instance Decidable_eq_ascii : forall (a b : ascii), Decidable (a = b).
 Proof.
@@ -165,6 +172,29 @@ Definition string_reverse : string -> string := _string_reverse "".
 Lemma string_app_nil_r (s : string) : (s ++ "")%string = s.
 Proof.
   induction s; [ auto | cbn; rewrite IHs; auto ].
+Qed.
+
+Lemma not_string_elem_app c s1 s2
+  : string_elem c s1 = false ->
+    string_elem c s2 = false ->
+    string_elem c (s1 ++ s2) = false.
+Proof.
+  induction s1; cbn; auto.
+  destruct (c =? a)%char2; try discriminate; auto.
+Qed.
+
+Lemma not_string_elem_head c c' s
+  : string_elem c (c' :: s) = false -> c <> c'.
+Proof.
+  cbn; destruct (eqb_eq_ascii' c c'); discriminate + auto.
+Qed.
+
+Lemma not_string_elem_singleton c c'
+  : c <> c' -> string_elem c (c' :: "") = false.
+Proof.
+  rewrite <- neqb_neq_ascii.
+  intros H; cbn; rewrite H.
+  reflexivity.
 Qed.
 
 (** Separate elements with commas. *)
