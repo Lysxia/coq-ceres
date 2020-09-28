@@ -11,7 +11,7 @@
   (identifiers) have a restricted alphabet:
 
   ```
-  is_alphanum c ||| string_elem c "=-+*/:!@#$%^&_<>"
+  is_alphanum c ||| string_elem c "'=-+*/:!@#$%^&_<>"
   ```
 
 # 0.2.0
