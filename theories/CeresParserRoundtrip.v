@@ -28,7 +28,7 @@ Definition whitespaces (s : string) : Prop :=
   string_forall is_whitespace s = true.
 
 Inductive comment : string -> Prop :=
-(* TODO *)
+| comment_mk s : comment (";" :: s ++ newline)
 .
 
 Definition atom_string (s : string) : Prop :=
@@ -151,20 +151,21 @@ Proof.
   induction s0; cbn; [ auto | rewrite IHs0; auto ].
 Qed.
 
-Lemma after_atom_string_snoc c s more :
+Lemma after_atom_string_snoc c s s' more :
   is_atom_char c = false ->
   after_atom_string s more ->
-  after_atom_string (s ++ c :: "") false.
+  after_atom_string (s ++ c :: s') false.
 Proof.
   intros Hc []; constructor; auto.
 Qed.
+Hint Resolve after_atom_string_snoc : ceres.
 
 Lemma token_string_open_snoc more ts s :
   token_string more ts s ->
   token_string false (ts ++ [Token.Open]) (s ++ "(").
 Proof.
   induction 1; cbn; try rewrite (string_app_assoc _ _ "("%string); auto with ceres.
-  eauto using token_string_atom, after_atom_string_snoc with ceres.
+  eauto using token_string_atom with ceres.
 Qed.
 
 Lemma token_string_close_snoc more ts s :
@@ -172,7 +173,7 @@ Lemma token_string_close_snoc more ts s :
   token_string false (ts ++ [Token.Close]) (s ++ ")").
 Proof.
   induction 1; cbn; try rewrite (string_app_assoc _ _ ")"%string); auto with ceres.
-  eauto using token_string_atom, after_atom_string_snoc with ceres.
+  eauto using token_string_atom with ceres.
 Qed.
 
 Lemma token_string_atom_snoc ts s s1 :
@@ -184,6 +185,26 @@ Proof.
   - rewrite <- string_app_nil_r at 2. apply token_string_atom; auto with ceres.
   - constructor; auto.
     inversion H1; cbn. constructor; auto.
+Qed.
+
+Lemma token_string_newline_snoc more s ts
+  : token_string more ts s ->
+    token_string false ts (s ++ newline).
+Proof.
+  induction 1; cbn; try rewrite (string_app_assoc _ _ newline); auto with ceres.
+  - change newline with (newline ++ "")%string. apply token_string_spaces; constructor.
+  - constructor; eauto with ceres.
+Qed.
+
+Lemma token_string_comment_snoc more s s_com ts
+  : token_string more ts s ->
+    token_string false ts (s ++ ";" ++ s_com ++ newline).
+Proof.
+  induction 1; cbn; try rewrite string_app_assoc; auto with ceres.
+  - change newline with (newline ++ "")%string.
+    change (?x :: ?y ++ ?z)%string with ((x :: y) ++ z)%string; rewrite <- string_app_assoc.
+    apply token_string_comment; constructor.
+  - constructor; eauto with ceres.
 Qed.
 
 (* * Parser state *)
@@ -296,6 +317,14 @@ Inductive parser_state_string_
 .
 Hint Constructors parser_state_string_ : ceres.
 
+Lemma parser_state_string_map d u more more' s0 s0'
+  : (forall ts, token_string more ts s0 -> token_string more' ts s0') ->
+    parser_state_string_ more  d u s0 ->
+    parser_state_string_ more' d u s0'.
+Proof.
+  intros f []; eauto with ceres.
+Qed.
+
 (* Invariant on the parsed prefix *)
 Inductive parser_state_string (i : parser_state) : string -> Prop :=
 | parser_state_string_mk more s0 s1
@@ -328,11 +357,8 @@ Proof.
   intros [_ Hs]. cbn in Hs. rewrite Hc in Hs. discriminate.
 Qed.
 
-Lemma new_sexp_Atom_sound d u s0 ts00 ts01 more
-    (Hs0 : token_string more (ts00 ++ ts01) s0)
-    (Hdone : list_sexp_tokens (rev d) ts00)
-    (Hstack : stack_tokens u ts01)
-    (Hstackend : stack_end u)
+Lemma new_sexp_Atom_sound d u s0 more
+    (Hdu : parser_state_string_ more d u s0)
     (s' : string)
     (Hmore : more_ok more s')
     (s1' : string)
@@ -343,6 +369,7 @@ Lemma new_sexp_Atom_sound d u s0 ts00 ts01 more
 Proof.
   unfold new_sexp in i'.
   assert (more = false) by eauto using more_ok_atom_inv; subst more.
+  destruct Hdu as [ ts00 ts01 Hs0 Hts Hstack Hend ].
   destruct u; cbn; clear i'.
   - inversion Hstack; subst ts01; clear Hstack. rewrite app_nil_r in Hs0.
     apply parser_state_string_mk_
@@ -522,7 +549,7 @@ Proof.
     + rewrite string_app_assoc.
       econstructor; cbn; eauto using string_reverse_cons with ceres.
     + destruct Hi as [ts00 ts01 Hs0 Hdone Hstack].
-      eauto using next_sound', new_sexp_Atom_sound.
+      eauto using next_sound', new_sexp_Atom_sound with ceres.
   - (* StrToken *)
     admit.
   - (* Comment *)
@@ -530,17 +557,22 @@ Proof.
 Admitted.
 
 Lemma _done_or_fail_sound d u
-    (p : loc)
     (more : bool)
     (s0 : string)
     (H : parser_state_string_ more d u s0)
   : on_right (_done_or_fail d u)
       (fun es : list sexp =>
        exists ts : list Token.t,
-         list_sexp_tokens es ts /\ token_string false ts (s0 ++ newline)).
+         list_sexp_tokens es ts /\ token_string more ts s0).
 Proof.
   destruct H.
-Admitted.
+  destruct H2 as [ | ? H2]; cbn.
+  - inversion H1; subst; clear H1. rewrite app_nil_r in *.
+    exists ts00. unfold rev'; rewrite <- rev_alt.
+    eauto.
+  - clear H1. induction H2; intros; cbn; auto.
+    destruct u; cbn; auto.
+Qed.
 
 Lemma eof_sound
     (i : parser_state)
@@ -552,14 +584,15 @@ Lemma eof_sound
         list_sexp_tokens es ts /\ token_string false ts (s ++ newline)).
 Proof.
   unfold eof.
-  destruct H as [ more s0 s1 ].
-  destruct (parser_cur_token i) eqn:Ei; cbn; auto.
-  - inversion H1; subst; clear H1. rewrite string_app_nil_r.
-    eauto using _done_or_fail_sound.
-  - remember (new_sexp _ _ _ _) as i'.
-    admit.
-  - admit.
-Admitted.
+  destruct H as [ more s0 s1 H Hmore Hpartial ].
+  destruct Hpartial; cbn; auto.
+  - rewrite string_app_nil_r.
+    eauto using _done_or_fail_sound, parser_state_string_map, token_string_newline_snoc.
+  - eauto using _done_or_fail_sound, new_sexp_Atom_sound, parser_state_string_map, token_string_newline_snoc.
+  - rewrite string_app_assoc. eapply _done_or_fail_sound. cbn.
+    revert H.
+    apply parser_state_string_map, token_string_comment_snoc.
+Qed.
 
 Lemma _parse_sexps_sound i p (s0 s : string)
   : parser_state_string i s0 ->
