@@ -51,7 +51,7 @@ Variant atom : Set :=
 | Num (n : Z)       (* Integers. *)
 | Str (s : string)  (* Literal strings. *)
 | Raw (s : string)  (* Simple atoms (e.g., ADT tags). *)
-                    (* Should fit in this alphabet: [A-Za-z0-9'=+*/:!@#$%^&<>_-]. *)
+                    (* Should fit in this alphabet: [A-Za-z0-9'=+*/:!?@#$%^&<>.,|_~-]. *)
 .
 ```
 
