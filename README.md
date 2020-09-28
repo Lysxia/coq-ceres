@@ -148,8 +148,8 @@ The module `CeresRoundtrip` defines some roundtripping properties
 and lemmas to help prove them.
 
 ```coq
-Class SerDeClass {A} `{Serialize A} `{Deserialize A} : Prop.
-Class DeSerClass {A} `{Serialize A} `{Deserialize A} : Prop.
+Class CompleteClass {A} `{Serialize A} `{Deserialize A} : Prop.
+Class SoundClass {A} `{Serialize A} `{Deserialize A} : Prop.
 ```
 
 Generic encoding
