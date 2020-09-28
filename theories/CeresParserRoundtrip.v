@@ -537,6 +537,24 @@ Proof.
   apply string_reverse_cons_.
 Qed.
 
+Lemma next_str_sound
+    (i : parser_state)
+    (s : string)
+    (p : loc)
+    (c : ascii)
+    (more : bool)
+    (s0 : string)
+    (Hi : parser_state_string_ more (parser_done i) (parser_stack i) s0)
+    (s' : string)
+    (p1 : loc)
+    (tok : string)
+    (e : escape)
+    (H : str_token_string tok e s')
+  : on_right (next_str i p1 tok e p c)
+      (fun i' : parser_state => parser_state_string i' (s0 ++ s' ++ c :: "")).
+Proof.
+Admitted.
+
 Lemma next_comment_sound
     (i : parser_state)
     (c : ascii)
@@ -568,6 +586,7 @@ Lemma next_sound i s p c
 Proof.
   intros [more s0 s1 Hi Hmore Hcur].
   unfold next.
+  remember (parser_cur_token i) as ct; symmetry in Heqct.
   destruct Hcur as [ | p1' s1' | p1 tok e | s1' Hs ].
   - (* NoToken *)
     apply more_ok_nil_inv in Hmore; subst more.
@@ -582,11 +601,12 @@ Proof.
     + destruct Hi as [ts00 ts01 Hs0 Hdone Hstack].
       eauto using next_sound', new_sexp_Atom_sound with ceres.
   - (* StrToken *)
-    admit.
+    rewrite string_app_assoc; cbn.
+    eauto using next_str_sound.
   - (* Comment *)
     rewrite string_app_assoc; cbn.
     eauto using next_comment_sound.
-Admitted.
+Qed.
 
 Lemma _done_or_fail_sound d u
     (more : bool)
