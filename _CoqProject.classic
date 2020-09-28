@@ -1,4 +1,5 @@
 -Q theories/ Ceres
+theories/CeresUtils.v
 theories/CeresString.v
 theories/CeresS.v
 theories/CeresFormat.v

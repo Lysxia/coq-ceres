@@ -4,6 +4,7 @@ From Coq Require Import
   List
   ZArith.
 From Ceres Require Import
+  CeresUtils
   CeresS
   CeresString
   CeresParser.
@@ -103,10 +104,21 @@ Inductive sexp_tokens : sexp -> list Token.t -> Prop :=
 | sexp_tokens_List es ts
   : list_tokens sexp_tokens es ts -> sexp_tokens (List es) (Token.Open :: ts ++ [Token.Close])
 .
+Hint Constructors sexp_tokens.
 
 Notation list_sexp_tokens := (list_tokens sexp_tokens).
 
 (* * Lemmas *)
+
+Lemma list_sexp_tokens_app es1 es2 ts1 ts2
+  : list_sexp_tokens es1 ts1 ->
+    list_sexp_tokens es2 ts2 ->
+    list_sexp_tokens (es1 ++ es2) (ts1 ++ ts2).
+Proof.
+  induction 1; cbn.
+  - auto.
+  - rewrite <- app_assoc; constructor; auto.
+Qed.
 
 Lemma string_app_assoc (s0 s1 s2 : string)
   : ((s0 ++ s1) ++ s2 = s0 ++ (s1 ++ s2))%string.
@@ -115,7 +127,14 @@ Proof.
 Qed.
 
 Lemma after_atom_string_open_app s more :
-  after_atom_string (s ++ "(") more.
+  after_atom_string s more ->
+  after_atom_string (s ++ "(") false.
+Proof.
+Admitted.
+
+Lemma after_atom_string_close_app s more :
+  after_atom_string s more ->
+  after_atom_string (s ++ ")") false.
 Proof.
 Admitted.
 
@@ -124,8 +143,15 @@ Lemma token_string_open_app more ts s :
   token_string false (ts ++ [Token.Open]) (s ++ "(").
 Proof.
   induction 1; cbn; try rewrite (string_app_assoc _ _ "("%string); eauto.
-  apply token_string_atom; auto.
-  apply after_atom_string_open_app.
+  eauto using token_string_atom, after_atom_string_open_app.
+Qed.
+
+Lemma token_string_close_app more ts s :
+  token_string more ts s ->
+  token_string false (ts ++ [Token.Close]) (s ++ ")").
+Proof.
+  induction 1; cbn; try rewrite (string_app_assoc _ _ ")"%string); eauto.
+  eauto using token_string_atom, after_atom_string_close_app.
 Qed.
 
 (* * Parser state *)
@@ -195,7 +221,7 @@ Inductive parser_state_string_
     (more : bool) (d : list sexp) (u : list symbol) (s0 : string) : Prop :=
 | parser_state_string_mk_ ts00 ts01
   : token_string more (ts00 ++ ts01) s0 ->
-    list_sexp_tokens d ts00 ->
+    list_sexp_tokens (rev d) ts00 ->
     stack_tokens u ts01 ->
     parser_state_string_ more d u s0
 .
@@ -229,6 +255,53 @@ Proof.
   induction s; [ auto | cbn; rewrite IHs; auto ].
 Qed.
 
+Lemma new_sexp_Atom_sound d u s0 ts00 ts01 more
+    (Hs0 : token_string more (ts00 ++ ts01) s0)
+    (Hdone : list_sexp_tokens (rev d) ts00)
+    (Hstack : stack_tokens u ts01)
+    (s' : string)
+    (Hmore : more_ok more s')
+    (s1' : string)
+    (H : is_atom_string s')
+    (H0 : s' = string_reverse s1')
+    (i' := new_sexp d u (Atom (raw_or_num s1')) tt)
+  : parser_state_string_ true (parser_done i') (parser_stack i') (s0 ++ s').
+Proof.
+Admitted.
+
+Lemma new_sexp_List_sound d u s0 ts00 ts01 ts02 more
+    (es : list sexp)
+    (Hs0 : token_string more (ts00 ++ ts01 ++ [Token.Open] ++ ts02) s0)
+    (Hdone : list_sexp_tokens (rev d) ts00)
+    (H2 : stack_tokens u ts01)
+    (Hes : list_sexp_tokens es ts02)
+  : parser_state_string (new_sexp d u (List es) NoToken) (s0 ++ ")").
+Proof.
+  unfold new_sexp.
+  destruct u.
+  - inversion H2; subst; clear H2. cbn in Hs0.
+    rewrite <- (string_app_nil_r (_ ++ ")")).
+    apply parser_state_string_mk with (more := false); cbn; auto.
+    apply parser_state_string_mk_
+      with (ts00 := ts00 ++ [Token.Open] ++ ts02 ++ [Token.Close]) (ts01 := []);
+      cbn; auto.
+    + rewrite app_nil_r.
+      change (?x :: ?y ++ ?z) with ((x :: y) ++ z).
+      rewrite !(app_assoc _ _ [Token.Close]).
+      eauto using token_string_close_app.
+    + apply list_sexp_tokens_app; auto.
+      rewrite <- (app_nil_r (_ :: _ ++ _)).
+      auto.
+  - rewrite <- (string_app_nil_r (_ ++ ")")).
+    econstructor; cbn; auto.
+    apply parser_state_string_mk_
+      with (ts00 := ts00) (ts01 := ts01 ++ [Token.Open] ++ ts02 ++ [Token.Close]);
+      cbn; auto.
+    change (?x :: ?y ++ ?z) with ((x :: y) ++ z).
+    rewrite !(app_assoc _ _ [Token.Close]).
+    eauto using token_string_close_app.
+Qed.
+
 Lemma _fold_stack_sound_
     d
     (p : loc)
@@ -239,7 +312,7 @@ Lemma _fold_stack_sound_
     (es : list sexp)
     (ts00 ts01 ts02 : list Token.t)
     (Hs0 : token_string more (ts00 ++ ts01 ++ ts02) s0)
-    (Hdone : list_sexp_tokens d ts00)
+    (Hdone : list_sexp_tokens (rev d) ts00)
     (Hstack : stack_tokens u ts01)
     (Hes : list_sexp_tokens es ts02)
   , on_right (_fold_stack d p es u)
@@ -247,12 +320,14 @@ Lemma _fold_stack_sound_
 Proof.
   induction u; cbn; auto; intros.
   destruct a; cbn.
-  - admit.
+  - inversion Hstack; subst; clear Hstack.
+    rewrite <- app_assoc in Hs0.
+    eauto using new_sexp_List_sound.
   - inversion Hstack; subst; clear Hstack.
     rewrite <- app_assoc in Hs0.
     specialize IHu with (1 := Hs0).
     apply IHu; auto.
-Admitted.
+Qed.
 
 Lemma _fold_stack_sound
     d
@@ -330,20 +405,6 @@ Lemma string_reverse_cons c s s'
 Proof.
   apply string_reverse_cons_.
 Qed.
-
-Lemma new_sexp_Atom_sound d u s0 ts00 ts01 more
-    (Hs0 : token_string more (ts00 ++ ts01) s0)
-    (Hdone : list_sexp_tokens d ts00)
-    (Hstack : stack_tokens u ts01)
-    (s' : string)
-    (Hmore : more_ok more s')
-    (s1' : string)
-    (H : is_atom_string s')
-    (H0 : s' = string_reverse s1')
-    (i' := new_sexp d u (Atom (raw_or_num s1')) tt)
-  : parser_state_string_ true (parser_done i') (parser_stack i') (s0 ++ s').
-Proof.
-Admitted.
 
 Lemma next_sound i s p c
   : parser_state_string i s ->
