@@ -291,7 +291,8 @@ Qed.
 Hint Resolve is_atom_app : ceres.
 
 Inductive str_token_string (tok : string) (e : escape) : string -> Prop :=
-| str_token_string_mk : str_token_string tok e ("""" :: string_reverse tok ++ escape_to_string e)
+| str_token_string_mk
+  : str_token_string tok e ("""" :: _escape_string "" (string_reverse tok) ++ escape_to_string e)
 .
 
 Lemma str_token_string_new : str_token_string "" EscNone """".
@@ -538,21 +539,17 @@ Proof.
 Qed.
 
 Lemma next_str_sound
-    (i : parser_state)
-    (s : string)
-    (p : loc)
-    (c : ascii)
-    (more : bool)
-    (s0 : string)
+    (i : parser_state) (p p1 : loc) (c : ascii) (e : escape)
+    (more : bool) (s0 tok s' : string)
     (Hi : parser_state_string_ more (parser_done i) (parser_stack i) s0)
-    (s' : string)
-    (p1 : loc)
-    (tok : string)
-    (e : escape)
     (H : str_token_string tok e s')
   : on_right (next_str i p1 tok e p c)
       (fun i' : parser_state => parser_state_string i' (s0 ++ s' ++ c :: "")).
 Proof.
+  unfold next_str.
+  destruct e, i as [d u ct].
+  - match_ascii; cbn.
+    econstructor; eauto using more_ok_cons with ceres.
 Admitted.
 
 Lemma next_comment_sound

@@ -253,11 +253,11 @@ Local Definition _three_digit (n : nat) : string :=
   (n2 :: n1 :: n0 :: EmptyString).
 
 (** Helper for [escape_string] *)
-Local Fixpoint _escape_string (s : string) : string :=
+Fixpoint _escape_string (_end s : string) : string :=
   match s with
-  | EmptyString => """"
+  | EmptyString => _end
   | (c :: s')%string =>
-    let escaped_s' := _escape_string s' in
+    let escaped_s' := _escape_string _end s' in
     if ascii_dec c "009" (* 9 = TAB *) then
       "\" :: "t" :: escaped_s'
     else if ascii_dec c "010" (* 10 = NEWLINE *) then
@@ -278,7 +278,7 @@ Local Fixpoint _escape_string (s : string) : string :=
 
 (** Escape a string so it can be shown in a terminal. *)
 Definition escape_string (s : string) : string :=
-  String """" (_escape_string s).
+  String """" (_escape_string """" s).
 
 (** ** Unescape string *)
 
