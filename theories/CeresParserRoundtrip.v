@@ -2,7 +2,8 @@ From Coq Require Import
   Ascii
   String
   List
-  ZArith.
+  ZArith
+  DecimalString.
 From Ceres Require Import
   CeresUtils
   CeresS
@@ -95,14 +96,17 @@ Hint Constructors list_tokens : ceres.
 
 Inductive atom_token : atom -> Token.t -> Prop :=
 | atom_token_Raw s : atom_token (Raw s) (Token.Atom s)
-| atom_token_Num z : atom_token (Num z) (Token.Atom (string_of_Z z))
+| atom_token_Num s z
+  : NilZero.int_of_string s = Some z ->
+    atom_token (Num (Z.of_int z)) (Token.Atom s)
 | atom_token_Str s : atom_token (Str s) (Token.Str s)
 .
 
 Inductive sexp_tokens : sexp -> list Token.t -> Prop :=
 | sexp_tokens_Atom a t : atom_token a t -> sexp_tokens (Atom_ a) [t]
 | sexp_tokens_List es ts
-  : list_tokens sexp_tokens es ts -> sexp_tokens (List es) (Token.Open :: ts ++ [Token.Close])
+  : list_tokens sexp_tokens es ts ->
+    sexp_tokens (List es) (Token.Open :: ts ++ [Token.Close])
 .
 Hint Constructors sexp_tokens : ceres.
 
@@ -115,7 +119,10 @@ Lemma atom_token_atom s
     atom_token (raw_or_num s) (Token.Atom (string_reverse s)).
 Proof.
   unfold raw_or_num. remember (string_reverse _) as s' eqn:E; clear E s.
-Admitted.
+  destruct NilZero.int_of_string eqn:Eios; intros H.
+  - constructor. assumption.
+  - constructor.
+Qed.
 
 Lemma whitespace_no_atom c
   : is_whitespace c = true -> is_atom_char c = false.
