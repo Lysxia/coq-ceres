@@ -24,20 +24,19 @@ End Token.
 
 (* * Lexer *)
 
-Inductive whitespaces : string -> Prop :=
-(* TODO *)
-.
+Definition whitespaces (s : string) : Prop :=
+  string_forall is_whitespace s = true.
 
 Inductive comment : string -> Prop :=
 (* TODO *)
 .
 
-Inductive atom_string (s1 : string) : Prop :=
-(* TODO: s1 is made of atom characters *)
-.
+Definition atom_string (s : string) : Prop :=
+  s <> ""%string /\ string_forall is_atom_char s = true.
 
-Inductive after_atom_string (s : string) (more : bool) : Prop :=
- (* TODO: s does not start with an atom character *)
+Inductive after_atom_string : string -> bool -> Prop :=
+| after_atom_nil : after_atom_string "" true
+| after_atom_cons c s more : is_atom_char c = false -> after_atom_string (c :: s) more
 .
 
 Inductive string_string (s0 : string) (s1 : string) : Prop :=
@@ -66,13 +65,13 @@ Inductive token_string (more : bool) : list Token.t -> string -> Prop :=
 | token_string_string ts s0 s1 s
   : string_string s0 s1 -> token_string more ts s -> token_string more (Token.Str s0 :: ts) (s1 ++ s)
 .
-Hint Constructors token_string : core.
+Hint Constructors token_string : ceres.
 
 Inductive more_ok : bool -> string -> Prop :=
 | more_ok_false s : more_ok false s
 | more_ok_true c s : is_atom_char c = false -> more_ok true (c :: s)
 .
-Hint Constructors more_ok : core.
+Hint Constructors more_ok : ceres.
 
 Lemma more_ok_nil_inv more : more_ok more "" -> more = false.
 Proof.
@@ -81,7 +80,7 @@ Qed.
 
 Lemma more_ok_cons more c s : is_atom_char c = false -> more_ok more (c :: s).
 Proof.
-  destruct more; auto.
+  destruct more; auto with ceres.
 Qed.
 
 (* * Parser *)
@@ -91,7 +90,7 @@ Inductive list_tokens {A B} (tks : A -> list B -> Prop) : list A -> list B -> Pr
 | list_tokens_cons x xs y ys
   : tks x y -> list_tokens tks xs ys -> list_tokens tks (x :: xs) (y ++ ys)
 .
-Hint Constructors list_tokens : core.
+Hint Constructors list_tokens : ceres.
 
 Inductive atom_token : atom -> Token.t -> Prop :=
 | atom_token_Raw s : atom_token (Raw s) (Token.Atom s)
@@ -104,11 +103,33 @@ Inductive sexp_tokens : sexp -> list Token.t -> Prop :=
 | sexp_tokens_List es ts
   : list_tokens sexp_tokens es ts -> sexp_tokens (List es) (Token.Open :: ts ++ [Token.Close])
 .
-Hint Constructors sexp_tokens.
+Hint Constructors sexp_tokens : ceres.
 
 Notation list_sexp_tokens := (list_tokens sexp_tokens).
 
 (* * Lemmas *)
+
+Lemma atom_token_atom s
+  : atom_string (string_reverse s) ->
+    atom_token (raw_or_num s) (Token.Atom (string_reverse s)).
+Proof.
+  unfold raw_or_num. remember (string_reverse _) as s' eqn:E; clear E s.
+Admitted.
+
+Lemma whitespace_no_atom c
+  : is_whitespace c = true -> is_atom_char c = false.
+Proof.
+Admitted.
+Hint Resolve whitespace_no_atom : ceres.
+
+Lemma list_sexp_tokens_singleton e ts
+  : sexp_tokens e ts ->
+    list_sexp_tokens [e] ts.
+Proof.
+  rewrite <- (app_nil_r ts) at 2.
+  constructor; auto with ceres.
+Qed.
+Hint Resolve list_sexp_tokens_singleton : ceres.
 
 Lemma list_sexp_tokens_app es1 es2 ts1 ts2
   : list_sexp_tokens es1 ts1 ->
@@ -126,33 +147,35 @@ Proof.
   induction s0; cbn; [ auto | rewrite IHs0; auto ].
 Qed.
 
-Lemma after_atom_string_open_app s more :
+Lemma after_atom_string_snoc c s more :
+  is_atom_char c = false ->
   after_atom_string s more ->
-  after_atom_string (s ++ "(") false.
+  after_atom_string (s ++ c :: "") false.
 Proof.
 Admitted.
 
-Lemma after_atom_string_close_app s more :
-  after_atom_string s more ->
-  after_atom_string (s ++ ")") false.
-Proof.
-Admitted.
-
-Lemma token_string_open_app more ts s :
+Lemma token_string_open_snoc more ts s :
   token_string more ts s ->
   token_string false (ts ++ [Token.Open]) (s ++ "(").
 Proof.
-  induction 1; cbn; try rewrite (string_app_assoc _ _ "("%string); eauto.
-  eauto using token_string_atom, after_atom_string_open_app.
+  induction 1; cbn; try rewrite (string_app_assoc _ _ "("%string); eauto with ceres.
+  eauto using token_string_atom, after_atom_string_snoc with ceres.
 Qed.
 
-Lemma token_string_close_app more ts s :
+Lemma token_string_close_snoc more ts s :
   token_string more ts s ->
   token_string false (ts ++ [Token.Close]) (s ++ ")").
 Proof.
-  induction 1; cbn; try rewrite (string_app_assoc _ _ ")"%string); eauto.
-  eauto using token_string_atom, after_atom_string_close_app.
+  induction 1; cbn; try rewrite (string_app_assoc _ _ ")"%string); eauto with ceres.
+  eauto using token_string_atom, after_atom_string_snoc with ceres.
 Qed.
+
+Lemma token_string_atom_snoc ts s s1 :
+  atom_string s1 ->
+  token_string false ts s ->
+  token_string true (ts ++ [Token.Atom s1]) (s ++ s1).
+Proof.
+Admitted.
 
 (* * Parser state *)
 
@@ -166,7 +189,7 @@ Inductive stack_tokens : list symbol -> list Token.t -> Prop :=
     stack_tokens us ts ->
     stack_tokens (Exp e :: us) (ts ++ ts0)
 .
-Hint Constructors stack_tokens : core.
+Hint Constructors stack_tokens : ceres.
 
 Definition escape_to_string (e : escape) : string :=
   match e with
@@ -177,20 +200,19 @@ Definition escape_to_string (e : escape) : string :=
 Definition no_newline (s : string) : Prop :=
   string_elem "010" s = false.
 
-Definition is_atom_string (s : string) : Prop :=
-  string_forall is_atom_char s = true.
-
 Lemma is_atom_singleton (c : ascii)
-  : is_atom_char c = true -> is_atom_string (c :: "").
-Proof. unfold is_atom_string; cbn; intros E; rewrite E; reflexivity. Qed.
+  : is_atom_char c = true -> atom_string (c :: "").
+Proof. intros E; constructor; cbn; discriminate + rewrite E; reflexivity. Qed.
 Hint Resolve is_atom_singleton : ceres.
 
 Lemma is_atom_app (s : string) (c : ascii)
-  : is_atom_string s -> is_atom_char c = true -> is_atom_string (s ++ c :: "").
+  : atom_string s -> is_atom_char c = true -> atom_string (s ++ c :: "").
 Proof.
-  unfold is_atom_string; induction s; cbn; intros Hs Hc.
-  - rewrite Hc; auto.
-  - destruct (is_atom_char a); discriminate + rewrite IHs; auto.
+  intros [_ Hs] Hc; constructor.
+  - destruct s; discriminate.
+  - revert Hs; unfold atom_string; induction s; cbn; intros.
+    + rewrite Hc; auto.
+    + destruct (is_atom_char a); discriminate + rewrite IHs; auto.
 Qed.
 Hint Resolve is_atom_app : ceres.
 
@@ -205,7 +227,7 @@ Inductive partial_token_string : partial_token -> string -> Prop :=
 | partial_token_string_NoToken
   : partial_token_string NoToken ""
 | partial_token_string_SimpleToken p s s'
-  : is_atom_string s' ->
+  : atom_string s' ->
     s' = string_reverse s ->
     partial_token_string (SimpleToken p s) s'
 | partial_token_string_StrToken p tok e s'
@@ -215,7 +237,7 @@ Inductive partial_token_string : partial_token -> string -> Prop :=
   : no_newline s ->
     partial_token_string Comment (";" :: s)
 .
-Hint Constructors partial_token_string : core.
+Hint Constructors partial_token_string : ceres.
 
 Inductive parser_state_string_
     (more : bool) (d : list sexp) (u : list symbol) (s0 : string) : Prop :=
@@ -255,6 +277,15 @@ Proof.
   induction s; [ auto | cbn; rewrite IHs; auto ].
 Qed.
 
+Lemma more_ok_atom_inv more s
+  : more_ok more s ->
+    atom_string s ->
+    more = false.
+Proof.
+  intros [| c s' Hc]; auto.
+  intros [_ Hs]. cbn in Hs. rewrite Hc in Hs. discriminate.
+Qed.
+
 Lemma new_sexp_Atom_sound d u s0 ts00 ts01 more
     (Hs0 : token_string more (ts00 ++ ts01) s0)
     (Hdone : list_sexp_tokens (rev d) ts00)
@@ -262,12 +293,28 @@ Lemma new_sexp_Atom_sound d u s0 ts00 ts01 more
     (s' : string)
     (Hmore : more_ok more s')
     (s1' : string)
-    (H : is_atom_string s')
+    (H : atom_string s')
     (H0 : s' = string_reverse s1')
     (i' := new_sexp d u (Atom (raw_or_num s1')) tt)
   : parser_state_string_ true (parser_done i') (parser_stack i') (s0 ++ s').
 Proof.
-Admitted.
+  unfold new_sexp in i'.
+  assert (more = false) by eauto using more_ok_atom_inv; subst more.
+  destruct u; cbn; clear i'.
+  - inversion Hstack; subst ts01; clear Hstack. rewrite app_nil_r in Hs0.
+    apply parser_state_string_mk_
+      with (ts00 := ts00 ++ [Token.Atom s']) (ts01 := []);
+      cbn; auto with ceres.
+    + rewrite app_nil_r.
+      auto using token_string_atom_snoc.
+    + subst s'; auto using list_sexp_tokens_app, atom_token_atom with ceres.
+  - apply parser_state_string_mk_
+      with (ts00 := ts00) (ts01 := ts01 ++ [Token.Atom s']);
+      cbn; auto with ceres.
+    + rewrite app_assoc.
+      auto using token_string_atom_snoc.
+    + subst s'; auto using atom_token_atom with ceres.
+Qed.
 
 Lemma new_sexp_List_sound d u s0 ts00 ts01 ts02 more
     (es : list sexp)
@@ -281,25 +328,25 @@ Proof.
   destruct u.
   - inversion H2; subst; clear H2. cbn in Hs0.
     rewrite <- (string_app_nil_r (_ ++ ")")).
-    apply parser_state_string_mk with (more := false); cbn; auto.
+    apply parser_state_string_mk with (more := false); cbn; auto with ceres.
     apply parser_state_string_mk_
       with (ts00 := ts00 ++ [Token.Open] ++ ts02 ++ [Token.Close]) (ts01 := []);
-      cbn; auto.
+      cbn; auto with ceres.
     + rewrite app_nil_r.
       change (?x :: ?y ++ ?z) with ((x :: y) ++ z).
       rewrite !(app_assoc _ _ [Token.Close]).
-      eauto using token_string_close_app.
+      eauto using token_string_close_snoc.
     + apply list_sexp_tokens_app; auto.
       rewrite <- (app_nil_r (_ :: _ ++ _)).
-      auto.
+      auto with ceres.
   - rewrite <- (string_app_nil_r (_ ++ ")")).
-    econstructor; cbn; auto.
+    econstructor; cbn; auto with ceres.
     apply parser_state_string_mk_
       with (ts00 := ts00) (ts01 := ts01 ++ [Token.Open] ++ ts02 ++ [Token.Close]);
-      cbn; auto.
+      cbn; auto with ceres.
     change (?x :: ?y ++ ?z) with ((x :: y) ++ z).
     rewrite !(app_assoc _ _ [Token.Close]).
-    eauto using token_string_close_app.
+    eauto using token_string_close_snoc.
 Qed.
 
 Lemma _fold_stack_sound_
@@ -326,7 +373,7 @@ Proof.
   - inversion Hstack; subst; clear Hstack.
     rewrite <- app_assoc in Hs0.
     specialize IHu with (1 := Hs0).
-    apply IHu; auto.
+    apply IHu; auto with ceres.
 Qed.
 
 Lemma _fold_stack_sound
@@ -340,16 +387,21 @@ Lemma _fold_stack_sound
       (fun i' : parser_state => parser_state_string i' (s0 ++ ")")).
 Proof.
   intros [ts00 ts01 ? ?]; apply _fold_stack_sound_
-    with (more := more) (ts00 := ts00) (ts01 := ts01) (ts02 := []); auto.
-  rewrite app_nil_r; auto.
+    with (more := more) (ts00 := ts00) (ts01 := ts01) (ts02 := []); auto with ceres.
+  rewrite app_nil_r; auto with ceres.
 Qed.
 
 Lemma token_string_spaces_app more ts s c
-  : token_string more ts s ->
-    is_whitespace c = true ->
+  : is_whitespace c = true ->
+    token_string more ts s ->
     token_string false ts (s ++ c :: "").
 Proof.
-Admitted.
+  intros Hc; induction 1; cbn; try rewrite string_app_assoc; auto with ceres.
+  - apply token_string_spaces with (ws := (c :: "")%string); auto with ceres.
+    red; cbn; rewrite Hc; auto.
+  - apply token_string_atom; auto with ceres.
+    eauto using after_atom_string_snoc with ceres.
+Qed.
 
 Lemma next_sound' {T} (i : parser_state_ T) (more : bool) s0 p c
   : parser_state_string_ more (parser_done i) (parser_stack i) s0 ->
@@ -361,31 +413,31 @@ Proof.
   unfold next'; match_ascii; cbn.
   + (* "(" *)
     rewrite <- (string_app_nil_r (_ ++ "(")).
-    apply parser_state_string_mk with (more := false); auto.
+    apply parser_state_string_mk with (more := false); auto with ceres.
     apply parser_state_string_mk_
       with (ts00 := ts00) (ts01 := ts01 ++ [Token.Open]);
-      cbn; auto.
-    rewrite app_assoc; apply token_string_open_app with (more := more); eauto.
+      cbn; auto with ceres.
+    rewrite app_assoc; apply token_string_open_snoc with (more := more); eauto.
   + (* ")" *)
     eauto using _fold_stack_sound.
   + (* """" *)
-    eapply parser_state_string_mk; cbn; eauto using str_token_string_new, more_ok_cons.
+    eapply parser_state_string_mk; cbn; eauto using str_token_string_new, more_ok_cons with ceres.
   + (* ";" *)
-    eapply parser_state_string_mk; cbn; eauto using more_ok_cons.
+    eapply parser_state_string_mk; cbn; eauto using more_ok_cons with ceres.
   + (* else *)
     destruct (is_whitespace y) eqn:Ews; cbn.
     * rewrite <- (string_app_nil_r (_ ++ y :: "")).
-      eauto using token_string_spaces_app.
+      eauto using token_string_spaces_app with ceres.
     * auto.
 Qed.
 
 Lemma more_ok_atom more s c
   : more_ok more s ->
-    is_atom_string s ->
+    atom_string s ->
     is_atom_char c = true ->
     more_ok more (s ++ c :: "").
 Proof.
-  intros []; cbn; auto.
+  intros []; cbn; auto with ceres.
 Qed.
 Hint Resolve more_ok_atom : ceres.
 
