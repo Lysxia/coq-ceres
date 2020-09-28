@@ -6,6 +6,14 @@
     + Parser (string -> sexp): parse-then-print roundtrip (soundness; see `CeresParserRoundtrip`)
     + Serializers (sexp <-> mytype): both ways (see `CeresRoundtrip`, exported by default)
 
+- The concrete syntax becomes stricter. Strings must consist of printable characters
+  (only `\\` and `\n` are currently supported escape sequences), and atoms
+  (identifiers) have a restricted alphabet:
+
+  ```
+  is_alphanum c ||| string_elem c "=-+*/:!@#$%^&_<>"
+  ```
+
 # 0.2.0
 
 - Add decidable equality
