@@ -200,6 +200,43 @@ Inductive stack_tokens : list symbol -> list Token.t -> Prop :=
 .
 Hint Constructors stack_tokens : ceres.
 
+Inductive stack_end_last : list symbol -> Prop :=
+| stack_end_last_last p : stack_end_last [Open p]
+| stack_end_last_cons u us : stack_end_last us -> stack_end_last (u :: us)
+.
+
+Inductive stack_end : list symbol -> Prop :=
+| stack_end_nil : stack_end []
+| stack_end_nonempty us : stack_end_last us -> stack_end us
+.
+Hint Constructors stack_end : ceres.
+
+Lemma stack_end_cons v u us
+  : stack_end (u :: us) ->
+    stack_end (v :: u :: us).
+Proof.
+  inversion 1; do 2 constructor; auto.
+Qed.
+Hint Resolve stack_end_cons : ceres.
+
+Lemma stack_end_cons_Open p us
+  : stack_end us ->
+    stack_end (Open p :: us).
+Proof.
+  inversion 1.
+  - do 2 constructor.
+  - inversion H0; do 3 (constructor; auto).
+Qed.
+Hint Resolve stack_end_cons_Open : ceres.
+
+Lemma stack_end_inv u us
+  : stack_end (u :: us) ->
+    stack_end us.
+Proof.
+  inversion 1. inversion H0; auto with ceres.
+Qed.
+Hint Resolve stack_end_inv : ceres.
+
 Definition escape_to_string (e : escape) : string :=
   match e with
   | EscBackslash => "\"
@@ -254,6 +291,7 @@ Inductive parser_state_string_
   : token_string more (ts00 ++ ts01) s0 ->
     list_sexp_tokens (rev d) ts00 ->
     stack_tokens u ts01 ->
+    stack_end u ->
     parser_state_string_ more d u s0
 .
 Hint Constructors parser_state_string_ : ceres.
@@ -294,6 +332,7 @@ Lemma new_sexp_Atom_sound d u s0 ts00 ts01 more
     (Hs0 : token_string more (ts00 ++ ts01) s0)
     (Hdone : list_sexp_tokens (rev d) ts00)
     (Hstack : stack_tokens u ts01)
+    (Hstackend : stack_end u)
     (s' : string)
     (Hmore : more_ok more s')
     (s1' : string)
@@ -324,13 +363,14 @@ Lemma new_sexp_List_sound d u s0 ts00 ts01 ts02 more
     (es : list sexp)
     (Hs0 : token_string more (ts00 ++ ts01 ++ [Token.Open] ++ ts02) s0)
     (Hdone : list_sexp_tokens (rev d) ts00)
-    (H2 : stack_tokens u ts01)
+    (Hstack : stack_tokens u ts01)
+    (Hstackend : stack_end u)
     (Hes : list_sexp_tokens es ts02)
   : parser_state_string (new_sexp d u (List es) NoToken) (s0 ++ ")").
 Proof.
   unfold new_sexp.
   destruct u.
-  - inversion H2; subst; clear H2. cbn in Hs0.
+  - inversion Hstack; subst; clear Hstack. cbn in Hs0.
     rewrite <- (string_app_nil_r (_ ++ ")")).
     apply parser_state_string_mk with (more := false); cbn; auto with ceres.
     apply parser_state_string_mk_
@@ -365,6 +405,7 @@ Lemma _fold_stack_sound_
     (Hs0 : token_string more (ts00 ++ ts01 ++ ts02) s0)
     (Hdone : list_sexp_tokens (rev d) ts00)
     (Hstack : stack_tokens u ts01)
+    (Hstackend : stack_end u)
     (Hes : list_sexp_tokens es ts02)
   , on_right (_fold_stack d p es u)
       (fun i' : parser_state => parser_state_string i' (s0 ++ ")")).
@@ -373,11 +414,11 @@ Proof.
   destruct a; cbn.
   - inversion Hstack; subst; clear Hstack.
     rewrite <- app_assoc in Hs0.
-    eauto using new_sexp_List_sound.
+    eauto using new_sexp_List_sound with ceres.
   - inversion Hstack; subst; clear Hstack.
     rewrite <- app_assoc in Hs0.
     specialize IHu with (1 := Hs0).
-    apply IHu; auto with ceres.
+    apply IHu; eauto with ceres.
 Qed.
 
 Lemma _fold_stack_sound
@@ -420,8 +461,8 @@ Proof.
     apply parser_state_string_mk with (more := false); auto with ceres.
     apply parser_state_string_mk_
       with (ts00 := ts00) (ts01 := ts01 ++ [Token.Open]);
-      cbn; auto with ceres.
-    rewrite app_assoc; apply token_string_open_snoc with (more := more); eauto.
+      cbn; eauto with ceres.
+    rewrite app_assoc; apply token_string_open_snoc with (more := more); eauto with ceres.
   + (* ")" *)
     eauto using _fold_stack_sound with ceres.
   + (* """" *)
@@ -488,20 +529,33 @@ Proof.
     admit.
 Admitted.
 
+Lemma _done_or_fail_sound d u
+    (p : loc)
+    (more : bool)
+    (s0 : string)
+    (H : parser_state_string_ more d u s0)
+  : on_right (_done_or_fail d u)
+      (fun es : list sexp =>
+       exists ts : list Token.t,
+         list_sexp_tokens es ts /\ token_string false ts (s0 ++ newline)).
+Proof.
+  destruct H.
+Admitted.
+
 Lemma eof_sound
     (i : parser_state)
     (p : loc)
     (s : string)
     (H : parser_state_string i s)
   : on_right (eof i p) (fun es : list sexp =>
-      exists (more : bool) (ts : list Token.t),
-        list_sexp_tokens es ts /\ token_string more ts s).
+      exists (ts : list Token.t),
+        list_sexp_tokens es ts /\ token_string false ts (s ++ newline)).
 Proof.
   unfold eof.
   destruct H as [ more s0 s1 ].
   destruct (parser_cur_token i) eqn:Ei; cbn; auto.
   - inversion H1; subst; clear H1. rewrite string_app_nil_r.
-    admit.
+    eauto using _done_or_fail_sound.
   - remember (new_sexp _ _ _ _) as i'.
     admit.
   - admit.
@@ -512,20 +566,20 @@ Lemma _parse_sexps_sound i p (s0 s : string)
     match parse_sexps_ i p s with
     | (None, p', i') =>
       on_right (eof i' p') (fun es =>
-        exists more ts,
-          list_sexp_tokens es ts /\ token_string more ts (s0 ++ s))
+        exists ts,
+          list_sexp_tokens es ts /\ token_string false ts (s0 ++ s ++ newline))
     | (Some _, _, _) => True
     end.
 Proof.
   revert i p s0; induction s as [ | c s ]; intros; cbn.
-  - rewrite string_app_nil_r. apply eof_sound; auto.
+  - apply eof_sound; auto.
   - pose proof next_sound as SOUND.
     specialize (SOUND i s0 p c H).
     destruct next as [ | i']; auto; cbn in SOUND.
     specialize (IHs i' (N.succ p) _ SOUND).
     destruct parse_sexps_ as [ [ [ | ] ] ? ]; auto.
     destruct eof; auto; cbn in *.
-    destruct IHs as (more & ts & Hts & Hs0).
+    destruct IHs as (ts & Hts & Hs0).
     rewrite string_app_assoc in Hs0.
     eauto.
 Qed.
@@ -536,11 +590,11 @@ Proof.
   repeat econstructor; cbn; auto with ceres.
 Qed.
 
-(* If the parser succeeds, then the expressions relate to the above *)
+(* If the parser succeeds, then the expressions relate to the input string. *)
 Theorem parse_sexps_sound (s : string) (es : list sexp)
   : on_right (parse_sexps s) (fun es =>
-      exists more ts,
-        list_sexp_tokens es ts /\ token_string more ts s).
+      exists ts,
+        list_sexp_tokens es ts /\ token_string false ts (s ++ newline)).
 Proof.
   unfold parse_sexps.
   pose proof (_parse_sexps_sound initial_state 0%N "" s parser_state_empty) as SOUND.
