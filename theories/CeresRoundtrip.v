@@ -4,6 +4,7 @@ From Coq Require Import
   Ascii
   String.
 From Ceres Require Import
+  CeresUtils
   CeresS
   CeresSerialize
   CeresDeserialize.
@@ -280,12 +281,6 @@ Proof.
   intros Eab; injection Eab; intros [].
   unfold to_sexp, Serialize_product; cbn.
   repeat f_equal; [ revert Ea | revert Eb ]; eapply de_ser_class.
-Qed.
-
-Lemma app_cons_assoc {A} (xs : list A) (x : A) (ys : list A)
-  : xs ++ x :: ys = (xs ++ [x]) ++ ys.
-Proof.
-  rewrite <- app_assoc; reflexivity.
 Qed.
 
 Lemma de_ser_class_list {A} `{DeSerClass A} (es : list sexp)
