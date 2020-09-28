@@ -63,6 +63,7 @@ Variant error :=
 | UnterminatedString : loc -> error
 | EmptyInput : error
 | InvalidChar : ascii -> loc -> error
+| InvalidStringChar : ascii -> loc -> error
 .
 
 Definition pretty_error (e : error) :=
@@ -73,6 +74,7 @@ Definition pretty_error (e : error) :=
   | UnterminatedString p => "Unterminated string starting at location " ++ pretty_loc p
   | EmptyInput => "Input is empty"
   | InvalidChar c p => "Invalid character " ++ "TODO" ++ " at location " ++ pretty_loc p
+  | InvalidStringChar c p => "Invalid character inside string " ++ "TODO" ++ " at location " ++ pretty_loc p
   end%string.
 
 Definition is_atom_char (c : ascii) : bool :=
@@ -111,7 +113,8 @@ Definition next_str (i : parser_state) (p0 : loc) (tok : string) (e : escape) (p
   | EscNone =>
     if      "\"  =? c then ret tok EscBackslash
     else if """" =? c then inr (new_sexp d s (Atom (Str (string_reverse tok))) NoToken)
-    else ret (c :: tok)%string EscNone
+    else if is_printable c then ret (c :: tok)%string EscNone
+    else inl (InvalidStringChar c p)
   end%char2.
 
 (** Close parenthesis: build up a list expression. *)

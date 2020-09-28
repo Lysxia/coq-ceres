@@ -57,6 +57,7 @@ Definition eqb_ascii (a b : ascii) : bool :=
     Bool.eqb a0 b0 &&& Bool.eqb a1 b1 &&& Bool.eqb a2 b2 &&& Bool.eqb a3 b3
     &&& Bool.eqb a4 b4 &&& Bool.eqb a5 b5 &&& Bool.eqb a6 b6 &&& Bool.eqb a7 b7
  end.
+Arguments eqb_ascii : simpl never.
 
 (* Note: the most significant bit is on the right. *)
 Definition ascii_compare (a b : ascii) : comparison :=
@@ -82,20 +83,20 @@ Definition eqb_eq {A} (eqb : A -> A -> bool) :=
 
 Lemma eqb_eq_ascii : eqb_eq eqb_ascii.
 Proof with auto.
-  split; intros.
-  - destruct a, b; simpl in H.
+  split; intros H.
+  - destruct a, b; unfold eqb_ascii in H.
     do 8 (
       match type of H with
       | context [ Bool.eqb ?x ?y ] => destruct (eqb_eq_bool x y); try discriminate; subst
       end)...
-  - subst; destruct b; simpl.
+  - subst; destruct b; unfold eqb_ascii.
     repeat rewrite eqb_reflx...
 Defined.
 
 Lemma eqb_eq_ascii' c0 c1 :
   reflect_eq c0 c1 (c0 =? c1)%char2.
 Proof.
-  destruct c0, c1; cbn.
+  destruct c0, c1; unfold eqb_ascii.
   repeat
     match goal with
     | [ |- context E [ Bool.eqb ?x ?y ] ] =>
@@ -116,6 +117,13 @@ Proof.
            {| Decidable_witness := eqb_ascii a b;
               Decidable_spec := eqb_eq_ascii a b |}).
 Defined.
+
+Ltac match_ascii :=
+  repeat
+    match goal with
+    | [ |- context E [ eqb_ascii ?x ?y ] ] =>
+      destruct (eqb_eq_ascii' x y)
+    end.
 
 Fixpoint eqb_string s1 s2 : bool :=
   match s1, s2 with
@@ -212,9 +220,9 @@ Section AsciiTest.
 Local Open Scope char2_scope.
 
 (** Is a character printable? The character is given by its ASCII code. *)
-Definition is_printable (n : nat) : bool :=
-  (  (n <? 32)%nat (* 32 = SPACE *)
-  || (126 <? n)%nat (* 126 = ~ *)
+Definition is_printable (c : ascii) : bool :=
+  (  (" " <=? c)%char2 (* 32 = SPACE *)
+  && (c <=? "~")%char2 (* 126 = ~ *)
   ).
 
 Definition is_whitespace (c : ascii) : bool :=
@@ -258,22 +266,22 @@ Fixpoint _escape_string (_end s : string) : string :=
   | EmptyString => _end
   | (c :: s')%string =>
     let escaped_s' := _escape_string _end s' in
-    if ascii_dec c "009" (* 9 = TAB *) then
+    if ("009" =? c)%char2 (* 9 = TAB *) then
       "\" :: "t" :: escaped_s'
-    else if ascii_dec c "010" (* 10 = NEWLINE *) then
+    else if ("010" =? c)%char2 (* 10 = NEWLINE *) then
       "\" :: "n" :: escaped_s'
-    else if ascii_dec c "013" (* 13 = CARRIAGE RETURN *) then
+    else if ("013" =? c)%char2 (* 13 = CARRIAGE RETURN *) then
       "\" :: "r" :: escaped_s'
-    else if ascii_dec c """" (* DOUBLEQUOTE *) then
+    else if ("""" =? c)%char2 (* DOUBLEQUOTE *) then
       "\" :: """" :: escaped_s'
-    else if ascii_dec c "\" (* BACKSLASH *) then
+    else if ("\" =? c)%char2 (* BACKSLASH *) then
       "\" :: "\" :: escaped_s'
     else
-      let n := nat_of_ascii c in
-      if is_printable n then
-        "\" :: _three_digit n ++ escaped_s'
+      if is_printable c then
+        c :: escaped_s'
       else
-        String c escaped_s'
+        let n := nat_of_ascii c in
+        "\" :: _three_digit n ++ escaped_s'
   end.
 
 (** Escape a string so it can be shown in a terminal. *)
