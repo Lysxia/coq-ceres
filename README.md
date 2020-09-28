@@ -53,15 +53,51 @@ Other modules in the library:
 - `CeresFormat`: format S-expressions as strings (`sexp -> string`).
 - `CeresParser`: S-expression parser (`string -> error + sexp`).
 - `CeresString`: general string utilities.
-- `CeresUtils`: miscellaneous
+- `CeresUtils`: miscellaneous.
 - `CeresParserRoundtrip`, `CeresParserRoundtripProof`:
   Correctness proof of the parser. Currently, only soundness is proved
   (i.e., parse-then-print roundtrip).
 
+Simplified overview
+-------------------
+
+This library offers a type `sexp` with two constructors:
+
+```coq
+Inductive sexp :=
+| Atom (a : atom)
+| List (xs : list sexp)
+.
+```
+
+Atoms are identifiers (`Raw`), numbers (`Num`) or srings (`Str`).
+
+```coq
+Variant atom : Set :=
+| Num (n : Z)       (* Integers. *)
+| Str (s : string)  (* Literal strings. *)
+| Raw (s : string)  (* Simple atoms (e.g., ADT tags). *)
+                    (* Should fit in this alphabet: [A-Za-z0-9'=+*/:!@#$%^&<>_-]. *)
+.
+```
+
+Two classes `Serialize` and `Deserialize` are provided to define canonical
+serializers and deserializers between your types and S-expressions.
+The following functions are provided for conversions to `sexp` or directly to
+`string`:
+
+```coq
+Definition to_sexp {A} `{Serialize A} : A -> sexp.
+Definition from_sexp {A} `{Deserialize A} : sexp -> error + A.
+
+Definition to_string {A} `{Serialize A} : A -> string.
+Definition from_string {A} `{Deserialize A} : string -> error + A.
+```
+
 Core definitions
 ----------------
 
-The type of S-expressions. It is parameterized by the type of atoms.
+The type of S-expressions is actually parameterized by the type of atoms.
 
 ```coq
 Inductive sexp_ (A : Type) :=
@@ -70,17 +106,10 @@ Inductive sexp_ (A : Type) :=
 .
 ```
 
-The library offers a default `atom` type, so that the main S-expression type is
+By default, it is specialized to the `atom` type, so that the main S-expression type is
 `sexp := sexp_ atom`.
 
 ```coq
-Variant atom : Set :=
-| Num (n : Z)       (* Integers. *)
-| Str (s : string)  (* Literal strings. *)
-| Raw (s : string)  (* Simple atoms (e.g., ADT tags). *)
-                    (* Should fit in this alphabet: [A-Za-z0-9-_.']. *)
-.
-
 Notation sexp := (sexp_ atom).
 Notation Atom := (@Atom_ atom).
 
