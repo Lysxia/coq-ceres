@@ -80,7 +80,7 @@ Definition pretty_error (e : error) :=
   end%string.
 
 Definition is_atom_char (c : ascii) : bool :=
-  (is_alphanum c ||| string_elem c "=-+*/:!@#$%^&_<>").
+  (is_alphanum c ||| string_elem c "'=-+*/:!@#$%^&_<>").
 
 Definition new_sexp {T : Set} (d : list sexp) (s : list symbol) (e : sexp) (t : T)
   : parser_state_ T :=
