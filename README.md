@@ -54,7 +54,7 @@ Other modules in the library:
 - `CeresParser`: S-expression parser (`string -> error + sexp`).
 - `CeresString`: general string utilities.
 - `CeresUtils`: miscellaneous
-- `CeresParserRoundtrip`, `CersParserRoundtripProof:
+- `CeresParserRoundtrip`, `CeresParserRoundtripProof`:
   Correctness proof of the parser. Currently, only soundness is proved
   (i.e., parse-then-print roundtrip).
 
