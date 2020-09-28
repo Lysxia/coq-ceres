@@ -32,32 +32,6 @@ Definition example : sexp :=
   ].
 ```
 
-Usage
------
-
-Import the main module of the library.
-
-```coq
-Require Import Ceres.Ceres.
-```
-
-This exports:
-
-- `CeresS`: the core definitions for S-expressions.
-- `CeresSerialize`: the `Serialize` type class (`sexp -> error + mytype`).
-- `CeresDeserialize`: the `Deserialize` type class (`mytype -> sexp`).
-- `CeresRoundtrip`: roundtrip properties for serializers and deserializers.
-
-Other modules in the library:
-
-- `CeresFormat`: format S-expressions as strings (`sexp -> string`).
-- `CeresParser`: S-expression parser (`string -> error + sexp`).
-- `CeresString`: general string utilities.
-- `CeresUtils`: miscellaneous.
-- `CeresParserRoundtrip`, `CeresParserRoundtripProof`:
-  Correctness proof of the parser. Currently, only soundness is proved
-  (i.e., parse-then-print roundtrip).
-
 Simplified overview
 -------------------
 
@@ -93,6 +67,31 @@ Definition from_sexp {A} `{Deserialize A} : sexp -> error + A.
 Definition to_string {A} `{Serialize A} : A -> string.
 Definition from_string {A} `{Deserialize A} : string -> error + A.
 ```
+Usage
+-----
+
+Import the main module of the library.
+
+```coq
+Require Import Ceres.Ceres.
+```
+
+This exports:
+
+- `CeresS`: the core definitions for S-expressions.
+- `CeresSerialize`: the `Serialize` type class (`sexp -> error + mytype`).
+- `CeresDeserialize`: the `Deserialize` type class (`mytype -> sexp`).
+- `CeresRoundtrip`: roundtrip properties for serializers and deserializers.
+
+Other modules in the library:
+
+- `CeresFormat`: format S-expressions as strings (`sexp -> string`).
+- `CeresParser`: S-expression parser (`string -> error + sexp`).
+- `CeresString`: general string utilities.
+- `CeresUtils`: miscellaneous.
+- `CeresParserRoundtrip`, `CeresParserRoundtripProof`:
+  Correctness proof of the parser. Currently, only soundness is proved
+  (i.e., parse-then-print roundtrip).
 
 Core definitions
 ----------------
