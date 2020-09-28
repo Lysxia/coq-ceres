@@ -81,6 +81,11 @@ Lemma parse_10 :
   e4 = Some (Atom 34%Z).
 Proof. split; split; split; reflexivity. Qed.
 
+Lemma parse_11
+  : parse_sexps "a.b a-b a? a! || hi' +1 a/b"
+  = inr [Atom "a.b"; Atom "a-b"; Atom "a?"; Atom "a!"; Atom "||"; Atom "hi'"; Atom "+1"; Atom "a/b"]%list.
+Proof. reflexivity. Qed.
+
 (**)
 
 (* Test that recursive deserializers are supported. *)
