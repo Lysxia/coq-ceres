@@ -148,6 +148,12 @@ Fixpoint string_elem (c : ascii) (s : string) : bool :=
   | c' :: s => eqb_ascii c c' ||| string_elem c s
   end%string.
 
+Fixpoint string_forall (f : ascii -> bool) (s : string) : bool :=
+  match s with
+  | "" => true
+  | c :: s => f c &&& string_forall f s
+  end%string.
+
 Fixpoint _string_reverse (r s : string) : string :=
   match s with
   | "" => r
