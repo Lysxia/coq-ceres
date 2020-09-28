@@ -1,3 +1,18 @@
+(** * Parser specification *)
+
+(** This is the specification of the parser, turning byte strings into S-expressions. *)
+
+(** Main relations:
+  - [token_string]: relating strings to streams of tokens;
+  - [sexp_tokens]: relating tokens to S-expressions.
+
+  The soundness theorem ("parse then print") is stated below, [PARSE_SEXPS_SOUND].
+  The completeness theorem ("print then parse") is TODO.
+
+  These are justs the theorem statements, ensuring that they don't
+  depend on any proof details. The proofs are in [CeresParserRoundtripProof].
+ *)
+
 From Coq Require Import
   Ascii
   String
@@ -144,15 +159,20 @@ Hint Constructors sexp_tokens : ceres.
 (* Parser relation on lists of S-expressions (without the outer parentheses). *)
 Notation list_sexp_tokens := (list_tokens sexp_tokens).
 
-(* A predicate on the right component of a sum. It is [True] for [inl] elements. *)
+(** [on_right] is a helper to phrase conditional propositions of the form
+  "if this parser succeeds, then ...".
+
+  Concretely, this predicate transformer lifts a predicate on the right
+  component of a sum.  It is [True] for [inl] elements. *)
 Definition on_right {A B} (x : A + B) (P : B -> Prop) : Prop :=
   match x with
   | inl _ => True
   | inr b => P b
   end.
 
-(* Soundness: if the parser succeeds, then the expressions relate to the input string.
-   ("Parse then print" roundtrip.)
+(** Soundness: if the parser succeeds, then the expressions relate to the input string.
+  ("Parse then print" roundtrip.) I call this "soundness" because it means that the
+  parser rejects garbage.
  *)
 Definition PARSE_SEXPS_SOUND : Prop :=
   forall (s : string) (es : list sexp),
