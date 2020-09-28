@@ -102,15 +102,17 @@ Definition next_str (i : parser_state) (p0 : loc) (tok : string) (e : escape) (p
      ; parser_stack := s
      ; parser_cur_token := StrToken p0 tok' e'
     |} in
-  match e, c with
-  | EscBackslash, "n"%char => ret ("010" :: tok)%string EscNone
-  | EscBackslash, "\"%char => ret ("\" :: tok)%string EscNone
-  | EscBackslash, """"%char => ret ("""" :: tok)%string EscNone
-  | EscBackslash, _ => inl (UnknownEscape p c)
-  | EscNone, "\"%char => ret tok EscBackslash
-  | EscNone, """"%char => inr (new_sexp d s (Atom (Str (string_reverse tok))) NoToken)
-  | EscNone, c => ret (c :: tok)%string EscNone
-  end.
+  match e with
+  | EscBackslash =>
+    if      "n"  =? c then ret ("010" :: tok)%string EscNone
+    else if "\"  =? c then ret ("\" :: tok)%string EscNone
+    else if """" =? c then ret ("""" :: tok)%string EscNone
+    else inl (UnknownEscape p c)
+  | EscNone =>
+    if      "\"  =? c then ret tok EscBackslash
+    else if """" =? c then inr (new_sexp d s (Atom (Str (string_reverse tok))) NoToken)
+    else ret (c :: tok)%string EscNone
+  end%char2.
 
 (** Close parenthesis: build up a list expression. *)
 Fixpoint _fold_stack (d : list sexp) (p : loc) (r : list sexp) (s : list symbol) : error + parser_state :=
