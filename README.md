@@ -44,7 +44,7 @@ Inductive sexp :=
 .
 ```
 
-Atoms are identifiers (`Raw`), numbers (`Num`) or srings (`Str`).
+Atoms are identifiers (`Raw`), numbers (`Num`) or strings (`Str`).
 
 ```coq
 Variant atom : Set :=
