@@ -11,53 +11,49 @@ From Ceres Require Import
 
 Import ListNotations.
 
-Definition SerDe {A : Type} (ser : A -> sexp) (de : sexp -> error + A) : Prop :=
+(** Completeness: all values can be serialized without loss of information. *)
+Definition Complete {A : Type} (ser : A -> sexp) (de : sexp -> error + A) : Prop :=
   forall (a : A), de (ser a) = inr a.
 
-Definition map_sum {A B B' : Type} (f : B -> B') (x : A + B) : A + B' :=
-  match x with
-  | inl a => inl a
-  | inr b => inr (f b)
-  end.
-
-Definition DeSer {A : Type} (ser : A -> sexp) (de : sexp -> error + A) : Prop :=
+(** Soundness: deserialization succeeds only for well-formed expressions. *)
+Definition Sound {A : Type} (ser : A -> sexp) (de : sexp -> error + A) : Prop :=
   forall (e : sexp) (a : A),
     de e = inr a ->
     ser a = e.
 
-Class SerDeClass (A : Type) `{Serialize A} `{Deserialize A} : Prop :=
-  ser_de_class : forall l, @SerDe A to_sexp (_from_sexp l).
+Class CompleteClass (A : Type) `{Serialize A} `{Deserialize A} : Prop :=
+  complete_class : forall l, @Complete A to_sexp (_from_sexp l).
 
-Class DeSerClass (A : Type) `{Serialize A} `{Deserialize A} : Prop :=
-  de_ser_class : forall l, @DeSer A to_sexp (_from_sexp l).
+Class SoundClass (A : Type) `{Serialize A} `{Deserialize A} : Prop :=
+  sound_class : forall l, @Sound A to_sexp (_from_sexp l).
 
 (**)
 
-Class SerDeIntegral (A : Type) `{Integral A} `{SemiIntegral A} : Prop :=
-  ser_de_integral : forall (a : A), from_Z (to_Z a) = Some a.
+Class CompleteIntegral (A : Type) `{Integral A} `{SemiIntegral A} : Prop :=
+  complete_integral : forall (a : A), from_Z (to_Z a) = Some a.
 
-Class DeSerIntegral (A : Type) `{Integral A} `{SemiIntegral A} : Prop :=
-  de_ser_integral : forall z a, from_Z z = Some a -> to_Z a = z.
+Class SoundIntegral (A : Type) `{Integral A} `{SemiIntegral A} : Prop :=
+  sound_integral : forall z a, from_Z z = Some a -> to_Z a = z.
 
-Instance SerDeClass_Integral {A} `{SerDeIntegral A} : SerDeClass A.
+Instance CompleteClass_Integral {A} `{CompleteIntegral A} : CompleteClass A.
 Proof.
-  intros l a; cbn; rewrite ser_de_integral; reflexivity.
+  intros l a; cbn; rewrite complete_integral; reflexivity.
 Qed.
 
-Instance DeSerClass_Integral {A} `{DeSerIntegral A} : DeSerClass A.
+Instance SoundClass_Integral {A} `{SoundIntegral A} : SoundClass A.
 Proof.
   intros l [ [] | ] a; cbn; try discriminate.
   destruct from_Z eqn:Ez; try discriminate.
   intros E; injection E; intros [].
-  apply (f_equal Atom), (f_equal Num). apply de_ser_integral; assumption.
+  apply (f_equal Atom), (f_equal Num). apply sound_integral; assumption.
 Qed.
 
-Instance SerDe_Z : SerDeIntegral Z.
+Instance Complete_Z : CompleteIntegral Z.
 Proof.
   intros a. reflexivity.
 Qed.
 
-Instance SerDe_N : SerDeIntegral N.
+Instance Complete_N : CompleteIntegral N.
 Proof.
   intros a. unfold from_Z, SemiIntegral_N.
   replace (Z.ltb _ _) with false.
@@ -66,7 +62,7 @@ Proof.
     apply N2Z.is_nonneg.
 Qed.
 
-Instance SerDe_nat : SerDeIntegral nat.
+Instance Complete_nat : CompleteIntegral nat.
 Proof.
   intros a. unfold from_Z, SemiIntegral_nat.
   replace (Z.ltb _ _) with false.
@@ -75,12 +71,12 @@ Proof.
     apply Nat2Z.is_nonneg.
 Qed.
 
-Instance DeSer_Z : DeSerIntegral Z.
+Instance Sound_Z : SoundIntegral Z.
 Proof.
   intros a b H; injection H; intros []; reflexivity.
 Qed.
 
-Instance DeSer_N : DeSerIntegral N.
+Instance Sound_N : SoundIntegral N.
 Proof.
   intros z n. unfold from_Z, SemiIntegral_N.
   destruct (Z.ltb_spec z 0); try discriminate.
@@ -88,7 +84,7 @@ Proof.
   intros []; rewrite Z2N.id; auto.
 Qed.
 
-Instance DeSer_nat : DeSerIntegral nat.
+Instance Sound_nat : SoundIntegral nat.
 Proof.
   intros z n.  unfold from_Z, SemiIntegral_nat.
   destruct (Z.ltb_spec z 0); try discriminate.
@@ -98,7 +94,7 @@ Qed.
 
 (**)
 
-Lemma de__con {A} (tyname : string)
+Lemma sound__con {A} (tyname : string)
     (g : string -> loc -> error + A) (f : string -> FromSexpList A)
     l (e : sexp) (a : A)
   : Deser._con tyname g f l e = inr a ->
@@ -133,7 +129,7 @@ Proof.
   induction 2; intros; auto.
 Qed.
 
-Theorem de_match_con {A} (tyname : string)
+Theorem sound_match_con {A} (tyname : string)
     (c0 : list (string * A)) (c1 : list (string * FromSexpList A))
     l (e : sexp) (a : A)
   : Deser.match_con tyname c0 c1 l e = inr a ->
@@ -143,7 +139,7 @@ Theorem de_match_con {A} (tyname : string)
            inr a = snd p l (type_error tyname) es) c1.
 Proof.
   unfold Deser.match_con.
-  intros DESER. apply de__con in DESER. destruct DESER as [ (c & Ee & Ea ) | (c & es & Ee & Ea) ].
+  intros DESER. apply sound__con in DESER. destruct DESER as [ (c & Ee & Ea ) | (c & es & Ee & Ea) ].
   - apply _find_or_spec in Ea. destruct Ea as [ Ea | [] ]; [ | discriminate ].
     left. revert Ea; apply List_Exists_impl.
     intros [] [Es Ea]; cbn in *.
@@ -165,33 +161,33 @@ Ltac elim_Exists H :=
     destruct H as [ H | H ]; [ | elim_Exists H ]
   end.
 
-Instance SerDeClass_bool : SerDeClass bool.
+Instance CompleteClass_bool : CompleteClass bool.
 Proof.
-  unfold SerDeClass, SerDe.
+  unfold CompleteClass, Complete.
   intros l []; reflexivity.
 Qed.
 
-Instance DeSerClass_bool : DeSerClass bool.
+Instance SoundClass_bool : SoundClass bool.
 Proof.
-  intros l e a Ee; apply de_match_con in Ee.
+  intros l e a Ee; apply sound_match_con in Ee.
   destruct Ee as [ Ee | Ee ]; elim_Exists Ee;
     destruct Ee as [Eatom Ea]; subst; try reflexivity.
 Qed.
 
-Instance SerDeClass_option {A} `{SerDeClass A} : SerDeClass (option A).
+Instance CompleteClass_option {A} `{CompleteClass A} : CompleteClass (option A).
 Proof.
-  unfold SerDeClass, SerDe.
+  unfold CompleteClass, Complete.
   intros l []; cbn; [ rewrite H1 | ]; reflexivity.
 Qed.
 
-Instance SerDeClass_sum {A B} `{SerDeClass A} `{SerDeClass B} : SerDeClass (A + B).
+Instance CompleteClass_sum {A B} `{CompleteClass A} `{CompleteClass B} : CompleteClass (A + B).
 Proof.
-  intros l []; cbn; rewrite ser_de_class; reflexivity.
+  intros l []; cbn; rewrite complete_class; reflexivity.
 Qed.
 
-Instance SerDeClass_prod {A B} `{SerDeClass A} `{SerDeClass B} : SerDeClass (A * B).
+Instance CompleteClass_prod {A B} `{CompleteClass A} `{CompleteClass B} : CompleteClass (A * B).
 Proof.
-  intros l []; cbn; rewrite 2 ser_de_class; reflexivity.
+  intros l []; cbn; rewrite 2 complete_class; reflexivity.
 Qed.
 
 Section DeRetField.
@@ -202,7 +198,7 @@ Inductive UnnilFields : R -> list sexp -> Prop :=
 | MkUnnilFields : UnnilFields r nil
 .
 
-Lemma de_ret_field {a} l err es
+Lemma sound_ret_field {a} l err es
   : inr a = _fields (@Deser.ret R r n) l err es ->
     UnnilFields a es.
 Proof.
@@ -227,7 +223,7 @@ Inductive UnconsFields : list sexp -> Prop :=
     UnconsFields (e' :: es')
 .
 
-Lemma de_bind_field
+Lemma sound_bind_field
   : inr a = _fields (Deser.bind_field pa f) l err es ->
     UnconsFields es.
 Proof.
@@ -238,52 +234,52 @@ Qed.
 
 End DeBindField.
 
-Ltac de_field Ea :=
-  (apply de_ret_field in Ea; destruct Ea) +
+Ltac sound_field Ea :=
+  (apply sound_ret_field in Ea; destruct Ea) +
   (let a1 := fresh "a" in
    let e1 := fresh "e" in
    let es := fresh "es" in
    let Ea1 := fresh "Ea1" in
-   apply de_bind_field in Ea;
+   apply sound_bind_field in Ea;
    destruct Ea as [a1 e1 es Ea1 Ea];
-   de_field Ea).
+   sound_field Ea).
 
-Instance DeSerClass_option {A} `{DeSerClass A} : DeSerClass (option A).
+Instance SoundClass_option {A} `{SoundClass A} : SoundClass (option A).
 Proof.
-  intros l e a Ee; apply de_match_con in Ee.
+  intros l e a Ee; apply sound_match_con in Ee.
   destruct Ee as [ Ee | Ee ]; elim_Exists Ee; cbn [fst snd] in *.
   - destruct Ee as [E1 E2]; subst; reflexivity.
   - destruct Ee as [es [Ee Ea]].
-    de_field Ea. cbn.
+    sound_field Ea. cbn.
     apply H1 in Ea1.
     rewrite Ea1; assumption.
 Qed.
 
-Instance DeSerClass_sum {A B} `{DeSerClass A} `{DeSerClass B} : DeSerClass (A + B).
+Instance SoundClass_sum {A B} `{SoundClass A} `{SoundClass B} : SoundClass (A + B).
 Proof.
-  intros l e a Ee; apply de_match_con in Ee.
+  intros l e a Ee; apply sound_match_con in Ee.
   destruct Ee as [ Ee | Ee ]; elim_Exists Ee; cbn [fst snd] in *.
   - destruct Ee as [es [Ee Ea]].
-    de_field Ea. cbn.
-    apply de_ser_class in Ea1.
+    sound_field Ea. cbn.
+    apply sound_class in Ea1.
     rewrite Ea1; assumption.
   - destruct Ee as [es [Ee Ea]].
-    de_field Ea. cbn.
-    apply de_ser_class in Ea1.
+    sound_field Ea. cbn.
+    apply sound_class in Ea1.
     rewrite Ea1; assumption.
 Qed.
 
-Instance DeSerClass_prod {A B} `{DeSerClass A} `{DeSerClass B} : DeSerClass (A * B).
+Instance SoundClass_prod {A B} `{SoundClass A} `{SoundClass B} : SoundClass (A * B).
 Proof.
   intros l [ ea | [ | ea [ | eb [ | ] ] ] ] a; cbn; try discriminate.
   destruct (_from_sexp _ ea) eqn:Ea; cbn; try discriminate.
   destruct (_from_sexp _ eb) eqn:Eb; cbn; try discriminate.
   intros Eab; injection Eab; intros [].
   unfold to_sexp, Serialize_product; cbn.
-  repeat f_equal; [ revert Ea | revert Eb ]; eapply de_ser_class.
+  repeat f_equal; [ revert Ea | revert Eb ]; eapply sound_class.
 Qed.
 
-Lemma de_ser_class_list {A} `{DeSerClass A} (es : list sexp)
+Lemma sound_class_list {A} `{SoundClass A} (es : list sexp)
   : forall fs xs n l a,
       map to_sexp (rev xs) = fs ->
       _sexp_to_list _from_sexp xs n l es = inr a -> to_sexp a = List (fs ++ es).
@@ -297,48 +293,48 @@ Proof.
     + rewrite app_cons_assoc; assumption.
     + rewrite map_app; cbn.
       f_equal; [ assumption | f_equal ].
-      eapply de_ser_class. eassumption.
+      eapply sound_class. eassumption.
 Qed.
 
-Instance DeSerClass_list {A} `{DeSerClass A} : DeSerClass (list A).
+Instance SoundClass_list {A} `{SoundClass A} : SoundClass (list A).
 Proof.
   intros l [e | es] a; cbn; try discriminate.
-  apply de_ser_class_list with (fs := []).
+  apply sound_class_list with (fs := []).
   reflexivity.
 Qed.
 
-Lemma ser_de_class_list {A} `{SerDeClass A} (a : list A)
+Lemma complete_class_list {A} `{CompleteClass A} (a : list A)
   : forall (xs : list A) (n : nat) (l : loc),
       _sexp_to_list _from_sexp xs n l (map to_sexp a) = inr (rev xs ++ a).
 Proof.
   induction a as [ | y ys ]; intros; cbn.
   - rewrite rev_alt, app_nil_r; reflexivity.
-  - rewrite ser_de_class. rewrite app_cons_assoc.
+  - rewrite complete_class. rewrite app_cons_assoc.
     apply IHys.
 Qed.
 
-Instance SerDeClass_list {A} `{SerDeClass A} : SerDeClass (list A).
+Instance CompleteClass_list {A} `{CompleteClass A} : CompleteClass (list A).
 Proof.
-  intros l a. apply ser_de_class_list.
+  intros l a. apply complete_class_list.
 Qed.
 
-Instance SerDeClass_string : SerDeClass string.
+Instance CompleteClass_string : CompleteClass string.
 Proof.
   intros l a. reflexivity.
 Qed.
 
-Instance DeSerClass_string : DeSerClass string.
+Instance SoundClass_string : SoundClass string.
 Proof.
   intros l [ [] | ]; cbn; try discriminate.
   intros ? E; injection E; intros []; reflexivity.
 Qed.
 
-Instance SerDeClass_ascii : SerDeClass ascii.
+Instance CompleteClass_ascii : CompleteClass ascii.
 Proof.
   intros l a. reflexivity.
 Qed.
 
-Instance DeSerClass_ascii : DeSerClass ascii.
+Instance SoundClass_ascii : SoundClass ascii.
 Proof.
   intros l [ [ | s | ] | ]; cbn; try discriminate.
   destruct s as [ | ? [] ]; cbn; try discriminate.
