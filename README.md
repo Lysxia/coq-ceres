@@ -82,16 +82,21 @@ This exports:
 - `CeresSerialize`: the `Serialize` type class (`sexp -> error + mytype`).
 - `CeresDeserialize`: the `Deserialize` type class (`mytype -> sexp`).
 - `CeresRoundtrip`: roundtrip properties for serializers and deserializers.
+- `CeresFormat`: format S-expressions as strings (`sexp -> string`).
+- `CeresParser`: S-expression parser (`string -> error + sexp`).
 
 Other modules in the library:
 
-- `CeresFormat`: format S-expressions as strings (`sexp -> string`).
-- `CeresParser`: S-expression parser (`string -> error + sexp`).
-- `CeresString`: general string utilities.
-- `CeresUtils`: miscellaneous.
+- `CeresParserUtils`: low-level primitives for the S-expression parser
 - `CeresParserRoundtrip`, `CeresParserRoundtripProof`:
   Correctness proof of the parser. Currently, only soundness is proved
   (i.e., parse-then-print roundtrip).
+
+Internals:
+
+- `CeresUtils`: miscellaneous.
+- `CeresParserInternal`: S-expression parser, internals
+- `CeresString`: general string utilities.
 
 Core definitions
 ----------------

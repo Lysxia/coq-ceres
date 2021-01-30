@@ -5,4 +5,6 @@ From Ceres Require Export
   CeresS
   CeresSerialize
   CeresDeserialize
-  CeresRoundtrip.
+  CeresRoundtrip
+  CeresParser
+  CeresFormat.

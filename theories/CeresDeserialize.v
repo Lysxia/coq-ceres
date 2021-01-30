@@ -44,7 +44,7 @@ Definition type_error (tyname : string) (msg : message) : message :=
 
 (** Errors which may occur when deserializing S-expressions. *)
 Variant error :=
-| ParseError : CeresParser.error -> error     (* Errors from parsing [string -> sexp] *)
+| ParseError : CeresParserUtils.error -> error     (* Errors from parsing [string -> sexp] *)
 | DeserError : loc -> message -> error   (* Errors from deserializing [sexp -> A] *)
 .
 

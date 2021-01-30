@@ -1,5 +1,5 @@
 From Coq Require Import List NArith ZArith String.
-From Ceres Require Import Ceres CeresParser.
+From Ceres Require Import Ceres CeresParser CeresParserInternal.
 
 Import ListNotations.
 Local Open Scope string.
