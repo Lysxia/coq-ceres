@@ -1,0 +1,435 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<link href="coqdocjs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="config.js"></script>
+<script type="text/javascript" src="coqdocjs.js"></script>
+</head>
+
+<body onload="document.getElementById('content').focus()">
+  <div id="header">
+    <span class="left">
+      <span class="modulename"> <script> document.write(document.title) </script> </span>
+    </span>
+
+    <span class="button" id="toggle-proofs"></span>
+
+    <span class="right">
+      <a href="../">Project Page</a>
+      <a href="./indexpage.html"> Index </a>
+      <a href="./toc.html"> Table of Contents </a>
+    </span>
+</div>
+    <div id="content" tabindex="-1" onblur="document.getElementById('content').focus()">
+    <div id="main">
+<h1 class="libtitle">Tutorial</h1>
+
+<div class="code">
+</div>
+
+<div class="doc">
+<a id="lab1"></a><h1 class="section">Ceres library tutorial</h1>
+
+<div class="paragraph"> </div>
+
+ <a href="https://github.com/Lysxia/coq-ceres/tree/master/tutorial/Tutorial.v"> Source of this file</a> 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">From</span> <span class="id" title="var">Coq</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#"><span class="id" title="library">List</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.ZArith.ZArith.html#"><span class="id" title="library">ZArith</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#"><span class="id" title="library">String</span></a>.<br/>
+<span class="id" title="keyword">From</span> <span class="id" title="var">Ceres</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Ceres.Ceres.html#"><span class="id" title="library">Ceres</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Import</span> <span class="id" title="var">ListNotations</span>.<br/>
+<span class="id" title="keyword">Local Open</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">string_scope</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab2"></a><h1 class="section">Introduction</h1>
+
+<div class="paragraph"> </div>
+
+ Ceres is a library for serializing Coq data types,
+so they can be stored or displayed outside of Coq's interactive
+environment (for example, in an extracted program).
+
+<div class="paragraph"> </div>
+
+Ceres manipulates S-expressions, a generic format with:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> a common human-readable string representation,
+
+</li>
+<li> a tree structure which makes it easy to map to user-defined Coq types.
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+Thus the library consists of two components mediating between these
+data representations:
+
+<div class="paragraph"> </div>
+
+<pre>
+        Strings
+              ↕ (1) Parser/printer
+  S-expressions
+              ↕ (2) Serialization
+Your data types
+</pre>
+
+<div class="paragraph"> </div>
+
+<a id="lab3"></a><h1 class="section">S-expressions</h1>
+
+<div class="paragraph"> </div>
+
+<a id="lab4"></a><h2 class="section">Types and constructors</h2>
+
+<div class="paragraph"> </div>
+
+ S-expressions have type <span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a></span>, with two constructors, <span class="inlinecode"><a class="idref" href="Ceres.CeresParserRoundtrip.html#Token.Atom"><span class="id" title="constructor">Atom</span></a></span> and <span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a></span>.
+So S-expressions are trees of atoms.
+
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> (<a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a> : <span class="id" title="keyword">Set</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Check</span> (<a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> : <a class="idref" href="Ceres.CeresS.html#atom"><span class="id" title="inductive">atom</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a>).<br/>
+<span class="id" title="keyword">Check</span> (<a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Note: The actual definition of <span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a></span> is a little fancier than a plain
+inductive type, but don't pay too much attention to that. 
+<div class="paragraph"> </div>
+
+ Here is an example of an S-expression in its concrete syntax:
+
+<div class="paragraph"> </div>
+
+<pre>
+(example
+  (message "I'm a teapot")
+  (code 418))
+</pre>
+
+<div class="paragraph"> </div>
+
+ Atoms are numbers (<span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#Num"><span class="id" title="constructor">Num</span></a></span>), strings (<span class="inlinecode"><a class="idref" href="Ceres.CeresParserRoundtrip.html#Token.Str"><span class="id" title="constructor">Str</span></a></span>), and "raw identifiers" (<span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#Raw"><span class="id" title="constructor">Raw</span></a></span>). 
+<div class="paragraph"> </div>
+
+ Numbers are integers (they may be negative). 
+</div>
+<div class="code">
+<span class="id" title="keyword">Check</span> (<a class="idref" href="Ceres.CeresS.html#Num"><span class="id" title="constructor">Num</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Numbers.BinNums.html#Z"><span class="id" title="inductive">Z</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#atom"><span class="id" title="inductive">atom</span></a>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Strings are arbitrary values of type <span class="inlinecode"><a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a></span>.
+Their concrete syntax is between double quotes, possibly containing escape sequences
+(e.g., <code>"\\"</code>, <code>"\n"</code>, <code>"\010"</code>).
+
+<div class="paragraph"> </div>
+
+Use strings to embed actual strings from your data types, or to embed other
+arbitrary syntax (e.g., dates, fractional numbers, hex, binary). 
+</div>
+<div class="code">
+<span class="id" title="keyword">Check</span> (<a class="idref" href="Ceres.CeresS.html#Str"><span class="id" title="constructor">Str</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#atom"><span class="id" title="inductive">atom</span></a>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Raw identifiers correspond to unquoted strings in the concrete syntax of S-expressions.
+Raw identifiers also have type <span class="inlinecode"><a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a></span>, but they must consist only of
+characters in the set <span class="inlinecode">[<span class="id" title="var">A</span>-<span class="id" title="var">Za</span>-<span class="id" title="var">z0</span>-9'=+*/:!?@#$%^&amp;&lt;&gt;.,|<span class="id" title="var">_</span>~-]</span>.
+
+<div class="paragraph"> </div>
+
+For the purpose of encoding Coq inductive types, their constructor names
+can be encoded as <span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#Raw"><span class="id" title="constructor">Raw</span></a></span> atoms. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Check</span> (<a class="idref" href="Ceres.CeresS.html#Raw"><span class="id" title="constructor">Raw</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#atom"><span class="id" title="inductive">atom</span></a>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Note: <span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#Raw"><span class="id" title="constructor">Raw</span></a></span> is a coercion, but <span class="inlinecode"><a class="idref" href="Ceres.CeresParserRoundtrip.html#Token.Str"><span class="id" title="constructor">Str</span></a></span> is not (that would be ambiguous otherwise).
+Thus a <span class="inlinecode"><a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a></span> can be put anywhere an <span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#atom"><span class="id" title="inductive">atom</span></a></span> is expected. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> (<a class="idref" href="Ceres.CeresS.html#Raw"><span class="id" title="constructor">Raw</span></a> "example" <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> "example")%<span class="id" title="var">string</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab5"></a><h2 class="section">Examples</h2>
+
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="example1" class="idref" href="#example1"><span class="id" title="definition">example1</span></a> : <a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a> :=<br/>
+&nbsp;&nbsp;<a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">[</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> (<a class="idref" href="Ceres.CeresS.html#Raw"><span class="id" title="constructor">Raw</span></a> "example")<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">[</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> (<a class="idref" href="Ceres.CeresS.html#Raw"><span class="id" title="constructor">Raw</span></a> "message") <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> (<a class="idref" href="Ceres.CeresS.html#Str"><span class="id" title="constructor">Str</span></a> "I'm a teapot") <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">]</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">[</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> (<a class="idref" href="Ceres.CeresS.html#Raw"><span class="id" title="constructor">Raw</span></a> "code") <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> 418%<span class="id" title="var">Z</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">]</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">]</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The list notation is also overloaded to implicitly add the <span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a></span> constructor:
+<br/>
+<span class="inlinecode"><span class="id" title="keyword">Notation</span> "[ ]" := (<a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a>) : <span class="id" title="var">sexp_scope</span>.<br/>
+<span class="id" title="keyword">Notation</span> "[ x ]" := (<a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> (@<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#cons"><span class="id" title="constructor">cons</span></a> (<a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <span class="id" title="var">_</span>) <span class="id" title="var">x</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a>)) : <span class="id" title="var">sexp_scope</span>.<br/>
+<span class="id" title="keyword">Notation</span> "[ x ; y ; .. ; z ]"<br/>
+&nbsp;&nbsp;:= (<a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> (@<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#cons"><span class="id" title="constructor">cons</span></a> (<a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <span class="id" title="var">_</span>) <span class="id" title="var">x</span> (@<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#cons"><span class="id" title="constructor">cons</span></a> (<a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <span class="id" title="var">_</span>) <span class="id" title="var">y</span> .. (@<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#cons"><span class="id" title="constructor">cons</span></a> (<a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <span class="id" title="var">_</span>) <span class="id" title="var">z</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a>) .. )))<br/>
+&nbsp;&nbsp;: <span class="id" title="var">sexp_scope</span>.
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+Remember to open <span class="inlinecode"><span class="id" title="var">sexp_scope</span></span>:
+<ul class="doclist">
+<li> with the command <span class="inlinecode">[<span class="id" title="keyword">Local</span></span> <span class="inlinecode"><span class="id" title="keyword">Open</span></span> <span class="inlinecode"><span class="id" title="keyword">Scope</span></span> <span class="inlinecode"><span class="id" title="var">sexp_scope</span>.]</span>
+
+</li>
+<li> or with the key <span class="inlinecode">[%<a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a>]</span>.
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+Also open <span class="inlinecode"><span class="id" title="var">string_scope</span></span> to benefit from the <span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#Raw"><span class="id" title="constructor">Raw</span></a></span> coercion.
+
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="example2" class="idref" href="#example2"><span class="id" title="definition">example2</span></a> : <a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a> :=<br/>
+&nbsp;&nbsp;<a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">[</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> "example"<br/>
+&nbsp;&nbsp;<a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">[</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> "message" <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> (<a class="idref" href="Ceres.CeresS.html#Str"><span class="id" title="constructor">Str</span></a> "I'm a teapot") <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">]</span></a><br/>
+&nbsp;&nbsp;<a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">[</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> "code" <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> 418%<span class="id" title="var">Z</span> <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">]</span></a><br/>
+&nbsp;&nbsp;<a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">]</span></a>%<span class="id" title="var">sexp</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab6"></a><h1 class="section">String conversions</h1>
+
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> (<a class="idref" href="Ceres.CeresParser.html#parse_sexp"><span class="id" title="definition">parse_sexp</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresParserUtils.html#error"><span class="id" title="inductive">CeresParserUtils.error</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#e03f39daf98516fa530d3f6f5a1b4d92"><span class="id" title="notation">+</span></a> <a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a>).<br/>
+<span class="id" title="keyword">Check</span> (<a class="idref" href="Ceres.CeresParser.html#parse_sexps"><span class="id" title="definition">parse_sexps</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresParserUtils.html#error"><span class="id" title="inductive">CeresParserUtils.error</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#e03f39daf98516fa530d3f6f5a1b4d92"><span class="id" title="notation">+</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a>).<br/>
+<span class="id" title="keyword">Check</span> (<a class="idref" href="Ceres.CeresFormat.html#string_of_sexp"><span class="id" title="definition">string_of_sexp</span></a> : <a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The function <span class="inlinecode"><a class="idref" href="Ceres.CeresParser.html#parse_sexp"><span class="id" title="definition">parse_sexp</span></a></span> (resp. <span class="inlinecode"><a class="idref" href="Ceres.CeresParser.html#parse_sexps"><span class="id" title="definition">parse_sexps</span></a></span>) reads a <span class="inlinecode"><a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a></span> intro
+a single <span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a></span> (resp. a list of <span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a></span>). An error is returned if the string
+is not well-formed. 
+<div class="paragraph"> </div>
+
+ The function <span class="inlinecode"><a class="idref" href="Ceres.CeresFormat.html#string_of_sexp"><span class="id" title="definition">string_of_sexp</span></a></span> converts a <span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a></span> into a <span class="inlinecode"><a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a></span>. 
+<div class="paragraph"> </div>
+
+<a id="lab7"></a><h1 class="section">Serialization of data types</h1>
+
+<div class="paragraph"> </div>
+
+ Example inductive type: 
+</div>
+<div class="code">
+<span class="id" title="keyword">Inductive</span> <a id="t" class="idref" href="#t"><span class="id" title="inductive">t</span></a> : <span class="id" title="keyword">Set</span> :=<br/>
+| <a id="Number" class="idref" href="#Number"><span class="id" title="constructor">Number</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Tutorial.html#t:1"><span class="id" title="inductive">t</span></a><br/>
+| <a id="Bool" class="idref" href="#Bool"><span class="id" title="constructor">Bool</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Tutorial.html#t:1"><span class="id" title="inductive">t</span></a><br/>
+| <a id="If" class="idref" href="#If"><span class="id" title="constructor">If</span></a> : <a class="idref" href="Tutorial.html#t:1"><span class="id" title="inductive">t</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Tutorial.html#t:1"><span class="id" title="inductive">t</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Tutorial.html#t:1"><span class="id" title="inductive">t</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Tutorial.html#t:1"><span class="id" title="inductive">t</span></a><br/>
+| <a id="Plus" class="idref" href="#Plus"><span class="id" title="constructor">Plus</span></a> : <a class="idref" href="Tutorial.html#t:1"><span class="id" title="inductive">t</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Tutorial.html#t:1"><span class="id" title="inductive">t</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Tutorial.html#t:1"><span class="id" title="inductive">t</span></a><br/>
+.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We define a <span class="inlinecode"><a class="idref" href="Ceres.CeresSerialize.html#Serialize"><span class="id" title="record">Serialize</span></a></span> and <span class="inlinecode"><a class="idref" href="Ceres.CeresDeserialize.html#Deserialize"><span class="id" title="record">Deserialize</span></a></span> instance to convert it to and
+from S-expressions. 
+<div class="paragraph"> </div>
+
+<a id="lab8"></a><h2 class="section">Serialize</h2>
+
+<div class="paragraph"> </div>
+
+ An instance <span class="inlinecode"><a class="idref" href="Ceres.CeresSerialize.html#Serialize"><span class="id" title="record">Serialize</span></a></span> <span class="inlinecode"><a class="idref" href="Ceres.CeresParserRoundtrip.html#Token.t"><span class="id" title="inductive">t</span></a></span> is a function <span class="inlinecode"><a class="idref" href="Ceres.CeresParserRoundtrip.html#Token.t"><span class="id" title="inductive">t</span></a></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a></span>. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Check</span> (<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#eq_refl"><span class="id" title="constructor">eq_refl</span></a> : <a class="idref" href="Ceres.CeresSerialize.html#Serialize"><span class="id" title="class">Serialize</span></a> <a class="idref" href="Tutorial.html#t"><span class="id" title="inductive">t</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">(</span></a><a class="idref" href="Tutorial.html#t"><span class="id" title="inductive">t</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a><a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">)</span></a>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Since <span class="inlinecode"><a class="idref" href="Ceres.CeresParserRoundtrip.html#Token.t"><span class="id" title="inductive">t</span></a></span> is recursive, this function will be defined using <span class="inlinecode"><span class="id" title="keyword">fix</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Instance</span> <a id="Serialize_t" class="idref" href="#Serialize_t"><span class="id" title="instance">Serialize_t</span></a> : <a class="idref" href="Ceres.CeresSerialize.html#Serialize"><span class="id" title="class">Serialize</span></a> <a class="idref" href="Tutorial.html#t"><span class="id" title="inductive">t</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">fix</span> <span class="id" title="var">sz</span> (<a id="a:3" class="idref" href="#a:3"><span class="id" title="binder">a</span></a> : <a class="idref" href="Tutorial.html#t"><span class="id" title="inductive">t</span></a>) : <a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Tutorial.html#a:3"><span class="id" title="variable">a</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Tutorial.html#Number"><span class="id" title="constructor">Number</span></a> <span class="id" title="var">n</span> =&gt; <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">[</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> "Number" <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresSerialize.html#to_sexp"><span class="id" title="definition">to_sexp</span></a> <span class="id" title="var">n</span> <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">]</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Tutorial.html#Bool"><span class="id" title="constructor">Bool</span></a> <span class="id" title="var">b</span> =&gt; <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">[</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> "Bool" <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresSerialize.html#to_sexp"><span class="id" title="definition">to_sexp</span></a> <span class="id" title="var">b</span> <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">]</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Tutorial.html#If"><span class="id" title="constructor">If</span></a> <span class="id" title="var">x</span> <span class="id" title="var">y</span> <span class="id" title="var">z</span> =&gt; <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">[</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> "If" <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">;</span></a> <a class="idref" href="Tutorial.html#sz:4"><span class="id" title="variable">sz</span></a> <span class="id" title="var">x</span> <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">;</span></a> <a class="idref" href="Tutorial.html#sz:4"><span class="id" title="variable">sz</span></a> <span class="id" title="var">y</span> <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">;</span></a> <a class="idref" href="Tutorial.html#sz:4"><span class="id" title="variable">sz</span></a> <span class="id" title="var">z</span> <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">]</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Tutorial.html#Plus"><span class="id" title="constructor">Plus</span></a> <span class="id" title="var">x</span> <span class="id" title="var">y</span> =&gt; <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">[</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> "Plus" <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">;</span></a> <a class="idref" href="Tutorial.html#sz:4"><span class="id" title="variable">sz</span></a> <span class="id" title="var">x</span> <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">;</span></a> <a class="idref" href="Tutorial.html#sz:4"><span class="id" title="variable">sz</span></a> <span class="id" title="var">y</span> <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">]</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>%<span class="id" title="var">sexp</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Having defined a <span class="inlinecode"><a class="idref" href="Ceres.CeresSerialize.html#Serialize"><span class="id" title="record">Serialize</span></a></span> instance, the <span class="inlinecode"><a class="idref" href="Ceres.CeresSerialize.html#to_sexp"><span class="id" title="projection">to_sexp</span></a></span> function becomes available
+for that type: 
+</div>
+<div class="code">
+<span class="id" title="keyword">Check</span> (<a class="idref" href="Ceres.CeresSerialize.html#to_sexp"><span class="id" title="definition">to_sexp</span></a> : <a class="idref" href="Tutorial.html#t"><span class="id" title="inductive">t</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+A <span class="inlinecode"><a class="idref" href="Ceres.CeresSerialize.html#Serialize"><span class="id" title="record">Serialize</span></a></span> instance can be any function <span class="inlinecode"><a class="idref" href="Ceres.CeresParserRoundtrip.html#Token.t"><span class="id" title="inductive">t</span></a></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a></span>, but for uniformity,
+and to benefit from library combinators for deserialization, it is recommended
+to stick to the following encoding.
+
+<div class="paragraph"> </div>
+
+A constructor <span class="inlinecode"><span class="id" title="var">C</span></span> <span class="inlinecode"><span class="id" title="var">x</span></span> <span class="inlinecode"><span class="id" title="var">y</span></span> <span class="inlinecode"><span class="id" title="var">z</span></span> as a list <span class="inlinecode">[(<span class="id" title="var">C</span></span> <span class="inlinecode"><span class="id" title="var">x</span></span> <span class="inlinecode"><span class="id" title="var">y</span></span> <span class="inlinecode"><span class="id" title="var">z</span>)]</span>, i.e.,
+<span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a></span> <span class="inlinecode">[</span> <span class="inlinecode"><a class="idref" href="Ceres.CeresParserRoundtrip.html#Token.Atom"><span class="id" title="constructor">Atom</span></a></span> <span class="inlinecode">&quot;<span class="id" title="var">C</span>&quot;</span> <span class="inlinecode">;</span> <span class="inlinecode"><a class="idref" href="Ceres.CeresSerialize.html#to_sexp"><span class="id" title="projection">to_sexp</span></a></span> <span class="inlinecode"><span class="id" title="var">x</span></span> <span class="inlinecode">;</span> <span class="inlinecode"><a class="idref" href="Ceres.CeresSerialize.html#to_sexp"><span class="id" title="projection">to_sexp</span></a></span> <span class="inlinecode"><span class="id" title="var">y</span></span> <span class="inlinecode">;</span> <span class="inlinecode"><a class="idref" href="Ceres.CeresSerialize.html#to_sexp"><span class="id" title="projection">to_sexp</span></a></span> <span class="inlinecode"><span class="id" title="var">z</span></span> <span class="inlinecode">]</span> in Gallina,
+such that the first element is the name of the constructor as an atom, and the
+subsequent elements are the fields of the constructor.
+
+<div class="paragraph"> </div>
+
+<a id="lab9"></a><h2 class="section">Deserialize</h2>
+
+<div class="paragraph"> </div>
+
+ For deserialization, the helper <span class="inlinecode"><span class="id" title="var">Deser.match_con</span></span> quickly provides
+an implementation to decode the encoding described above. 
+<div class="paragraph"> </div>
+
+ An instance <span class="inlinecode"><a class="idref" href="Ceres.CeresDeserialize.html#Deserialize"><span class="id" title="record">Deserialize</span></a></span> <span class="inlinecode"><a class="idref" href="Ceres.CeresParserRoundtrip.html#Token.t"><span class="id" title="inductive">t</span></a></span> is a function <span class="inlinecode"><a class="idref" href="Ceres.CeresDeserialize.html#loc"><span class="id" title="definition">loc</span></a></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><a class="idref" href="Ceres.CeresDeserialize.html#error"><span class="id" title="inductive">error</span></a></span> <span class="inlinecode">+</span> <span class="inlinecode"><a class="idref" href="Ceres.CeresParserRoundtrip.html#Token.t"><span class="id" title="inductive">t</span></a></span>. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Check</span> (<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#eq_refl"><span class="id" title="constructor">eq_refl</span></a> : <a class="idref" href="Ceres.CeresDeserialize.html#Deserialize"><span class="id" title="class">Deserialize</span></a> <a class="idref" href="Tutorial.html#t"><span class="id" title="inductive">t</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">(</span></a><a class="idref" href="Ceres.CeresDeserialize.html#loc"><span class="id" title="definition">loc</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresDeserialize.html#error"><span class="id" title="inductive">error</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#e03f39daf98516fa530d3f6f5a1b4d92"><span class="id" title="notation">+</span></a> <a class="idref" href="Tutorial.html#t"><span class="id" title="inductive">t</span></a><a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">)</span></a>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The fact that these are functions is mostly hidden by the helpers, except
+for recursive types where you have to build a fixpoint and explicitly pass the
+two arguments to <span class="inlinecode"><span class="id" title="var">Deser.match_con</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Instance</span> <a id="Deserialize_t" class="idref" href="#Deserialize_t"><span class="id" title="instance">Deserialize_t</span></a> : <a class="idref" href="Ceres.CeresDeserialize.html#Deserialize"><span class="id" title="class">Deserialize</span></a> <a class="idref" href="Tutorial.html#t"><span class="id" title="inductive">t</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">fix</span> <span class="id" title="var">ds</span> (<a id="l:6" class="idref" href="#l:6"><span class="id" title="binder">l</span></a> : <a class="idref" href="Ceres.CeresDeserialize.html#loc"><span class="id" title="definition">loc</span></a>) (<a id="e:7" class="idref" href="#e:7"><span class="id" title="binder">e</span></a> : <a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a>) : <a class="idref" href="Ceres.CeresDeserialize.html#error"><span class="id" title="inductive">error</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#e03f39daf98516fa530d3f6f5a1b4d92"><span class="id" title="notation">+</span></a> <a class="idref" href="Tutorial.html#t"><span class="id" title="inductive">t</span></a> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Ceres.CeresDeserialize.html#Deser.match_con"><span class="id" title="definition">Deser.match_con</span></a> "t" <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#ae9a5e1034e143b218b09d8e454472bd"><span class="id" title="notation">[]</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">[</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a>"Number"<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <a class="idref" href="Ceres.CeresDeserialize.html#Deser.con1_"><span class="id" title="definition">Deser.con1_</span></a> <a class="idref" href="Tutorial.html#Number"><span class="id" title="constructor">Number</span></a><a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">;</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a>"Bool"<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <a class="idref" href="Ceres.CeresDeserialize.html#Deser.con1_"><span class="id" title="definition">Deser.con1_</span></a> <a class="idref" href="Tutorial.html#Bool"><span class="id" title="constructor">Bool</span></a><a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">;</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a>"If"<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <a class="idref" href="Ceres.CeresDeserialize.html#Deser.con3"><span class="id" title="definition">Deser.con3</span></a> <a class="idref" href="Tutorial.html#If"><span class="id" title="constructor">If</span></a> <a class="idref" href="Tutorial.html#ds:8"><span class="id" title="variable">ds</span></a> <a class="idref" href="Tutorial.html#ds:8"><span class="id" title="variable">ds</span></a> <a class="idref" href="Tutorial.html#ds:8"><span class="id" title="variable">ds</span></a><a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">;</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a>"Plus"<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <a class="idref" href="Ceres.CeresDeserialize.html#Deser.con2"><span class="id" title="definition">Deser.con2</span></a> <a class="idref" href="Tutorial.html#Plus"><span class="id" title="constructor">Plus</span></a> <a class="idref" href="Tutorial.html#ds:8"><span class="id" title="variable">ds</span></a> <a class="idref" href="Tutorial.html#ds:8"><span class="id" title="variable">ds</span></a><a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">]</span></a> <a class="idref" href="Tutorial.html#l:6"><span class="id" title="variable">l</span></a> <a class="idref" href="Tutorial.html#e:7"><span class="id" title="variable">e</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Having defined a <span class="inlinecode"><a class="idref" href="Ceres.CeresDeserialize.html#Deserialize"><span class="id" title="record">Deserialize</span></a></span> instance, the <span class="inlinecode"><a class="idref" href="Ceres.CeresDeserialize.html#from_sexp"><span class="id" title="definition">from_sexp</span></a></span> function becomes available
+for that type: 
+</div>
+<div class="code">
+<span class="id" title="keyword">Check</span> (<a class="idref" href="Ceres.CeresDeserialize.html#from_sexp"><span class="id" title="definition">from_sexp</span></a> : <a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresDeserialize.html#error"><span class="id" title="inductive">error</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#e03f39daf98516fa530d3f6f5a1b4d92"><span class="id" title="notation">+</span></a> <a class="idref" href="Tutorial.html#t"><span class="id" title="inductive">t</span></a>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+To explain <span class="inlinecode"><span class="id" title="var">Defer.match_con</span></span> in more details, it takes three main arguments:
+<ul class="doclist">
+<li> the name of the type, as a string, for error messages
+
+</li>
+<li> a list of cases for nullary constructors of <span class="inlinecode"><a class="idref" href="Ceres.CeresParserRoundtrip.html#Token.t"><span class="id" title="inductive">t</span></a></span> paired with their names (<span class="inlinecode"><a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a></span> <span class="inlinecode">(<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a></span> <span class="inlinecode">*</span> <span class="inlinecode"><a class="idref" href="Ceres.CeresParserRoundtrip.html#Token.t"><span class="id" title="inductive">t</span></a>)</span>)
+
+</li>
+<li> a list of cases for non-nullary constructors, also with their names,
+  wrapped using one of the following combinators depending on its arity:
+  <span class="inlinecode"><span class="id" title="var">Deser.con1</span></span>, <span class="inlinecode"><span class="id" title="var">Deser.con2</span></span>, <span class="inlinecode"><span class="id" title="var">Deser.con3</span></span>, etc.
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+The functions <span class="inlinecode"><span class="id" title="var">Deser.con1</span></span>, etc., take the constructor plus one more argument
+per field, which is a deserializer for that field.
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> Use the <span class="inlinecode"><a class="idref" href="Ceres.CeresDeserialize.html#_from_sexp"><span class="id" title="projection">_from_sexp</span></a></span> deserializer for fields whose type is already an instance of <span class="inlinecode"><a class="idref" href="Ceres.CeresDeserialize.html#Deserialize"><span class="id" title="record">Deserialize</span></a></span>;
+  the variants <span class="inlinecode"><span class="id" title="var">Deser.con1_</span></span>, <span class="inlinecode"><span class="id" title="var">Deser.con2_</span></span>, etc., suffixed by an underscore,
+  can be used to supply <span class="inlinecode"><a class="idref" href="Ceres.CeresDeserialize.html#_from_sexp"><span class="id" title="projection">_from_sexp</span></a></span> to all fields.
+
+</li>
+<li> Use the fixpoint for recursive fields.
+ 
+
+</li>
+</ul>
+</div>
+<div class="code">
+</div>
+</div>
+<div id="footer">
+  Generated by <a href="http://coq.inria.fr/">coqdoc</a> and improved with <a href="https://github.com/tebbi/coqdocjs">CoqdocJS</a>
+</div>
+</div>
+</body>
+
+</html>

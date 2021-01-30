@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<link href="coqdocjs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="config.js"></script>
+<script type="text/javascript" src="coqdocjs.js"></script>
+</head>
+
+<body onload="document.getElementById('content').focus()">
+  <div id="header">
+    <span class="left">
+      <span class="modulename"> <script> document.write(document.title) </script> </span>
+    </span>
+
+    <span class="button" id="toggle-proofs"></span>
+
+    <span class="right">
+      <a href="../">Project Page</a>
+      <a href="./indexpage.html"> Index </a>
+      <a href="./toc.html"> Table of Contents </a>
+    </span>
+</div>
+    <div id="content" tabindex="-1" onblur="document.getElementById('content').focus()">
+    <div id="main">
+<h1 class="libtitle">Ceres.CeresSerialize</h1>
+
+<div class="code">
+</div>
+
+<div class="doc">
+<a id="lab22"></a><h1 class="section">Serialization to S-expressions</h1>
+
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Serialization to S-expressions. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Class</span> <a id="Serialize" class="idref" href="#Serialize"><span class="id" title="record">Serialize</span></a> (<a id="A:1" class="idref" href="#A:1"><span class="id" title="binder">A</span></a> : <span class="id" title="keyword">Type</span>) :=<br/>
+&nbsp;&nbsp;<a id="to_sexp" class="idref" href="#to_sexp"><span class="id" title="projection">to_sexp</span></a> : <a class="idref" href="Ceres.CeresSerialize.html#A:1"><span class="id" title="variable">A</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Serialize a value to a string. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Definition</span> <a id="to_string" class="idref" href="#to_string"><span class="id" title="definition">to_string</span></a> {<a id="A:4" class="idref" href="#A:4"><span class="id" title="binder">A</span></a>} `{<a id="H:5" class="idref" href="#H:5"><span class="id" title="binder">Serialize</span></a> <a id="H:5" class="idref" href="#H:5"><span class="id" title="binder">A</span></a>} : <a class="idref" href="Ceres.CeresSerialize.html#A:4"><span class="id" title="variable">A</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">fun</span> <a id="a:6" class="idref" href="#a:6"><span class="id" title="binder">a</span></a> =&gt; <a class="idref" href="Ceres.CeresFormat.html#string_of_sexp"><span class="id" title="definition">string_of_sexp</span></a> (<a class="idref" href="Ceres.CeresSerialize.html#to_sexp"><span class="id" title="definition">to_sexp</span></a> <a class="idref" href="Ceres.CeresSerialize.html#a:6"><span class="id" title="variable">a</span></a>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab23"></a><h2 class="section">Serialize integers</h2>
+
+<div class="paragraph"> </div>
+
+ Integer representations. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Class</span> <a id="Integral" class="idref" href="#Integral"><span class="id" title="record">Integral</span></a> (<a id="A:7" class="idref" href="#A:7"><span class="id" title="binder">A</span></a> : <span class="id" title="keyword">Type</span>) :=<br/>
+&nbsp;&nbsp;<a id="to_Z" class="idref" href="#to_Z"><span class="id" title="projection">to_Z</span></a> : <a class="idref" href="Ceres.CeresSerialize.html#A:7"><span class="id" title="variable">A</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Numbers.BinNums.html#Z"><span class="id" title="inductive">Z</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Integers are serializable. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Instance</span> <a id="Serialize_Integral" class="idref" href="#Serialize_Integral"><span class="id" title="instance">Serialize_Integral</span></a> {<a id="A:10" class="idref" href="#A:10"><span class="id" title="binder">A</span></a> : <span class="id" title="keyword">Type</span>} `(<a id="H:11" class="idref" href="#H:11"><span class="id" title="binder">Integral</span></a> <a id="H:11" class="idref" href="#H:11"><span class="id" title="binder">A</span></a>) : <a class="idref" href="Ceres.CeresSerialize.html#Serialize"><span class="id" title="class">Serialize</span></a> <a class="idref" href="Ceres.CeresSerialize.html#A:10"><span class="id" title="variable">A</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">fun</span> <a id="z:12" class="idref" href="#z:12"><span class="id" title="binder">z</span></a> =&gt; <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> (<a class="idref" href="Ceres.CeresSerialize.html#to_Z"><span class="id" title="definition">to_Z</span></a> <a class="idref" href="Ceres.CeresSerialize.html#z:12"><span class="id" title="variable">z</span></a>).<br/>
+
+<br/>
+<span class="id" title="keyword">Instance</span> <a id="Integral_nat" class="idref" href="#Integral_nat"><span class="id" title="instance">Integral_nat</span></a> : <a class="idref" href="Ceres.CeresSerialize.html#Integral"><span class="id" title="class">Integral</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> := <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.ZArith.BinInt.html#Z.of_nat"><span class="id" title="definition">Z.of_nat</span></a>.<br/>
+<span class="id" title="keyword">Instance</span> <a id="Integral_N" class="idref" href="#Integral_N"><span class="id" title="instance">Integral_N</span></a> : <a class="idref" href="Ceres.CeresSerialize.html#Integral"><span class="id" title="class">Integral</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Numbers.BinNums.html#N"><span class="id" title="inductive">N</span></a> := <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.ZArith.BinInt.html#Z.of_N"><span class="id" title="definition">Z.of_N</span></a>.<br/>
+<span class="id" title="keyword">Instance</span> <a id="Integral_Z" class="idref" href="#Integral_Z"><span class="id" title="instance">Integral_Z</span></a> : <a class="idref" href="Ceres.CeresSerialize.html#Integral"><span class="id" title="class">Integral</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Numbers.BinNums.html#Z"><span class="id" title="inductive">Z</span></a> := <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#id"><span class="id" title="definition">id</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab24"></a><h2 class="section">Serialize common types</h2>
+
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Instance</span> <a id="Serialize_bool" class="idref" href="#Serialize_bool"><span class="id" title="instance">Serialize_bool</span></a> : <a class="idref" href="Ceres.CeresSerialize.html#Serialize"><span class="id" title="class">Serialize</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a><br/>
+&nbsp;&nbsp;:= <span class="id" title="keyword">fun</span> <a id="b:13" class="idref" href="#b:13"><span class="id" title="binder">b</span></a> =&gt; <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> (<a class="idref" href="Ceres.CeresString.html#string_of_bool"><span class="id" title="definition">string_of_bool</span></a> <a class="idref" href="Ceres.CeresSerialize.html#b:13"><span class="id" title="variable">b</span></a>).<br/>
+
+<br/>
+<span class="id" title="keyword">Instance</span> <a id="Serialize_option" class="idref" href="#Serialize_option"><span class="id" title="instance">Serialize_option</span></a> {<a id="A:14" class="idref" href="#A:14"><span class="id" title="binder">A</span></a>} `(<a id="H:15" class="idref" href="#H:15"><span class="id" title="binder">Serialize</span></a> <a id="H:15" class="idref" href="#H:15"><span class="id" title="binder">A</span></a>) : <a class="idref" href="Ceres.CeresSerialize.html#Serialize"><span class="id" title="class">Serialize</span></a> (<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#option"><span class="id" title="inductive">option</span></a> <a class="idref" href="Ceres.CeresSerialize.html#A:14"><span class="id" title="variable">A</span></a>)<br/>
+&nbsp;&nbsp;:= <span class="id" title="keyword">fun</span> <a id="oa:16" class="idref" href="#oa:16"><span class="id" title="binder">oa</span></a> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Ceres.CeresSerialize.html#oa:16"><span class="id" title="variable">oa</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a> =&gt; <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> "None"%<span class="id" title="var">string</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> <span class="id" title="var">a</span> =&gt; <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">[</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> "Some"%<span class="id" title="var">string</span> <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresSerialize.html#to_sexp"><span class="id" title="definition">to_sexp</span></a> <span class="id" title="var">a</span> <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">]</span></a>%<span class="id" title="var">sexp</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Instance</span> <a id="Serialize_sum" class="idref" href="#Serialize_sum"><span class="id" title="instance">Serialize_sum</span></a> {<a id="A:18" class="idref" href="#A:18"><span class="id" title="binder">A</span></a> <a id="B:19" class="idref" href="#B:19"><span class="id" title="binder">B</span></a>} `(<a id="H:20" class="idref" href="#H:20"><span class="id" title="binder">Serialize</span></a> <a id="H:20" class="idref" href="#H:20"><span class="id" title="binder">A</span></a>) `(<a id="H0:21" class="idref" href="#H0:21"><span class="id" title="binder">Serialize</span></a> <a id="H0:21" class="idref" href="#H0:21"><span class="id" title="binder">B</span></a>)<br/>
+&nbsp;&nbsp;: <a class="idref" href="Ceres.CeresSerialize.html#Serialize"><span class="id" title="class">Serialize</span></a> (<a class="idref" href="Ceres.CeresSerialize.html#A:18"><span class="id" title="variable">A</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#e03f39daf98516fa530d3f6f5a1b4d92"><span class="id" title="notation">+</span></a> <a class="idref" href="Ceres.CeresSerialize.html#B:19"><span class="id" title="variable">B</span></a>)<br/>
+&nbsp;&nbsp;:= <span class="id" title="keyword">fun</span> <a id="ab:22" class="idref" href="#ab:22"><span class="id" title="binder">ab</span></a> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Ceres.CeresSerialize.html#ab:22"><span class="id" title="variable">ab</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#inl"><span class="id" title="constructor">inl</span></a> <span class="id" title="var">a</span> =&gt; <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">[</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> "inl"%<span class="id" title="var">string</span> <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresSerialize.html#to_sexp"><span class="id" title="definition">to_sexp</span></a> <span class="id" title="var">a</span> <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">]</span></a>%<span class="id" title="var">sexp</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#inr"><span class="id" title="constructor">inr</span></a> <span class="id" title="var">b</span> =&gt; <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">[</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> "inr"%<span class="id" title="var">string</span> <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresSerialize.html#to_sexp"><span class="id" title="definition">to_sexp</span></a> <span class="id" title="var">b</span> <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">]</span></a>%<span class="id" title="var">sexp</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Instance</span> <a id="Serialize_product" class="idref" href="#Serialize_product"><span class="id" title="instance">Serialize_product</span></a> {<a id="A:24" class="idref" href="#A:24"><span class="id" title="binder">A</span></a> <a id="B:25" class="idref" href="#B:25"><span class="id" title="binder">B</span></a>} `(<a id="H:26" class="idref" href="#H:26"><span class="id" title="binder">Serialize</span></a> <a id="H:26" class="idref" href="#H:26"><span class="id" title="binder">A</span></a>) `(<a id="H0:27" class="idref" href="#H0:27"><span class="id" title="binder">Serialize</span></a> <a id="H0:27" class="idref" href="#H0:27"><span class="id" title="binder">B</span></a>)<br/>
+&nbsp;&nbsp;: <a class="idref" href="Ceres.CeresSerialize.html#Serialize"><span class="id" title="class">Serialize</span></a> (<a class="idref" href="Ceres.CeresSerialize.html#A:24"><span class="id" title="variable">A</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">*</span></a> <a class="idref" href="Ceres.CeresSerialize.html#B:25"><span class="id" title="variable">B</span></a>)<br/>
+&nbsp;&nbsp;:= <span class="id" title="keyword">fun</span> <a id="ab:28" class="idref" href="#ab:28"><span class="id" title="binder">ab</span></a> =&gt; <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">[</span></a> <a class="idref" href="Ceres.CeresSerialize.html#to_sexp"><span class="id" title="definition">to_sexp</span></a> (<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#fst"><span class="id" title="definition">fst</span></a> <a class="idref" href="Ceres.CeresSerialize.html#ab:28"><span class="id" title="variable">ab</span></a>) <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresSerialize.html#to_sexp"><span class="id" title="definition">to_sexp</span></a> (<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#snd"><span class="id" title="definition">snd</span></a> <a class="idref" href="Ceres.CeresSerialize.html#ab:28"><span class="id" title="variable">ab</span></a>) <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">]</span></a>%<span class="id" title="var">sexp</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Instance</span> <a id="Serialize_Empty_set" class="idref" href="#Serialize_Empty_set"><span class="id" title="instance">Serialize_Empty_set</span></a> : <a class="idref" href="Ceres.CeresSerialize.html#Serialize"><span class="id" title="class">Serialize</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#Empty_set"><span class="id" title="inductive">Empty_set</span></a><br/>
+&nbsp;&nbsp;:= <span class="id" title="keyword">fun</span> <a id="v:29" class="idref" href="#v:29"><span class="id" title="binder">v</span></a> =&gt; <span class="id" title="keyword">match</span> <a class="idref" href="Ceres.CeresSerialize.html#v:29"><span class="id" title="variable">v</span></a> <span class="id" title="keyword">with</span> <span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Instance</span> <a id="Serialize_unit" class="idref" href="#Serialize_unit"><span class="id" title="instance">Serialize_unit</span></a> : <a class="idref" href="Ceres.CeresSerialize.html#Serialize"><span class="id" title="class">Serialize</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#unit"><span class="id" title="inductive">unit</span></a><br/>
+&nbsp;&nbsp;:= <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> =&gt; <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> "tt"%<span class="id" title="var">string</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Instance</span> <a id="Serialize_ascii" class="idref" href="#Serialize_ascii"><span class="id" title="instance">Serialize_ascii</span></a> : <a class="idref" href="Ceres.CeresSerialize.html#Serialize"><span class="id" title="class">Serialize</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.Ascii.html#ascii"><span class="id" title="inductive">ascii</span></a><br/>
+&nbsp;&nbsp;:= <span class="id" title="keyword">fun</span> <a id="a:31" class="idref" href="#a:31"><span class="id" title="binder">a</span></a> =&gt; <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> (<a class="idref" href="Ceres.CeresS.html#Str"><span class="id" title="constructor">Str</span></a> (<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#String"><span class="id" title="constructor">String</span></a> <a class="idref" href="Ceres.CeresSerialize.html#a:31"><span class="id" title="variable">a</span></a> "")).<br/>
+
+<br/>
+<span class="id" title="keyword">Instance</span> <a id="Serialize_string" class="idref" href="#Serialize_string"><span class="id" title="instance">Serialize_string</span></a> : <a class="idref" href="Ceres.CeresSerialize.html#Serialize"><span class="id" title="class">Serialize</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a><br/>
+&nbsp;&nbsp;:= <span class="id" title="keyword">fun</span> <a id="s:32" class="idref" href="#s:32"><span class="id" title="binder">s</span></a> =&gt; <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> (<a class="idref" href="Ceres.CeresS.html#Str"><span class="id" title="constructor">Str</span></a> <a class="idref" href="Ceres.CeresSerialize.html#s:32"><span class="id" title="variable">s</span></a>).<br/>
+
+<br/>
+<span class="id" title="keyword">Instance</span> <a id="Serialize_list" class="idref" href="#Serialize_list"><span class="id" title="instance">Serialize_list</span></a> {<a id="A:33" class="idref" href="#A:33"><span class="id" title="binder">A</span></a>} `{<a id="H:34" class="idref" href="#H:34"><span class="id" title="binder">Serialize</span></a> <a id="H:34" class="idref" href="#H:34"><span class="id" title="binder">A</span></a>} : <a class="idref" href="Ceres.CeresSerialize.html#Serialize"><span class="id" title="class">Serialize</span></a> (<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Ceres.CeresSerialize.html#A:33"><span class="id" title="variable">A</span></a>)<br/>
+&nbsp;&nbsp;:= <span class="id" title="keyword">fun</span> <a id="xs:35" class="idref" href="#xs:35"><span class="id" title="binder">xs</span></a> =&gt; <a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> (<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#map"><span class="id" title="definition">List.map</span></a> <a class="idref" href="Ceres.CeresSerialize.html#to_sexp"><span class="id" title="definition">to_sexp</span></a> <a class="idref" href="Ceres.CeresSerialize.html#xs:35"><span class="id" title="variable">xs</span></a>).<br/>
+
+<br/>
+<span class="id" title="keyword">Instance</span> <a id="Serialize_sexp" class="idref" href="#Serialize_sexp"><span class="id" title="instance">Serialize_sexp</span></a> : <a class="idref" href="Ceres.CeresSerialize.html#Serialize"><span class="id" title="class">Serialize</span></a> <a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a> := <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#id"><span class="id" title="definition">id</span></a>.<br/>
+</div>
+</div>
+<div id="footer">
+  Generated by <a href="http://coq.inria.fr/">coqdoc</a> and improved with <a href="https://github.com/tebbi/coqdocjs">CoqdocJS</a>
+</div>
+</div>
+</body>
+
+</html>

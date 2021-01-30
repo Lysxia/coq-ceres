@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<link href="coqdocjs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="config.js"></script>
+<script type="text/javascript" src="coqdocjs.js"></script>
+</head>
+
+<body onload="document.getElementById('content').focus()">
+  <div id="header">
+    <span class="left">
+      <span class="modulename"> <script> document.write(document.title) </script> </span>
+    </span>
+
+    <span class="button" id="toggle-proofs"></span>
+
+    <span class="right">
+      <a href="../">Project Page</a>
+      <a href="./indexpage.html"> Index </a>
+      <a href="./toc.html"> Table of Contents </a>
+    </span>
+</div>
+    <div id="content" tabindex="-1" onblur="document.getElementById('content').focus()">
+    <div id="main">
+<h1 class="libtitle">Ceres.CeresParserUtils</h1>
+
+<div class="code">
+<span class="id" title="keyword">From</span> <span class="id" title="var">Coq</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Bool.Bool.html#"><span class="id" title="library">Bool</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.NArith.NArith.html#"><span class="id" title="library">NArith</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#"><span class="id" title="library">String</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.Ascii.html#"><span class="id" title="library">Ascii</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">From</span> <span class="id" title="var">Ceres</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Ceres.CeresString.html#"><span class="id" title="library">CeresString</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Local Open</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">lazy_bool_scope</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Location in a string 
+</div>
+<div class="code">
+<span class="id" title="keyword">Definition</span> <a id="loc" class="idref" href="#loc"><span class="id" title="definition">loc</span></a> : <span class="id" title="keyword">Set</span> := <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Numbers.BinNums.html#N"><span class="id" title="inductive">N</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="pretty_loc" class="idref" href="#pretty_loc"><span class="id" title="definition">pretty_loc</span></a> (<a id="p:1" class="idref" href="#p:1"><span class="id" title="binder">p</span></a> : <a class="idref" href="Ceres.CeresParserUtils.html#loc"><span class="id" title="definition">loc</span></a>) : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a> := <a class="idref" href="Ceres.CeresString.html#string_of_N"><span class="id" title="definition">string_of_N</span></a> <a class="idref" href="Ceres.CeresParserUtils.html#p:1"><span class="id" title="variable">p</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Errors which may be raised by the parser. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Variant</span> <a id="error" class="idref" href="#error"><span class="id" title="inductive">error</span></a> :=<br/>
+| <a id="UnmatchedClose" class="idref" href="#UnmatchedClose"><span class="id" title="constructor">UnmatchedClose</span></a> : <a class="idref" href="Ceres.CeresParserUtils.html#loc"><span class="id" title="definition">loc</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresParserUtils.html#error:2"><span class="id" title="inductive">error</span></a><br/>
+| <a id="UnmatchedOpen" class="idref" href="#UnmatchedOpen"><span class="id" title="constructor">UnmatchedOpen</span></a> : <a class="idref" href="Ceres.CeresParserUtils.html#loc"><span class="id" title="definition">loc</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresParserUtils.html#error:2"><span class="id" title="inductive">error</span></a><br/>
+| <a id="UnknownEscape" class="idref" href="#UnknownEscape"><span class="id" title="constructor">UnknownEscape</span></a> : <a class="idref" href="Ceres.CeresParserUtils.html#loc"><span class="id" title="definition">loc</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.Ascii.html#ascii"><span class="id" title="inductive">ascii</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresParserUtils.html#error:2"><span class="id" title="inductive">error</span></a><br/>
+| <a id="UnterminatedString" class="idref" href="#UnterminatedString"><span class="id" title="constructor">UnterminatedString</span></a> : <a class="idref" href="Ceres.CeresParserUtils.html#loc"><span class="id" title="definition">loc</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresParserUtils.html#error:2"><span class="id" title="inductive">error</span></a><br/>
+| <a id="EmptyInput" class="idref" href="#EmptyInput"><span class="id" title="constructor">EmptyInput</span></a> : <a class="idref" href="Ceres.CeresParserUtils.html#error:2"><span class="id" title="inductive">error</span></a><br/>
+| <a id="InvalidChar" class="idref" href="#InvalidChar"><span class="id" title="constructor">InvalidChar</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.Ascii.html#ascii"><span class="id" title="inductive">ascii</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresParserUtils.html#loc"><span class="id" title="definition">loc</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresParserUtils.html#error:2"><span class="id" title="inductive">error</span></a><br/>
+| <a id="InvalidStringChar" class="idref" href="#InvalidStringChar"><span class="id" title="constructor">InvalidStringChar</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.Ascii.html#ascii"><span class="id" title="inductive">ascii</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresParserUtils.html#loc"><span class="id" title="definition">loc</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresParserUtils.html#error:2"><span class="id" title="inductive">error</span></a><br/>
+.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="pretty_error" class="idref" href="#pretty_error"><span class="id" title="definition">pretty_error</span></a> (<a id="e:4" class="idref" href="#e:4"><span class="id" title="binder">e</span></a> : <a class="idref" href="Ceres.CeresParserUtils.html#error"><span class="id" title="inductive">error</span></a>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Ceres.CeresParserUtils.html#e:4"><span class="id" title="variable">e</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="Ceres.CeresParserUtils.html#UnmatchedClose"><span class="id" title="constructor">UnmatchedClose</span></a> <span class="id" title="var">p</span> =&gt; "Unmatched close parenthesis at location " <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#169ad156fbc6036a53a0338819a2b301"><span class="id" title="notation">++</span></a> <a class="idref" href="Ceres.CeresParserUtils.html#pretty_loc"><span class="id" title="definition">pretty_loc</span></a> <span class="id" title="var">p</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="Ceres.CeresParserUtils.html#UnmatchedOpen"><span class="id" title="constructor">UnmatchedOpen</span></a> <span class="id" title="var">p</span> =&gt; "Unmatched open parenthesis at location " <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#169ad156fbc6036a53a0338819a2b301"><span class="id" title="notation">++</span></a> <a class="idref" href="Ceres.CeresParserUtils.html#pretty_loc"><span class="id" title="definition">pretty_loc</span></a> <span class="id" title="var">p</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="Ceres.CeresParserUtils.html#UnknownEscape"><span class="id" title="constructor">UnknownEscape</span></a> <span class="id" title="var">p</span> <span class="id" title="var">c</span> =&gt; "Unknown escape code '\" <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#169ad156fbc6036a53a0338819a2b301"><span class="id" title="notation">++</span></a> <span class="id" title="var">c</span> <a class="idref" href="Ceres.CeresString.html#::string_scope:x_'::'_x"><span class="id" title="notation">::</span></a> "' at location " <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#169ad156fbc6036a53a0338819a2b301"><span class="id" title="notation">++</span></a> <a class="idref" href="Ceres.CeresParserUtils.html#pretty_loc"><span class="id" title="definition">pretty_loc</span></a> <span class="id" title="var">p</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="Ceres.CeresParserUtils.html#UnterminatedString"><span class="id" title="constructor">UnterminatedString</span></a> <span class="id" title="var">p</span> =&gt; "Unterminated string starting at location " <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#169ad156fbc6036a53a0338819a2b301"><span class="id" title="notation">++</span></a> <a class="idref" href="Ceres.CeresParserUtils.html#pretty_loc"><span class="id" title="definition">pretty_loc</span></a> <span class="id" title="var">p</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="Ceres.CeresParserUtils.html#EmptyInput"><span class="id" title="constructor">EmptyInput</span></a> =&gt; "Input is empty"<br/>
+&nbsp;&nbsp;| <a class="idref" href="Ceres.CeresParserUtils.html#InvalidChar"><span class="id" title="constructor">InvalidChar</span></a> <span class="id" title="var">c</span> <span class="id" title="var">p</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;"Invalid character " <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#169ad156fbc6036a53a0338819a2b301"><span class="id" title="notation">++</span></a> <a class="idref" href="Ceres.CeresString.html#escape_string"><span class="id" title="definition">escape_string</span></a> (<span class="id" title="var">c</span> <a class="idref" href="Ceres.CeresString.html#::string_scope:x_'::'_x"><span class="id" title="notation">::</span></a> "") <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#169ad156fbc6036a53a0338819a2b301"><span class="id" title="notation">++</span></a> " at location " <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#169ad156fbc6036a53a0338819a2b301"><span class="id" title="notation">++</span></a> <a class="idref" href="Ceres.CeresParserUtils.html#pretty_loc"><span class="id" title="definition">pretty_loc</span></a> <span class="id" title="var">p</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="Ceres.CeresParserUtils.html#InvalidStringChar"><span class="id" title="constructor">InvalidStringChar</span></a> <span class="id" title="var">c</span> <span class="id" title="var">p</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;"Invalid character inside string " <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#169ad156fbc6036a53a0338819a2b301"><span class="id" title="notation">++</span></a> <a class="idref" href="Ceres.CeresString.html#escape_string"><span class="id" title="definition">escape_string</span></a> (<span class="id" title="var">c</span> <a class="idref" href="Ceres.CeresString.html#::string_scope:x_'::'_x"><span class="id" title="notation">::</span></a> "") <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#169ad156fbc6036a53a0338819a2b301"><span class="id" title="notation">++</span></a> " at location " <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#169ad156fbc6036a53a0338819a2b301"><span class="id" title="notation">++</span></a> <a class="idref" href="Ceres.CeresParserUtils.html#pretty_loc"><span class="id" title="definition">pretty_loc</span></a> <span class="id" title="var">p</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>%<span class="id" title="var">string</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="is_atom_char" class="idref" href="#is_atom_char"><span class="id" title="definition">is_atom_char</span></a> (<a id="c:6" class="idref" href="#c:6"><span class="id" title="binder">c</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.Ascii.html#ascii"><span class="id" title="inductive">ascii</span></a>) : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> :=<br/>
+&nbsp;&nbsp;(<a class="idref" href="Ceres.CeresString.html#is_alphanum"><span class="id" title="definition">is_alphanum</span></a> <a class="idref" href="Ceres.CeresParserUtils.html#c:6"><span class="id" title="variable">c</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Bool.Bool.html#0355f6c50df14bfb34d066e9a1089633"><span class="id" title="notation">|||</span></a> <a class="idref" href="Ceres.CeresString.html#string_elem"><span class="id" title="definition">string_elem</span></a> <a class="idref" href="Ceres.CeresParserUtils.html#c:6"><span class="id" title="variable">c</span></a> "'=-+*/:!?@#$%^&amp;_&lt;&gt;.,|~").<br/>
+</div>
+</div>
+<div id="footer">
+  Generated by <a href="http://coq.inria.fr/">coqdoc</a> and improved with <a href="https://github.com/tebbi/coqdocjs">CoqdocJS</a>
+</div>
+</div>
+</body>
+
+</html>

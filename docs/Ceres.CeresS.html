@@ -1,0 +1,391 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<link href="coqdocjs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="config.js"></script>
+<script type="text/javascript" src="coqdocjs.js"></script>
+</head>
+
+<body onload="document.getElementById('content').focus()">
+  <div id="header">
+    <span class="left">
+      <span class="modulename"> <script> document.write(document.title) </script> </span>
+    </span>
+
+    <span class="button" id="toggle-proofs"></span>
+
+    <span class="right">
+      <a href="../">Project Page</a>
+      <a href="./indexpage.html"> Index </a>
+      <a href="./toc.html"> Table of Contents </a>
+    </span>
+</div>
+    <div id="content" tabindex="-1" onblur="document.getElementById('content').focus()">
+    <div id="main">
+<h1 class="libtitle">Ceres.CeresS</h1>
+
+<div class="code">
+</div>
+
+<div class="doc">
+<a id="lab16"></a><h1 class="section">S-expressions</h1>
+
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+S-expressions, parameterized by the type of atoms. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Inductive</span> <a id="sexp_" class="idref" href="#sexp_"><span class="id" title="inductive">sexp_</span></a> (<a id="A:1" class="idref" href="#A:1"><span class="id" title="binder">A</span></a> : <span class="id" title="keyword">Type</span>) :=<br/>
+| <a id="Atom_" class="idref" href="#Atom_"><span class="id" title="constructor">Atom_</span></a> (<a id="a:4" class="idref" href="#a:4"><span class="id" title="binder">a</span></a> : <a class="idref" href="Ceres.CeresS.html#A:1"><span class="id" title="variable">A</span></a>)<br/>
+| <a id="List" class="idref" href="#List"><span class="id" title="constructor">List</span></a> (<a id="xs:5" class="idref" href="#xs:5"><span class="id" title="binder">xs</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Ceres.CeresS.html#sexp_:2"><span class="id" title="inductive">sexp_</span></a> <a class="idref" href="Ceres.CeresS.html#A:1"><span class="id" title="variable">A</span></a>))<br/>
+.<br/>
+
+<br/>
+<span class="id" title="var">Arguments</span> <a class="idref" href="Ceres.CeresS.html#Atom_"><span class="id" title="constructor">Atom_</span></a> {<span class="id" title="var">A</span>} <span class="id" title="var">a</span>.<br/>
+<span class="id" title="var">Arguments</span> <a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> {<span class="id" title="var">A</span>} <span class="id" title="var">xs</span>.<br/>
+
+<br/>
+<span class="comment">(*&nbsp;Declare&nbsp;Scope&nbsp;sexp_scope.&nbsp;*)</span><br/>
+<span class="id" title="keyword">Delimit</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">sexp_scope</span> <span class="id" title="keyword">with</span> <span class="id" title="var">sexp</span>.<br/>
+<span class="id" title="keyword">Bind</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">sexp_scope</span> <span class="id" title="keyword">with</span> <span class="id" title="var">sexp_</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Notation</span> <a id="2b6c84931232b3faf22f327ddf53557e" class="idref" href="#2b6c84931232b3faf22f327ddf53557e"><span class="id" title="notation">&quot;</span></a>[ ]" := (<a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a>) : <span class="id" title="var">sexp_scope</span>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="7841358cbfa2d68401acdb6543dbb5dc" class="idref" href="#7841358cbfa2d68401acdb6543dbb5dc"><span class="id" title="notation">&quot;</span></a>[ x ]" := (<a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> (@<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#cons"><span class="id" title="constructor">cons</span></a> (<a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <span class="id" title="var">_</span>) <span class="id" title="var">x</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a>)) : <span class="id" title="var">sexp_scope</span>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="687efd969070470f3c595e08deef9fbb" class="idref" href="#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">&quot;</span></a>[ x ; y ; .. ; z ]"<br/>
+&nbsp;&nbsp;:= (<a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> (@<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#cons"><span class="id" title="constructor">cons</span></a> (<a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <span class="id" title="var">_</span>) <span class="id" title="var">x</span> (@<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#cons"><span class="id" title="constructor">cons</span></a> (<a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <span class="id" title="var">_</span>) <span class="id" title="var">y</span> .. (@<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#cons"><span class="id" title="constructor">cons</span></a> (<a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <span class="id" title="var">_</span>) <span class="id" title="var">z</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a>) .. )))<br/>
+&nbsp;&nbsp;: <span class="id" title="var">sexp_scope</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Apply a function to every atom. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Fixpoint</span> <a id="map_sexp_" class="idref" href="#map_sexp_"><span class="id" title="definition">map_sexp_</span></a> {<a id="A:6" class="idref" href="#A:6"><span class="id" title="binder">A</span></a> <a id="B:7" class="idref" href="#B:7"><span class="id" title="binder">B</span></a> : <span class="id" title="keyword">Type</span>} (<a id="f:8" class="idref" href="#f:8"><span class="id" title="binder">f</span></a> : <a class="idref" href="Ceres.CeresS.html#A:6"><span class="id" title="variable">A</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#B:7"><span class="id" title="variable">B</span></a>) (<a id="x:9" class="idref" href="#x:9"><span class="id" title="binder">x</span></a> : <a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <a class="idref" href="Ceres.CeresS.html#A:6"><span class="id" title="variable">A</span></a>) : <a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <a class="idref" href="Ceres.CeresS.html#B:7"><span class="id" title="variable">B</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Ceres.CeresS.html#x:9"><span class="id" title="variable">x</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="Ceres.CeresS.html#Atom_"><span class="id" title="constructor">Atom_</span></a> <span class="id" title="var">a</span> =&gt; <a class="idref" href="Ceres.CeresS.html#Atom_"><span class="id" title="constructor">Atom_</span></a> (<a class="idref" href="Ceres.CeresS.html#f:8"><span class="id" title="variable">f</span></a> <span class="id" title="var">a</span>)<br/>
+&nbsp;&nbsp;| <a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> <span class="id" title="var">xs</span> =&gt; <a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> (<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#map"><span class="id" title="definition">map</span></a> (<a class="idref" href="Ceres.CeresS.html#map_sexp_:10"><span class="id" title="definition">map_sexp_</span></a> <a class="idref" href="Ceres.CeresS.html#f:8"><span class="id" title="variable">f</span></a>) <span class="id" title="var">xs</span>)<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Replace every atom with an S-expression. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Fixpoint</span> <a id="subst_sexp_" class="idref" href="#subst_sexp_"><span class="id" title="definition">subst_sexp_</span></a> {<a id="A:12" class="idref" href="#A:12"><span class="id" title="binder">A</span></a> <a id="B:13" class="idref" href="#B:13"><span class="id" title="binder">B</span></a> : <span class="id" title="keyword">Type</span>} (<a id="f:14" class="idref" href="#f:14"><span class="id" title="binder">f</span></a> : <a class="idref" href="Ceres.CeresS.html#A:12"><span class="id" title="variable">A</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <a class="idref" href="Ceres.CeresS.html#B:13"><span class="id" title="variable">B</span></a>) (<a id="x:15" class="idref" href="#x:15"><span class="id" title="binder">x</span></a> : <a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <a class="idref" href="Ceres.CeresS.html#A:12"><span class="id" title="variable">A</span></a>) : <a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <a class="idref" href="Ceres.CeresS.html#B:13"><span class="id" title="variable">B</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Ceres.CeresS.html#x:15"><span class="id" title="variable">x</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="Ceres.CeresS.html#Atom_"><span class="id" title="constructor">Atom_</span></a> <span class="id" title="var">a</span> =&gt; <a class="idref" href="Ceres.CeresS.html#f:14"><span class="id" title="variable">f</span></a> <span class="id" title="var">a</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> <span class="id" title="var">xs</span> =&gt; <a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> (<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#map"><span class="id" title="definition">map</span></a> (<a class="idref" href="Ceres.CeresS.html#subst_sexp_:16"><span class="id" title="definition">subst_sexp_</span></a> <a class="idref" href="Ceres.CeresS.html#f:14"><span class="id" title="variable">f</span></a>) <span class="id" title="var">xs</span>)<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Construct an S-expression from a list of atoms. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Definition</span> <a id="sexp_of_atoms" class="idref" href="#sexp_of_atoms"><span class="id" title="definition">sexp_of_atoms</span></a> {<a id="A:18" class="idref" href="#A:18"><span class="id" title="binder">A</span></a>} (<a id="xs:19" class="idref" href="#xs:19"><span class="id" title="binder">xs</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Ceres.CeresS.html#A:18"><span class="id" title="variable">A</span></a>) : <a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <a class="idref" href="Ceres.CeresS.html#A:18"><span class="id" title="variable">A</span></a> :=<br/>
+&nbsp;&nbsp;<a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> (<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#map"><span class="id" title="definition">map</span></a> <a class="idref" href="Ceres.CeresS.html#Atom_"><span class="id" title="constructor">Atom_</span></a> <a class="idref" href="Ceres.CeresS.html#xs:19"><span class="id" title="variable">xs</span></a>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab17"></a><h1 class="section">Default atoms</h1>
+
+<div class="paragraph"> </div>
+
+ Default type of atoms. <span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a></span> <span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#atom"><span class="id" title="inductive">atom</span></a></span> thus provides a uniform format to
+    store and exchange semi-structured data. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Variant</span> <a id="atom" class="idref" href="#atom"><span class="id" title="inductive">atom</span></a> : <span class="id" title="keyword">Set</span> :=<br/>
+| <a id="Num" class="idref" href="#Num"><span class="id" title="constructor">Num</span></a> (<a id="n:22" class="idref" href="#n:22"><span class="id" title="binder">n</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Numbers.BinNums.html#Z"><span class="id" title="inductive">Z</span></a>)       <span class="comment">(*&nbsp;Integers.&nbsp;*)</span><br/>
+| <a id="Str" class="idref" href="#Str"><span class="id" title="constructor">Str</span></a> (<a id="s:23" class="idref" href="#s:23"><span class="id" title="binder">s</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a>)  <span class="comment">(*&nbsp;Literal&nbsp;strings.&nbsp;*)</span><br/>
+| <a id="Raw" class="idref" href="#Raw"><span class="id" title="constructor">Raw</span></a> (<a id="s:24" class="idref" href="#s:24"><span class="id" title="binder">s</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a>)  <span class="comment">(*&nbsp;Simple&nbsp;atoms&nbsp;(e.g.,&nbsp;ADT&nbsp;tags).&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Should&nbsp;fit&nbsp;in&nbsp;this&nbsp;alphabet:&nbsp;<span class="inlinecode"><span class="id" title="var">A</span>-<span class="id" title="var">Za</span>-<span class="id" title="var">z0</span>-9-<span class="id" title="var">_</span>.'</span>.&nbsp;*)</span><br/>
+.<br/>
+
+<br/>
+<span class="id" title="keyword">Notation</span> <a id="sexp" class="idref" href="#sexp"><span class="id" title="abbreviation">sexp</span></a> := (<a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <a class="idref" href="Ceres.CeresS.html#atom"><span class="id" title="inductive">atom</span></a>).<br/>
+<span class="id" title="keyword">Notation</span> <a id="Atom" class="idref" href="#Atom"><span class="id" title="abbreviation">Atom</span></a> := (@<a class="idref" href="Ceres.CeresS.html#Atom_"><span class="id" title="constructor">Atom_</span></a> <a class="idref" href="Ceres.CeresS.html#atom"><span class="id" title="inductive">atom</span></a>). <span class="comment">(*&nbsp;This&nbsp;notation&nbsp;helps&nbsp;make&nbsp;coercions&nbsp;work.&nbsp;*)</span><br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Potential future extensions: binary strings, floating-point 
+<div class="paragraph"> </div>
+
+<a id="lab18"></a><h3 class="section">Coercions and notations</h3>
+
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Coercion</span> <a class="idref" href="Ceres.CeresS.html#Num"><span class="id" title="constructor">Num</span></a> <a class="idref" href="Ceres.CeresS.html#Num"><span class="id" title="constructor">:</span></a> <a class="idref" href="Ceres.CeresS.html#Num"><span class="id" title="constructor">Z</span></a> <a class="idref" href="Ceres.CeresS.html#Num"><span class="id" title="constructor">&gt;-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#Num"><span class="id" title="constructor">atom</span></a>.<br/>
+<span class="id" title="keyword">Coercion</span> <a class="idref" href="Ceres.CeresS.html#Raw"><span class="id" title="constructor">Raw</span></a> <a class="idref" href="Ceres.CeresS.html#Raw"><span class="id" title="constructor">:</span></a> <a class="idref" href="Ceres.CeresS.html#Raw"><span class="id" title="constructor">string</span></a> <a class="idref" href="Ceres.CeresS.html#Raw"><span class="id" title="constructor">&gt;-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#Raw"><span class="id" title="constructor">atom</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab19"></a><h2 class="section">Destructors</h2>
+
+<div class="paragraph"> </div>
+
+ This interface deliberately lacks a way to exhaustively eliminate an
+    <span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#atom"><span class="id" title="inductive">atom</span></a></span> to enable backward compatible extensions. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="get_Num" class="idref" href="#get_Num"><span class="id" title="definition">get_Num</span></a> (<a id="a:25" class="idref" href="#a:25"><span class="id" title="binder">a</span></a> : <a class="idref" href="Ceres.CeresS.html#atom"><span class="id" title="inductive">atom</span></a>) : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#option"><span class="id" title="inductive">option</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Numbers.BinNums.html#Z"><span class="id" title="inductive">Z</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Ceres.CeresS.html#a:25"><span class="id" title="variable">a</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="Ceres.CeresS.html#Num"><span class="id" title="constructor">Num</span></a> <span class="id" title="var">n</span> =&gt; <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> <span class="id" title="var">n</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">_</span> =&gt; <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="get_Str" class="idref" href="#get_Str"><span class="id" title="definition">get_Str</span></a> (<a id="a:27" class="idref" href="#a:27"><span class="id" title="binder">a</span></a> : <a class="idref" href="Ceres.CeresS.html#atom"><span class="id" title="inductive">atom</span></a>) : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#option"><span class="id" title="inductive">option</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Ceres.CeresS.html#a:27"><span class="id" title="variable">a</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="Ceres.CeresS.html#Str"><span class="id" title="constructor">Str</span></a> <span class="id" title="var">s</span> =&gt; <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> <span class="id" title="var">s</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">_</span> =&gt; <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="get_Raw" class="idref" href="#get_Raw"><span class="id" title="definition">get_Raw</span></a> (<a id="a:29" class="idref" href="#a:29"><span class="id" title="binder">a</span></a> : <a class="idref" href="Ceres.CeresS.html#atom"><span class="id" title="inductive">atom</span></a>) : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#option"><span class="id" title="inductive">option</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Ceres.CeresS.html#a:29"><span class="id" title="variable">a</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="Ceres.CeresS.html#Raw"><span class="id" title="constructor">Raw</span></a> <span class="id" title="var">s</span> =&gt; <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> <span class="id" title="var">s</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">_</span> =&gt; <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab20"></a><h2 class="section">Equality</h2>
+
+</div>
+<div class="code">
+
+<br/>
+<span class="comment">(*&nbsp;The&nbsp;inductive&nbsp;type&nbsp;<span class="inlinecode"><span class="id" title="var">sexp</span></span>&nbsp;has&nbsp;recursive&nbsp;occurences<br/>
+&nbsp;&nbsp;&nbsp;nested&nbsp;in&nbsp;<span class="inlinecode"><span class="id" title="var">list</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="keyword">Type</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="keyword">Type</span></span>.<br/>
+<br/>
+&nbsp;&nbsp;&nbsp;A&nbsp;common&nbsp;formula&nbsp;to&nbsp;define&nbsp;a&nbsp;recursive&nbsp;function&nbsp;<span class="inlinecode"><span class="id" title="var">f_sexp</span></span>&nbsp;on&nbsp;<span class="inlinecode"><span class="id" title="var">sexp</span></span><br/>
+&nbsp;&nbsp;&nbsp;(here,&nbsp;<span class="inlinecode"><span class="id" title="var">eqb_sexp</span></span>)&nbsp;is&nbsp;to&nbsp;first&nbsp;define&nbsp;a&nbsp;recursive&nbsp;function<br/>
+&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" title="var">f_list</span></span>&nbsp;on&nbsp;<span class="inlinecode"><span class="id" title="var">list</span></span> <span class="inlinecode"><span class="id" title="var">A</span></span>&nbsp;parameterized&nbsp;by&nbsp;a&nbsp;function&nbsp;<span class="inlinecode"><span class="id" title="var">f</span></span>&nbsp;on&nbsp;<span class="inlinecode"><span class="id" title="var">A</span></span>,<br/>
+&nbsp;&nbsp;&nbsp;which&nbsp;is&nbsp;going&nbsp;to&nbsp;be&nbsp;<span class="inlinecode"><span class="id" title="var">f_sexp</span></span>&nbsp;in&nbsp;the&nbsp;definition&nbsp;of&nbsp;<span class="inlinecode"><span class="id" title="var">f_sexp</span></span>.<br/>
+<br/>
+&nbsp;&nbsp;&nbsp;There&nbsp;are&nbsp;some&nbsp;more&nbsp;details&nbsp;to&nbsp;be&nbsp;careful&nbsp;about&nbsp;in&nbsp;order&nbsp;to&nbsp;make<br/>
+&nbsp;&nbsp;&nbsp;the&nbsp;definition&nbsp;of&nbsp;<span class="inlinecode"><span class="id" title="var">f_sexp</span></span>&nbsp;well-founded.&nbsp;In&nbsp;<span class="inlinecode"><span class="id" title="var">f_list</span></span>,&nbsp;the<br/>
+&nbsp;&nbsp;&nbsp;parameter&nbsp;<span class="inlinecode"><span class="id" title="var">f</span></span>&nbsp;should&nbsp;be&nbsp;bound&nbsp;_outside_&nbsp;of&nbsp;the&nbsp;<span class="inlinecode"><span class="id" title="keyword">fix</span></span><br/>
+&nbsp;&nbsp;&nbsp;expression,&nbsp;which&nbsp;only&nbsp;binds&nbsp;lists,&nbsp;ensuring&nbsp;that&nbsp;when&nbsp;the<br/>
+&nbsp;&nbsp;&nbsp;definition&nbsp;of&nbsp;<span class="inlinecode"><span class="id" title="var">f_list</span></span>&nbsp;is&nbsp;unfolded&nbsp;in&nbsp;<span class="inlinecode"><span class="id" title="var">f_sexp</span></span>,&nbsp;<span class="inlinecode"><span class="id" title="var">f</span></span>&nbsp;gets<br/>
+&nbsp;&nbsp;&nbsp;substituted&nbsp;with&nbsp;recursive&nbsp;occurences&nbsp;of&nbsp;<span class="inlinecode"><span class="id" title="var">f_sexp</span></span>.<br/>
+&nbsp;*)</span><br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="eqb_list" class="idref" href="#eqb_list"><span class="id" title="definition">eqb_list</span></a> {<a id="A:31" class="idref" href="#A:31"><span class="id" title="binder">A</span></a> <a id="B:32" class="idref" href="#B:32"><span class="id" title="binder">B</span></a>} (<a id="f:33" class="idref" href="#f:33"><span class="id" title="binder">f</span></a> : <a class="idref" href="Ceres.CeresS.html#A:31"><span class="id" title="variable">A</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#B:32"><span class="id" title="variable">B</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a>)<br/>
+&nbsp;&nbsp;: <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Ceres.CeresS.html#A:31"><span class="id" title="variable">A</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Ceres.CeresS.html#B:32"><span class="id" title="variable">B</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">fix</span> <span class="id" title="var">eqb_list_</span> (<a id="xs:34" class="idref" href="#xs:34"><span class="id" title="binder">xs</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Ceres.CeresS.html#A:31"><span class="id" title="variable">A</span></a>) (<a id="ys:35" class="idref" href="#ys:35"><span class="id" title="binder">ys</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Ceres.CeresS.html#B:32"><span class="id" title="variable">B</span></a>) :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Ceres.CeresS.html#xs:34"><span class="id" title="variable">xs</span></a>, <a class="idref" href="Ceres.CeresS.html#ys:35"><span class="id" title="variable">ys</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a>, <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a> =&gt; <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">x</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">xs</span>, <span class="id" title="var">y</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">ys</span> =&gt; (<a class="idref" href="Ceres.CeresS.html#f:33"><span class="id" title="variable">f</span></a> <span class="id" title="var">x</span> <span class="id" title="var">y</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#::bool_scope:x_'&amp;&amp;'_x"><span class="id" title="notation">&amp;&amp;</span></a> <a class="idref" href="Ceres.CeresS.html#eqb_list_:36"><span class="id" title="variable">eqb_list_</span></a> <a class="idref" href="Ceres.CeresS.html#xs:34"><span class="id" title="variable">xs</span></a> <a class="idref" href="Ceres.CeresS.html#ys:35"><span class="id" title="variable">ys</span></a>)%<span class="id" title="var">bool</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">_</span>, <span class="id" title="var">_</span> =&gt; <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="eqb_sexp_" class="idref" href="#eqb_sexp_"><span class="id" title="definition">eqb_sexp_</span></a> {<a id="A:39" class="idref" href="#A:39"><span class="id" title="binder">A</span></a> <a id="B:40" class="idref" href="#B:40"><span class="id" title="binder">B</span></a>} (<a id="a_eqb:41" class="idref" href="#a_eqb:41"><span class="id" title="binder">a_eqb</span></a> : <a class="idref" href="Ceres.CeresS.html#A:39"><span class="id" title="variable">A</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#B:40"><span class="id" title="variable">B</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a>)<br/>
+&nbsp;&nbsp;: <a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <a class="idref" href="Ceres.CeresS.html#A:39"><span class="id" title="variable">A</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <a class="idref" href="Ceres.CeresS.html#B:40"><span class="id" title="variable">B</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">fix</span> <span class="id" title="var">eqb_sexp__</span> (<a id="s1:42" class="idref" href="#s1:42"><span class="id" title="binder">s1</span></a> : <a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <a class="idref" href="Ceres.CeresS.html#A:39"><span class="id" title="variable">A</span></a>) (<a id="s2:43" class="idref" href="#s2:43"><span class="id" title="binder">s2</span></a> : <a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <a class="idref" href="Ceres.CeresS.html#B:40"><span class="id" title="variable">B</span></a>) : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Ceres.CeresS.html#s1:42"><span class="id" title="variable">s1</span></a>, <a class="idref" href="Ceres.CeresS.html#s2:43"><span class="id" title="variable">s2</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Ceres.CeresS.html#Atom_"><span class="id" title="constructor">Atom_</span></a> <span class="id" title="var">a1</span>, <a class="idref" href="Ceres.CeresS.html#Atom_"><span class="id" title="constructor">Atom_</span></a> <span class="id" title="var">a2</span> =&gt; <a class="idref" href="Ceres.CeresS.html#a_eqb:41"><span class="id" title="variable">a_eqb</span></a> <span class="id" title="var">a1</span> <span class="id" title="var">a2</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> <span class="id" title="var">xs1</span>, <a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> <span class="id" title="var">xs2</span> =&gt; <a class="idref" href="Ceres.CeresS.html#eqb_list"><span class="id" title="definition">eqb_list</span></a> <a class="idref" href="Ceres.CeresS.html#eqb_sexp__:44"><span class="id" title="variable">eqb_sexp__</span></a> <span class="id" title="var">xs1</span> <span class="id" title="var">xs2</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">_</span>, <span class="id" title="var">_</span> =&gt; <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="eqb_atom" class="idref" href="#eqb_atom"><span class="id" title="definition">eqb_atom</span></a> (<a id="x1:47" class="idref" href="#x1:47"><span class="id" title="binder">x1</span></a> <a id="x2:48" class="idref" href="#x2:48"><span class="id" title="binder">x2</span></a> : <a class="idref" href="Ceres.CeresS.html#atom"><span class="id" title="inductive">atom</span></a>) : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Ceres.CeresS.html#x1:47"><span class="id" title="variable">x1</span></a>, <a class="idref" href="Ceres.CeresS.html#x2:48"><span class="id" title="variable">x2</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="Ceres.CeresS.html#Raw"><span class="id" title="constructor">Raw</span></a> <span class="id" title="var">s1</span>, <a class="idref" href="Ceres.CeresS.html#Raw"><span class="id" title="constructor">Raw</span></a> <span class="id" title="var">s2</span> =&gt; <a class="idref" href="Ceres.CeresString.html#eqb_string"><span class="id" title="definition">eqb_string</span></a> <span class="id" title="var">s1</span> <span class="id" title="var">s2</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="Ceres.CeresS.html#Str"><span class="id" title="constructor">Str</span></a> <span class="id" title="var">s1</span>, <a class="idref" href="Ceres.CeresS.html#Str"><span class="id" title="constructor">Str</span></a> <span class="id" title="var">s2</span> =&gt; <a class="idref" href="Ceres.CeresString.html#eqb_string"><span class="id" title="definition">eqb_string</span></a> <span class="id" title="var">s1</span> <span class="id" title="var">s2</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="Ceres.CeresS.html#Num"><span class="id" title="constructor">Num</span></a> <span class="id" title="var">z1</span>, <a class="idref" href="Ceres.CeresS.html#Num"><span class="id" title="constructor">Num</span></a> <span class="id" title="var">z2</span> =&gt; <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.ZArith.BinInt.html#Z.eqb"><span class="id" title="definition">Z.eqb</span></a> <span class="id" title="var">z1</span> <span class="id" title="var">z2</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">_</span>, <span class="id" title="var">_</span> =&gt; <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="eqb_sexp" class="idref" href="#eqb_sexp"><span class="id" title="definition">eqb_sexp</span></a> : <a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> :=<br/>
+&nbsp;&nbsp;<a class="idref" href="Ceres.CeresS.html#eqb_sexp_"><span class="id" title="definition">eqb_sexp_</span></a> <a class="idref" href="Ceres.CeresS.html#eqb_atom"><span class="id" title="definition">eqb_atom</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">magic</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> *;<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">repeat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| [ <span class="id" title="var">H</span> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#Forall"><span class="id" title="inductive">Forall</span></a> <span class="id" title="var">_</span> (<span class="id" title="var">_</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">_</span>) |- <span class="id" title="var">_</span> ] =&gt; <span class="id" title="tactic">inversion_clear</span> <span class="id" title="var">H</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| [ |- <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#andb"><span class="id" title="definition">andb</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> ] =&gt; <span class="id" title="tactic">apply</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#andb_true_intro"><span class="id" title="lemma">andb_true_intro</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| [ <span class="id" title="var">H</span> : ?<span class="id" title="var">x</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> ?<span class="id" title="var">xs</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> ?<span class="id" title="var">y</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> ?<span class="id" title="var">ys</span> |- <span class="id" title="var">_</span> ] =&gt; <span class="id" title="tactic">inversion</span> <span class="id" title="var">H</span>; <span class="id" title="tactic">clear</span> <span class="id" title="var">H</span>; <span class="id" title="tactic">subst</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| [ <span class="id" title="var">H</span> : ?<span class="id" title="var">t</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> |- <span class="id" title="var">_</span> ] =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">t</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#andb"><span class="id" title="definition">andb</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="tactic">apply</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#andb_prop"><span class="id" title="lemma">andb_prop</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">H</span>; <span class="id" title="tactic">destruct</span> <span class="id" title="var">H</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.ZArith.BinInt.html#Z.eqb"><span class="id" title="definition">Z.eqb</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="tactic">apply</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.ZArith.BinInt.html#Z.eqb_eq"><span class="id" title="lemma">Z.eqb_eq</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">H</span>; <span class="id" title="tactic">subst</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Ceres.CeresString.html#eqb_string"><span class="id" title="definition">eqb_string</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="tactic">apply</span> <a class="idref" href="Ceres.CeresString.html#eqb_eq_string"><span class="id" title="lemma">eqb_eq_string</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">H</span>; <span class="id" title="tactic">subst</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| [ <span class="id" title="var">H</span> : <span class="id" title="var">_</span> |- <span class="id" title="var">_</span> ] =&gt; <span class="id" title="tactic">solve</span> [ <span class="id" title="tactic">apply</span> <span class="id" title="var">H</span>; <span class="id" title="tactic">auto</span> ]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>; <span class="id" title="tactic">auto</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <a id="eqb_eq_list" class="idref" href="#eqb_eq_list"><span class="id" title="lemma">eqb_eq_list</span></a> {<a id="A:51" class="idref" href="#A:51"><span class="id" title="binder">A</span></a>} (<a id="eqb:52" class="idref" href="#eqb:52"><span class="id" title="binder">eqb</span></a> : <a class="idref" href="Ceres.CeresS.html#A:51"><span class="id" title="variable">A</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#A:51"><span class="id" title="variable">A</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a>) (<a id="xs:53" class="idref" href="#xs:53"><span class="id" title="binder">xs</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Ceres.CeresS.html#A:51"><span class="id" title="variable">A</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a id="Heqb:56" class="idref" href="#Heqb:56"><span class="id" title="binder">Heqb</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#Forall"><span class="id" title="inductive">Forall</span></a> (<span class="id" title="keyword">fun</span> <a id="a:54" class="idref" href="#a:54"><span class="id" title="binder">a</span></a> : <a class="idref" href="Ceres.CeresS.html#A:51"><span class="id" title="variable">A</span></a> =&gt; <span class="id" title="keyword">forall</span> <a id="b:55" class="idref" href="#b:55"><span class="id" title="binder">b</span></a> : <a class="idref" href="Ceres.CeresS.html#A:51"><span class="id" title="variable">A</span></a>, <a class="idref" href="Ceres.CeresS.html#eqb:52"><span class="id" title="variable">eqb</span></a> <a class="idref" href="Ceres.CeresS.html#a:54"><span class="id" title="variable">a</span></a> <a class="idref" href="Ceres.CeresS.html#b:55"><span class="id" title="variable">b</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'&lt;-&gt;'_x"><span class="id" title="notation">&lt;-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#a:54"><span class="id" title="variable">a</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Ceres.CeresS.html#b:55"><span class="id" title="variable">b</span></a>) <a class="idref" href="Ceres.CeresS.html#xs:53"><span class="id" title="variable">xs</span></a>)<br/>
+&nbsp;&nbsp;: <span class="id" title="keyword">forall</span> (<a id="xs':57" class="idref" href="#xs':57"><span class="id" title="binder">xs'</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Ceres.CeresS.html#A:51"><span class="id" title="variable">A</span></a>), <a class="idref" href="Ceres.CeresS.html#eqb_list"><span class="id" title="definition">eqb_list</span></a> <a class="idref" href="Ceres.CeresS.html#eqb:52"><span class="id" title="variable">eqb</span></a> <a class="idref" href="Ceres.CeresS.html#xs:53"><span class="id" title="variable">xs</span></a> <a class="idref" href="Ceres.CeresS.html#xs':57"><span class="id" title="variable">xs'</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'&lt;-&gt;'_x"><span class="id" title="notation">&lt;-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#xs:53"><span class="id" title="variable">xs</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Ceres.CeresS.html#xs':57"><span class="id" title="variable">xs'</span></a>.<br/>
+<span class="id" title="keyword">Proof</span> <span class="id" title="keyword">with</span> <span class="id" title="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">xs</span>; <span class="id" title="tactic">intros</span> []; <span class="id" title="tactic">split</span>; <span class="id" title="tactic">intros</span>; <span class="id" title="tactic">try</span> <span class="id" title="tactic">discriminate</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">magic</span>; [ <span class="id" title="tactic">f_equal</span> | <span class="id" title="tactic">split</span> ]; <span class="id" title="var">magic</span>.<br/>
+<span class="id" title="keyword">Defined</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <a id="eqb_eq_atom" class="idref" href="#eqb_eq_atom"><span class="id" title="lemma">eqb_eq_atom</span></a> : <a class="idref" href="Ceres.CeresString.html#eqb_eq"><span class="id" title="definition">eqb_eq</span></a> <a class="idref" href="Ceres.CeresS.html#eqb_atom"><span class="id" title="definition">eqb_atom</span></a>.<br/>
+<span class="id" title="keyword">Proof</span> <span class="id" title="keyword">with</span> <span class="id" title="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">split</span>; <span class="id" title="tactic">intros</span>.<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">destruct</span> <span class="id" title="var">a</span>, <span class="id" title="var">b</span>; <span class="id" title="tactic">try</span> <span class="id" title="tactic">discriminate</span>; <span class="id" title="var">magic</span>.<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">subst</span>; <span class="id" title="tactic">destruct</span> <span class="id" title="var">b</span>; <span class="id" title="tactic">simpl</span>; <span class="id" title="tactic">try</span> <span class="id" title="tactic">apply</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.ZArith.BinInt.html#Z.eqb_refl"><span class="id" title="lemma">Z.eqb_refl</span></a>; <span class="id" title="tactic">try</span> <span class="id" title="tactic">apply</span> <a class="idref" href="Ceres.CeresString.html#eqb_eq_string"><span class="id" title="lemma">eqb_eq_string</span></a>...<br/>
+<span class="id" title="keyword">Defined</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Instance</span> <a id="Decidable_eq_atom" class="idref" href="#Decidable_eq_atom"><span class="id" title="instance">Decidable_eq_atom</span></a> : <span class="id" title="keyword">forall</span> (<a id="x1:58" class="idref" href="#x1:58"><span class="id" title="binder">x1</span></a> <a id="x2:59" class="idref" href="#x2:59"><span class="id" title="binder">x2</span></a> : <a class="idref" href="Ceres.CeresS.html#atom"><span class="id" title="inductive">atom</span></a>), <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Classes.DecidableClass.html#Decidable"><span class="id" title="class">Decidable</span></a> (<a class="idref" href="Ceres.CeresS.html#x1:58"><span class="id" title="variable">x1</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Ceres.CeresS.html#x2:59"><span class="id" title="variable">x2</span></a>).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">exact</span> (<span class="id" title="keyword">fun</span> <a id="x1:62" class="idref" href="#x1:62"><span class="id" title="binder">x1</span></a> <a id="x2:63" class="idref" href="#x2:63"><span class="id" title="binder">x2</span></a> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{| <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Classes.DecidableClass.html#Decidable_witness"><span class="id" title="method">Decidable_witness</span></a> := <a class="idref" href="Ceres.CeresS.html#eqb_atom"><span class="id" title="definition">eqb_atom</span></a> <a class="idref" href="Ceres.CeresS.html#x1:60"><span class="id" title="variable">x1</span></a> <a class="idref" href="Ceres.CeresS.html#x2:61"><span class="id" title="variable">x2</span></a>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Classes.DecidableClass.html#Decidable_spec"><span class="id" title="method">Decidable_spec</span></a> := <a class="idref" href="Ceres.CeresS.html#eqb_eq_atom"><span class="id" title="lemma">eqb_eq_atom</span></a> <a class="idref" href="Ceres.CeresS.html#x1:60"><span class="id" title="variable">x1</span></a> <a class="idref" href="Ceres.CeresS.html#x2:61"><span class="id" title="variable">x2</span></a> |}).<br/>
+<span class="id" title="keyword">Defined</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <a id="forall_Forall" class="idref" href="#forall_Forall"><span class="id" title="lemma">forall_Forall</span></a> : <span class="id" title="keyword">forall</span> {<a id="X:64" class="idref" href="#X:64"><span class="id" title="binder">X</span></a>} (<a id="P:65" class="idref" href="#P:65"><span class="id" title="binder">P</span></a> : <a class="idref" href="Ceres.CeresS.html#X:64"><span class="id" title="variable">X</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <span class="id" title="keyword">Prop</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">(</span></a><span class="id" title="keyword">forall</span> <a id="x:66" class="idref" href="#x:66"><span class="id" title="binder">x</span></a>, <a class="idref" href="Ceres.CeresS.html#P:65"><span class="id" title="variable">P</span></a> <a class="idref" href="Ceres.CeresS.html#x:66"><span class="id" title="variable">x</span></a><a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <span class="id" title="keyword">forall</span> (<a id="xs:67" class="idref" href="#xs:67"><span class="id" title="binder">xs</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Ceres.CeresS.html#X:64"><span class="id" title="variable">X</span></a>), <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#Forall"><span class="id" title="inductive">Forall</span></a> <a class="idref" href="Ceres.CeresS.html#P:65"><span class="id" title="variable">P</span></a> <a class="idref" href="Ceres.CeresS.html#xs:67"><span class="id" title="variable">xs</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">intros</span>; <span class="id" title="tactic">induction</span> <span class="id" title="var">xs</span>; <span class="id" title="tactic">auto</span>. <span class="id" title="keyword">Defined</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <a id="sexp__ind" class="idref" href="#sexp__ind"><span class="id" title="lemma">sexp__ind</span></a> : <span class="id" title="keyword">forall</span> (<a id="A:68" class="idref" href="#A:68"><span class="id" title="binder">A</span></a> : <span class="id" title="keyword">Type</span>) (<a id="P:69" class="idref" href="#P:69"><span class="id" title="binder">P</span></a> : <a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <a class="idref" href="Ceres.CeresS.html#A:68"><span class="id" title="variable">A</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <span class="id" title="keyword">Prop</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">(</span></a><span class="id" title="keyword">forall</span> <a id="a:70" class="idref" href="#a:70"><span class="id" title="binder">a</span></a> : <a class="idref" href="Ceres.CeresS.html#A:68"><span class="id" title="variable">A</span></a>, <a class="idref" href="Ceres.CeresS.html#P:69"><span class="id" title="variable">P</span></a> (<a class="idref" href="Ceres.CeresS.html#Atom_"><span class="id" title="constructor">Atom_</span></a> <a class="idref" href="Ceres.CeresS.html#a:70"><span class="id" title="variable">a</span></a>)<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">(</span></a><span class="id" title="keyword">forall</span> <a id="xs:71" class="idref" href="#xs:71"><span class="id" title="binder">xs</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <a class="idref" href="Ceres.CeresS.html#A:68"><span class="id" title="variable">A</span></a>), <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#Forall"><span class="id" title="inductive">Forall</span></a> <a class="idref" href="Ceres.CeresS.html#P:69"><span class="id" title="variable">P</span></a> <a class="idref" href="Ceres.CeresS.html#xs:71"><span class="id" title="variable">xs</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#P:69"><span class="id" title="variable">P</span></a> (<a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> <a class="idref" href="Ceres.CeresS.html#xs:71"><span class="id" title="variable">xs</span></a>)<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">forall</span> <a id="s:72" class="idref" href="#s:72"><span class="id" title="binder">s</span></a> : <a class="idref" href="Ceres.CeresS.html#sexp_"><span class="id" title="inductive">sexp_</span></a> <a class="idref" href="Ceres.CeresS.html#A:68"><span class="id" title="variable">A</span></a>, <a class="idref" href="Ceres.CeresS.html#P:69"><span class="id" title="variable">P</span></a> <a class="idref" href="Ceres.CeresS.html#s:72"><span class="id" title="variable">s</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">A</span> <span class="id" title="var">P</span> <span class="id" title="var">Ha</span> <span class="id" title="var">Hxs</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">fix</span> <span class="id" title="var">self</span> 1.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> [].<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">auto</span>.<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">apply</span> <span class="id" title="var">Hxs</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="Ceres.CeresS.html#forall_Forall"><span class="id" title="lemma">forall_Forall</span></a>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assumption</span>.<br/>
+<span class="id" title="keyword">Defined</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <a id="eqb_eq_sexp_" class="idref" href="#eqb_eq_sexp_"><span class="id" title="lemma">eqb_eq_sexp_</span></a> {<a id="A:73" class="idref" href="#A:73"><span class="id" title="binder">A</span></a>} {<a id="eqb_A:74" class="idref" href="#eqb_A:74"><span class="id" title="binder">eqb_A</span></a> : <a class="idref" href="Ceres.CeresS.html#A:73"><span class="id" title="variable">A</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="Ceres.CeresS.html#A:73"><span class="id" title="variable">A</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a id="Heqb_eq:75" class="idref" href="#Heqb_eq:75"><span class="id" title="binder">Heqb_eq</span></a> : <a class="idref" href="Ceres.CeresString.html#eqb_eq"><span class="id" title="definition">eqb_eq</span></a> <a class="idref" href="Ceres.CeresS.html#eqb_A:74"><span class="id" title="variable">eqb_A</span></a>) : <a class="idref" href="Ceres.CeresString.html#eqb_eq"><span class="id" title="definition">eqb_eq</span></a> (<a class="idref" href="Ceres.CeresS.html#eqb_sexp_"><span class="id" title="definition">eqb_sexp_</span></a> <a class="idref" href="Ceres.CeresS.html#eqb_A:74"><span class="id" title="variable">eqb_A</span></a>).<br/>
+<span class="id" title="keyword">Proof</span> <span class="id" title="keyword">with</span> <span class="id" title="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intro</span> <span class="id" title="var">s1</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">s1</span>; <span class="id" title="tactic">intros</span> []; <span class="id" title="tactic">split</span>; <span class="id" title="tactic">intro</span> <span class="id" title="var">HH</span>; <span class="id" title="tactic">try</span> <span class="id" title="tactic">discriminate</span>; <span class="id" title="tactic">try</span> <span class="id" title="tactic">injection</span> <span class="id" title="var">HH</span>; <span class="id" title="tactic">intros</span>.<br/>
+&nbsp;&nbsp;1,2: <span class="id" title="tactic">try</span> <span class="id" title="tactic">f_equal</span>; <span class="id" title="tactic">apply</span> <span class="id" title="var">Heqb_eq</span>; <span class="id" title="tactic">auto</span>.<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">f_equal</span>; <span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> *; <span class="id" title="tactic">apply</span> <a class="idref" href="Ceres.CeresS.html#eqb_eq_list"><span class="id" title="lemma">eqb_eq_list</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">HH</span>...<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">simpl</span>; <span class="id" title="tactic">eapply</span> <a class="idref" href="Ceres.CeresS.html#eqb_eq_list"><span class="id" title="lemma">eqb_eq_list</span></a>; <span class="id" title="tactic">auto</span>.<br/>
+<span class="id" title="keyword">Defined</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="eqb_eq_sexp" class="idref" href="#eqb_eq_sexp"><span class="id" title="definition">eqb_eq_sexp</span></a> : <a class="idref" href="Ceres.CeresString.html#eqb_eq"><span class="id" title="definition">eqb_eq</span></a> <a class="idref" href="Ceres.CeresS.html#eqb_sexp"><span class="id" title="definition">eqb_sexp</span></a> := <a class="idref" href="Ceres.CeresS.html#eqb_eq_sexp_"><span class="id" title="lemma">eqb_eq_sexp_</span></a> <a class="idref" href="Ceres.CeresS.html#eqb_eq_atom"><span class="id" title="lemma">eqb_eq_atom</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Instance</span> <a id="Decidable_eq_sexp" class="idref" href="#Decidable_eq_sexp"><span class="id" title="instance">Decidable_eq_sexp</span></a> : <span class="id" title="keyword">forall</span> (<a id="s1:76" class="idref" href="#s1:76"><span class="id" title="binder">s1</span></a> <a id="s2:77" class="idref" href="#s2:77"><span class="id" title="binder">s2</span></a> : <a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a>), <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Classes.DecidableClass.html#Decidable"><span class="id" title="class">Decidable</span></a> (<a class="idref" href="Ceres.CeresS.html#s1:76"><span class="id" title="variable">s1</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Ceres.CeresS.html#s2:77"><span class="id" title="variable">s2</span></a>).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">exact</span> (<span class="id" title="keyword">fun</span> <a id="s1:80" class="idref" href="#s1:80"><span class="id" title="binder">s1</span></a> <a id="s2:81" class="idref" href="#s2:81"><span class="id" title="binder">s2</span></a> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{| <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Classes.DecidableClass.html#Decidable_witness"><span class="id" title="method">Decidable_witness</span></a> := <a class="idref" href="Ceres.CeresS.html#eqb_sexp"><span class="id" title="definition">eqb_sexp</span></a> <a class="idref" href="Ceres.CeresS.html#s1:78"><span class="id" title="variable">s1</span></a> <a class="idref" href="Ceres.CeresS.html#s2:79"><span class="id" title="variable">s2</span></a>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Classes.DecidableClass.html#Decidable_spec"><span class="id" title="method">Decidable_spec</span></a> := <a class="idref" href="Ceres.CeresS.html#eqb_eq_sexp"><span class="id" title="definition">eqb_eq_sexp</span></a> <a class="idref" href="Ceres.CeresS.html#s1:78"><span class="id" title="variable">s1</span></a> <a class="idref" href="Ceres.CeresS.html#s2:79"><span class="id" title="variable">s2</span></a> |}).<br/>
+<span class="id" title="keyword">Defined</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab21"></a><h2 class="section">Example</h2>
+
+</div>
+<div class="code">
+<span class="id" title="keyword">Section</span> <a id="Example" class="idref" href="#Example"><span class="id" title="section">Example</span></a>.<br/>
+<span class="id" title="keyword">Import</span> <span class="id" title="var">ListNotations</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Local Open</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">string</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+This S-expression:
+
+<div class="paragraph"> </div>
+
+<pre>
+(example
+  (message "I'm a teapot")
+  (code 418))
+</pre>
+
+<div class="paragraph"> </div>
+
+corresponds to this <span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a></span> in Gallina:
+
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Let</span> <a id="Example.example_1" class="idref" href="#Example.example_1"><span class="id" title="variable">example_1</span></a> : <a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a> :=<br/>
+&nbsp;&nbsp;<a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">[</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> "example"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">[</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> "message" <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> (<a class="idref" href="Ceres.CeresS.html#Str"><span class="id" title="constructor">Str</span></a> "I'm a teapot") <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">]</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">[</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> "code" <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> 418%<span class="id" title="var">Z</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">]</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Lists.List.html#e76c6291366b599375c28eba0aae94bb"><span class="id" title="notation">]</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Local Open</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">sexp</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Or, overloading the list notation... 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Let</span> <a id="Example.example_2" class="idref" href="#Example.example_2"><span class="id" title="variable">example_2</span></a> : <a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a> :=<br/>
+&nbsp;&nbsp;<a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">[</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> "example"<br/>
+&nbsp;&nbsp;<a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">[</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> "message" <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> (<a class="idref" href="Ceres.CeresS.html#Str"><span class="id" title="constructor">Str</span></a> "I'm a teapot") <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">]</span></a><br/>
+&nbsp;&nbsp;<a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">[</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> "code" <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">;</span></a> <a class="idref" href="Ceres.CeresS.html#Atom"><span class="id" title="abbreviation">Atom</span></a> 418%<span class="id" title="var">Z</span> <a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">]</span></a><br/>
+&nbsp;&nbsp;<a class="idref" href="Ceres.CeresS.html#687efd969070470f3c595e08deef9fbb"><span class="id" title="notation">]</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">End</span> <a class="idref" href="Ceres.CeresS.html#Example"><span class="id" title="section">Example</span></a>.<br/>
+</div>
+</div>
+<div id="footer">
+  Generated by <a href="http://coq.inria.fr/">coqdoc</a> and improved with <a href="https://github.com/tebbi/coqdocjs">CoqdocJS</a>
+</div>
+</div>
+</body>
+
+</html>
