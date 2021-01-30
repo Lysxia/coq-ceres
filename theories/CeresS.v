@@ -44,7 +44,7 @@ Fixpoint subst_sexp_ {A B : Type} (f : A -> sexp_ B) (x : sexp_ A) : sexp_ B :=
   end.
 
 (** Construct an S-expression from a list of atoms. *)
-Fixpoint sexp_of_atoms {A} (xs : list A) : sexp_ A :=
+Definition sexp_of_atoms {A} (xs : list A) : sexp_ A :=
   List (map Atom_ xs).
 
 (** * Default atoms *)

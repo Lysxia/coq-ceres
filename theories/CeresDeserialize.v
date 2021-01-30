@@ -112,7 +112,7 @@ Definition _con {A : Type} (tyname : string)
   fun l e =>
     match e with
     | List (Atom_ (Raw c) :: es) => f c l (type_error tyname) es
-    | List (e0 :: es) => inl (DeserError (0 :: l) (type_error tyname "unexpected atom (expected constructor name)"%string))
+    | List (_ :: _) => inl (DeserError (0 :: l) (type_error tyname "unexpected atom (expected constructor name)"%string))
     | List nil => inl (DeserError l (type_error tyname "unexpected empty list"%string))
     | Atom_ (Raw c) => g c l
     | Atom_ _ => inl (DeserError l (type_error tyname "unexpected atom (expected list or nullary constructor name)"%string))
