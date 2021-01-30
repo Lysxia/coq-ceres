@@ -65,7 +65,7 @@ Inductive after_atom_string : bool -> string -> Prop :=
 | after_atom_nil : after_atom_string true ""
 | after_atom_cons c s more : is_atom_char c = false -> after_atom_string more (c :: s)
 .
-Hint Constructors after_atom_string : ceres.
+Global Hint Constructors after_atom_string : ceres.
 
 Lemma after_atom_string_nil_inv more : after_atom_string more "" -> more = true.
 Proof.
@@ -105,13 +105,13 @@ Inductive token_string (more : bool) : list Token.t -> string -> Prop :=
 | token_string_comment ts c s
   : comment c -> token_string more ts s -> token_string more ts (c ++ s)
 .
-Hint Constructors token_string : ceres.
+Global Hint Constructors token_string : ceres.
 
 Inductive more_ok : bool -> string -> Prop :=
 | more_ok_false s : more_ok false s
 | more_ok_true c s : is_atom_char c = false -> more_ok true (c :: s)
 .
-Hint Constructors more_ok : ceres.
+Global Hint Constructors more_ok : ceres.
 
 Lemma more_ok_nil_inv more : more_ok more "" -> more = false.
 Proof.
@@ -135,7 +135,7 @@ Inductive list_tokens {A B} (tks : A -> list B -> Prop) : list A -> list B -> Pr
 | list_tokens_cons x xs y ys
   : tks x y -> list_tokens tks xs ys -> list_tokens tks (x :: xs) (y ++ ys)
 .
-Hint Constructors list_tokens : ceres.
+Global Hint Constructors list_tokens : ceres.
 
 (* Parser relation on atoms. Each atom is a single token. *)
 Inductive atom_token : atom -> Token.t -> Prop :=
@@ -145,7 +145,7 @@ Inductive atom_token : atom -> Token.t -> Prop :=
     atom_token (Num (Z.of_int z)) (Token.Atom s)
 | atom_token_Str s : atom_token (Str s) (Token.Str s)
 .
-Hint Constructors atom_token : ceres.
+Global Hint Constructors atom_token : ceres.
 
 (* Parser relation on S-expressions. This is the main definition of this file. *)
 Inductive sexp_tokens : sexp -> list Token.t -> Prop :=
@@ -154,7 +154,7 @@ Inductive sexp_tokens : sexp -> list Token.t -> Prop :=
   : list_tokens sexp_tokens es ts ->
     sexp_tokens (List es) (Token.Open :: ts ++ [Token.Close])
 .
-Hint Constructors sexp_tokens : ceres.
+Global Hint Constructors sexp_tokens : ceres.
 
 (* Parser relation on lists of S-expressions (without the outer parentheses). *)
 Notation list_sexp_tokens := (list_tokens sexp_tokens).
