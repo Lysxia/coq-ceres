@@ -32,7 +32,7 @@ Proof.
   | [ c : _ |- _ ] => destruct c; clear c; try discriminate
   end; cbn; reflexivity.
 Qed.
-Hint Resolve whitespace_no_atom : ceres.
+Local Hint Resolve whitespace_no_atom : ceres.
 
 Lemma list_sexp_tokens_singleton e ts
   : sexp_tokens e ts ->
@@ -41,7 +41,7 @@ Proof.
   rewrite <- (app_nil_r ts) at 2.
   constructor; auto with ceres.
 Qed.
-Hint Resolve list_sexp_tokens_singleton : ceres.
+Local Hint Resolve list_sexp_tokens_singleton : ceres.
 
 Lemma list_sexp_tokens_app es1 es2 ts1 ts2
   : list_sexp_tokens es1 ts1 ->
@@ -66,7 +66,7 @@ Lemma after_atom_string_snoc c s s' more :
 Proof.
   intros Hc []; constructor; auto.
 Qed.
-Hint Resolve after_atom_string_snoc : ceres.
+Local Hint Resolve after_atom_string_snoc : ceres.
 
 Lemma token_string_open_snoc more ts s :
   token_string more ts s ->
@@ -137,7 +137,7 @@ Inductive stack_tokens : list symbol -> list Token.t -> Prop :=
     stack_tokens us ts ->
     stack_tokens (Exp e :: us) (ts ++ ts0)
 .
-Hint Constructors stack_tokens : ceres.
+Local Hint Constructors stack_tokens : ceres.
 
 Inductive stack_end_last : list symbol -> Prop :=
 | stack_end_last_last p : stack_end_last [Open p]
@@ -148,7 +148,7 @@ Inductive stack_end : list symbol -> Prop :=
 | stack_end_nil : stack_end []
 | stack_end_nonempty us : stack_end_last us -> stack_end us
 .
-Hint Constructors stack_end : ceres.
+Local Hint Constructors stack_end : ceres.
 
 Lemma stack_end_cons v u us
   : stack_end (u :: us) ->
@@ -156,7 +156,7 @@ Lemma stack_end_cons v u us
 Proof.
   inversion 1; do 2 constructor; auto.
 Qed.
-Hint Resolve stack_end_cons : ceres.
+Local Hint Resolve stack_end_cons : ceres.
 
 Lemma stack_end_cons_Open p us
   : stack_end us ->
@@ -166,7 +166,7 @@ Proof.
   - do 2 constructor.
   - inversion H0; do 3 (constructor; auto).
 Qed.
-Hint Resolve stack_end_cons_Open : ceres.
+Local Hint Resolve stack_end_cons_Open : ceres.
 
 Lemma stack_end_inv u us
   : stack_end (u :: us) ->
@@ -174,7 +174,7 @@ Lemma stack_end_inv u us
 Proof.
   inversion 1. inversion H0; auto with ceres.
 Qed.
-Hint Resolve stack_end_inv : ceres.
+Local Hint Resolve stack_end_inv : ceres.
 
 Definition escape_to_string (e : escape) : string :=
   match e with
@@ -188,7 +188,7 @@ Definition no_newline (s : string) : Prop :=
 Lemma is_atom_singleton (c : ascii)
   : is_atom_char c = true -> atom_string (c :: "").
 Proof. intros E; constructor; cbn; discriminate + rewrite E; reflexivity. Qed.
-Hint Resolve is_atom_singleton : ceres.
+Local Hint Resolve is_atom_singleton : ceres.
 
 Lemma is_atom_app (s : string) (c : ascii)
   : atom_string s -> is_atom_char c = true -> atom_string (s ++ c :: "").
@@ -199,7 +199,7 @@ Proof.
     + rewrite Hc; auto.
     + destruct (is_atom_char a); discriminate + rewrite IHs; auto.
 Qed.
-Hint Resolve is_atom_app : ceres.
+Local Hint Resolve is_atom_app : ceres.
 
 Inductive str_token_string (tok : string) : escape -> string -> Prop :=
 | str_token_string_EscBackslash
@@ -332,7 +332,7 @@ Inductive partial_token_string : partial_token -> string -> Prop :=
   : no_newline s ->
     partial_token_string Comment (";" :: s)
 .
-Hint Constructors partial_token_string : ceres.
+Local Hint Constructors partial_token_string : ceres.
 
 Inductive parser_state_string_
     (more : bool) (d : list sexp) (u : list symbol) (s0 : string) : Prop :=
@@ -343,7 +343,7 @@ Inductive parser_state_string_
     stack_end u ->
     parser_state_string_ more d u s0
 .
-Hint Constructors parser_state_string_ : ceres.
+Local Hint Constructors parser_state_string_ : ceres.
 
 Lemma parser_state_string_map d u more more' s0 s0'
   : (forall ts, token_string more ts s0 -> token_string more' ts s0') ->
@@ -361,7 +361,7 @@ Inductive parser_state_string (i : parser_state) : string -> Prop :=
     partial_token_string (parser_cur_token i) s1 ->
     parser_state_string i (s0 ++ s1)
 .
-Hint Constructors parser_state_string : ceres.
+Local Hint Constructors parser_state_string : ceres.
 
 Lemma more_ok_atom_inv more s
   : more_ok more s ->
@@ -554,7 +554,7 @@ Lemma more_ok_atom more s c
 Proof.
   intros []; cbn; auto with ceres.
 Qed.
-Hint Resolve more_ok_atom : ceres.
+Local Hint Resolve more_ok_atom : ceres.
 
 Lemma string_reverse_cons' c s s'
   : s' = string_reverse s ->
