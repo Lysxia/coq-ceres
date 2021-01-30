@@ -9,6 +9,8 @@ From Ceres Require Import
   CeresS
   CeresString
   CeresParser
+  CeresParserUtils
+  CeresParserInternal
   CeresParserRoundtrip.
 
 Import ListNotations.

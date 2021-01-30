@@ -22,6 +22,7 @@ From Coq Require Import
 From Ceres Require Import
   CeresS
   CeresString
+  CeresParserUtils
   CeresParser.
 
 Import ListNotations.

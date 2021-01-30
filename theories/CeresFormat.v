@@ -24,7 +24,7 @@ Local Definition dstring_of_sexp {A} (dstring_A : A -> DString.t)
     end%dstring.
 
 (** Convert a [sexp] to a [string]. *)
-Definition string_of_sexp {A} (string_A : A -> string) (x : sexp_ A) : string :=
+Definition string_of_sexp_ {A} (string_A : A -> string) (x : sexp_ A) : string :=
   dstring_of_sexp string_A x ""%string.
 
 (** Convert an [atom] to a [string]. *)
@@ -36,5 +36,5 @@ Definition string_of_atom (a : atom) : string :=
   end.
 
 (** Convert a [sexp] to a [string]. *)
-Definition string_of_sexpa : sexp -> string :=
-  string_of_sexp string_of_atom.
+Definition string_of_sexp : sexp -> string :=
+  string_of_sexp_ string_of_atom.
