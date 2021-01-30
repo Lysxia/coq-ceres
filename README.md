@@ -32,6 +32,10 @@ Definition example : sexp :=
   ].
 ```
 
+### Tutorial
+
+The [tutorial module](tutorial/Tutorial.v) is a good place for a quick start.
+
 Simplified overview
 -------------------
 
@@ -67,6 +71,7 @@ Definition from_sexp {A} `{Deserialize A} : sexp -> error + A.
 Definition to_string {A} `{Serialize A} : A -> string.
 Definition from_string {A} `{Deserialize A} : string -> error + A.
 ```
+
 Usage
 -----
 
