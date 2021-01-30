@@ -48,5 +48,8 @@ workflows:
           coq: '8.12'
           name: 'Coq 8.12'
       - test:
+          coq: '8.13'
+          name: 'Coq 8.13'
+      - test:
           coq: 'dev'
           name: 'Coq dev'
