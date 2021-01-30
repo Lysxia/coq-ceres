@@ -8,6 +8,7 @@ From Coq Require Import
   String.
 
 From Ceres Require Import
+  CeresUtils
   CeresS
   CeresParser
   CeresString.
@@ -16,22 +17,6 @@ Generalizable Variables A.
 
 Set Implicit Arguments.
 (* end hide *)
-
-(** ** General-purpose internal helpers *)
-
-(** Find an element by key in an association list. *)
-Fixpoint _find_or {A B C} (eqb : A -> A -> bool) (a : A) (xs : list (A * B)) (f : B -> C) (b : C) : C :=
-  match xs with
-  | nil => b
-  | (x, y) :: xs => if eqb a x then f y else _find_or eqb a xs f b
-  end.
-
-(** The bind of the [sum A] monad. *)
-Definition _bind_sum {A B C} (x : A + B) (f : B -> A + C) : A + C :=
-  match x with
-  | inl a => inl a
-  | inr b => f b
-  end.
 
 (** * Deserialization *)
 
