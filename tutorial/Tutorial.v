@@ -8,7 +8,7 @@ From Ceres Require Import Ceres.
 Import ListNotations.
 Local Open Scope string_scope.
 
-(** * Introduction *)
+(** ** Introduction *)
 
 (** Ceres is a library for serializing Coq data types,
 so they can be stored or displayed outside of Coq's interactive
@@ -31,9 +31,9 @@ Your data types
 >>
 *)
 
-(** * S-expressions *)
+(** ** S-expressions *)
 
-(** ** Types and constructors *)
+(** *** Types and constructors *)
 
 (** S-expressions have type [sexp], with two constructors, [Atom] and [List].
 So S-expressions are trees of atoms.
@@ -82,7 +82,7 @@ Thus a [string] can be put anywhere an [atom] is expected. *)
 
 Check (Raw "example" = "example")%string.
 
-(** ** Examples *)
+(** *** Examples *)
 
 Definition example1 : sexp :=
   List [ Atom (Raw "example")
@@ -112,7 +112,7 @@ Definition example2 : sexp :=
   ; [ Atom "code" ; Atom 418%Z ]
   ]%sexp.
 
-(** * String conversions *)
+(** ** String conversions *)
 
 Check (parse_sexp : string -> CeresParserUtils.error + sexp).
 Check (parse_sexps : string -> CeresParserUtils.error + list sexp).
@@ -124,7 +124,7 @@ is not well-formed. *)
 
 (** The function [string_of_sexp] converts a [sexp] into a [string]. *)
 
-(** * Serialization of data types *)
+(** ** Serialization of data types *)
 
 (** Example inductive type: *)
 Inductive t : Set :=
@@ -137,7 +137,7 @@ Inductive t : Set :=
 (** We define a [Serialize] and [Deserialize] instance to convert it to and
 from S-expressions. *)
 
-(** ** Serialize *)
+(** *** Serialize *)
 
 (** An instance [Serialize t] is a function [t -> sexp]. *)
 Check (eq_refl : Serialize t = (t -> sexp)).
@@ -168,7 +168,7 @@ subsequent elements are the fields of the constructor.
 *)
 
 
-(** ** Deserialize *)
+(** *** Deserialize *)
 
 (** For deserialization, the helper [Deser.match_con] quickly provides
 an implementation to decode the encoding described above. *)
