@@ -14,7 +14,7 @@ Local Open Scope string_scope.
 so they can be stored or displayed outside of Coq's interactive
 environment (for example, in an extracted program).
 
-Ceres manipulates S-expressions, a generic format with:
+Ceres manipulates S-expressions ("LISP notation"), a generic format with:
 
 - a common human-readable string representation,
 - a tree structure which makes it easy to map to user-defined Coq types.
@@ -71,7 +71,7 @@ Check (Str : string -> atom).
 
 (** Raw identifiers correspond to unquoted strings in the concrete syntax of S-expressions.
 Raw identifiers also have type [string], but they must consist only of
-characters in the set [[A-Za-z0-9'=+*/:!?@#$%^&<>.,|_~-]].
+characters in the set <<[A-Za-z0-9'=+*/:!?@#$%^&<>.,|_~-]>>.
 
 For the purpose of encoding Coq inductive types, their constructor names
 can be encoded as [Raw] atoms. *)
@@ -100,8 +100,8 @@ Notation "[ x ; y ; .. ; z ]"
 ]]
 
 Remember to open [sexp_scope]:
-- with the command [[Local Open Scope sexp_scope.]]
-- or with the key [[%sexp]].
+- with the command <<Local Open Scope sexp_scope.>>
+- or with the key <<%sexp>>.
 
 Also open [string_scope] to benefit from the [Raw] coercion.
 *)
@@ -161,7 +161,7 @@ Check (to_sexp : t -> sexp).
 and to benefit from library combinators for deserialization, it is recommended
 to stick to the following encoding.
 
-A constructor [C x y z] as a list [[(C x y z)]], i.e.,
+A constructor [C x y z] as a list <<(C x y z)>>, i.e.,
 [List [ Atom "C" ; to_sexp x ; to_sexp y ; to_sexp z ]] in Gallina,
 such that the first element is the name of the constructor as an atom, and the
 subsequent elements are the fields of the constructor.
