@@ -61,7 +61,7 @@ environment (for example, in an extracted program).
 
 <div class="paragraph"> </div>
 
-Ceres manipulates S-expressions, a generic format with:
+Ceres manipulates S-expressions ("LISP notation"), a generic format with:
 
 <div class="paragraph"> </div>
 
@@ -162,7 +162,7 @@ arbitrary syntax (e.g., dates, fractional numbers, hex, binary).
 <div class="doc">
 Raw identifiers correspond to unquoted strings in the concrete syntax of S-expressions.
 Raw identifiers also have type <span class="inlinecode"><a class="idref" href="http://coq.inria.fr/distrib/V8.13.0/stdlib//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a></span>, but they must consist only of
-characters in the set <span class="inlinecode">[<span class="id" title="var">A</span>-<span class="id" title="var">Za</span>-<span class="id" title="var">z0</span>-9'=+*/:!?@#$%^&amp;&lt;&gt;.,|<span class="id" title="var">_</span>~-]</span>.
+characters in the set <code>[A-Za-z0-9'=+*/:!?@#$%^&amp;&lt;&gt;.,|_~-]</code>.
 
 <div class="paragraph"> </div>
 
@@ -218,10 +218,10 @@ The list notation is also overloaded to implicitly add the <span class="inlineco
 
 Remember to open <span class="inlinecode"><span class="id" title="var">sexp_scope</span></span>:
 <ul class="doclist">
-<li> with the command <span class="inlinecode">[<span class="id" title="keyword">Local</span></span> <span class="inlinecode"><span class="id" title="keyword">Open</span></span> <span class="inlinecode"><span class="id" title="keyword">Scope</span></span> <span class="inlinecode"><span class="id" title="var">sexp_scope</span>.]</span>
+<li> with the command <code>Local Open Scope sexp_scope.</code>
 
 </li>
-<li> or with the key <span class="inlinecode">[%<a class="idref" href="Ceres.CeresS.html#sexp"><span class="id" title="abbreviation">sexp</span></a>]</span>.
+<li> or with the key <code>%sexp</code>.
 
 </li>
 </ul>
@@ -335,7 +335,7 @@ to stick to the following encoding.
 
 <div class="paragraph"> </div>
 
-A constructor <span class="inlinecode"><span class="id" title="var">C</span></span> <span class="inlinecode"><span class="id" title="var">x</span></span> <span class="inlinecode"><span class="id" title="var">y</span></span> <span class="inlinecode"><span class="id" title="var">z</span></span> as a list <span class="inlinecode">[(<span class="id" title="var">C</span></span> <span class="inlinecode"><span class="id" title="var">x</span></span> <span class="inlinecode"><span class="id" title="var">y</span></span> <span class="inlinecode"><span class="id" title="var">z</span>)]</span>, i.e.,
+A constructor <span class="inlinecode"><span class="id" title="var">C</span></span> <span class="inlinecode"><span class="id" title="var">x</span></span> <span class="inlinecode"><span class="id" title="var">y</span></span> <span class="inlinecode"><span class="id" title="var">z</span></span> as a list <code>(C x y z)</code>, i.e.,
 <span class="inlinecode"><a class="idref" href="Ceres.CeresS.html#List"><span class="id" title="constructor">List</span></a></span> <span class="inlinecode">[</span> <span class="inlinecode"><a class="idref" href="Ceres.CeresParserRoundtrip.html#Token.Atom"><span class="id" title="constructor">Atom</span></a></span> <span class="inlinecode">&quot;<span class="id" title="var">C</span>&quot;</span> <span class="inlinecode">;</span> <span class="inlinecode"><a class="idref" href="Ceres.CeresSerialize.html#to_sexp"><span class="id" title="projection">to_sexp</span></a></span> <span class="inlinecode"><span class="id" title="var">x</span></span> <span class="inlinecode">;</span> <span class="inlinecode"><a class="idref" href="Ceres.CeresSerialize.html#to_sexp"><span class="id" title="projection">to_sexp</span></a></span> <span class="inlinecode"><span class="id" title="var">y</span></span> <span class="inlinecode">;</span> <span class="inlinecode"><a class="idref" href="Ceres.CeresSerialize.html#to_sexp"><span class="id" title="projection">to_sexp</span></a></span> <span class="inlinecode"><span class="id" title="var">z</span></span> <span class="inlinecode">]</span> in Gallina,
 such that the first element is the name of the constructor as an atom, and the
 subsequent elements are the fields of the constructor.
