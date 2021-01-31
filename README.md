@@ -32,9 +32,11 @@ Definition example : sexp :=
   ].
 ```
 
-### Tutorial
+### Documentation
 
-The [tutorial module](tutorial/Tutorial.v) is a good place for a quick start.
+The [tutorial module](https://lysxia.github.io/coq-ceres/Tutorial.v) is a good place for a quick start.
+
+[Index to the rendered documentation.](https://lysxia.github.io/coq-ceres/indexpage.html)
 
 Simplified overview
 -------------------
@@ -228,6 +230,22 @@ Definition Deserialize_unary : Deserialize nat :=
     Deser.match_con "nat"
       [ ("Z", 0%nat) ]
       [ ("S", Deser.con1 S deser_nat) ] l e.
+```
+
+Developer notes
+---------------
+
+### Build the documentation
+
+Extra directories:
+
+- `coqdocjs`: a clone of [coqdocjs](https://github.com/coq-community/coqdocjs)
+- `doc`: a clone of this repo's `gh-pages` branch
+
+```
+make html && rm -r doc/docs && mv html doc/docs
+cd doc
+git add docs && git commit -m "Update" && git push
 ```
 
 See also
