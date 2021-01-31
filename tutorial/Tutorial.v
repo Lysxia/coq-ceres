@@ -193,7 +193,7 @@ Instance Deserialize_t : Deserialize t :=
 for that type: *)
 Check (from_sexp : sexp -> error + t).
 
-(** To explain [Defer.match_con] in more details, it takes three main arguments:
+(** To explain [Deser.match_con] in more details, it takes three main arguments:
 - the name of the type, as a string, for error messages
 - a list of cases for nullary constructors of [t] paired with their names ([list (string * t)])
 - a list of cases for non-nullary constructors, also with their names,
