@@ -36,7 +36,7 @@ Definition example : sexp :=
 
 The [tutorial module](https://lysxia.github.io/coq-ceres/Tutorial.html) is a good place for a quick start.
 
-[Index to the rendered documentation.](https://lysxia.github.io/coq-ceres/indexpage.html)
+[Link to the rendered documentation.](https://lysxia.github.io/coq-ceres/toc.html)
 
 Simplified overview
 -------------------
