@@ -1,3 +1,10 @@
+# 0.4.0
+
+- Reexport `CeresParser` and `CeresFormat` in `Ceres`
+- Add `CeresParserUtils` and `CeresParserInternal`
+- Rename `string_of_sexp` to `string_of_sexp_`
+- Rename `string_of_sexpa` to `string_of_sexp`
+
 # 0.3.0
 
 - Add `Serialize` and `Deserialize` instances for `ascii`
