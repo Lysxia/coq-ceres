@@ -75,3 +75,7 @@ Instance Serialize_list {A} `{Serialize A} : Serialize (list A)
   := fun xs => List (List.map to_sexp xs).
 
 Instance Serialize_sexp : Serialize sexp := id.
+
+Polymorphic Instance Serialize_id {A} {Serialize_A : Serialize A}
+  : Serialize (id A)
+  := Serialize_A.

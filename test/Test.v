@@ -94,3 +94,7 @@ Definition Deserialize_unary : Deserialize nat :=
     Deser.match_con (A := nat) "nat"
       [ ("Z", 0%nat) ]
       [ ("S", Deser.con1 S deser_nat) ] l e.
+
+Definition serialize_id := to_sexp (tt : id unit).
+
+Definition deserialize_id : _ + id unit := from_sexp (Atom "tt").

@@ -346,3 +346,7 @@ Instance Deserialize_list {A} `{Deserialize A} : Deserialize (list A) :=
     end.
 
 Instance Deserialize_sexp : Deserialize sexp := fun _ => inr.
+
+Polymorphic Instance Deserialize_id {A} {Deserialize_A : Deserialize A}
+  : Deserialize (id A)
+  := Deserialize_A.
