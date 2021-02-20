@@ -25,6 +25,14 @@ jobs:
       - run:
           name: Compile Cérès
           command: opam install ./coq-ceres.opam
+      - run:
+          name: Test dependants
+          command: |
+            PINS=$(opam list -s --pinned --columns=package | xargs | tr ' ' ,)
+            PACKAGES=`opam list -s --depends-on coq-ceres --coinstallable-with $PINS`
+            if [ -n "$PACKAGES" ]
+            then opam install -t $PACKAGES
+            fi
 
 workflows:
   version: 2
