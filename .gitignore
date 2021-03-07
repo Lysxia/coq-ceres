@@ -31,3 +31,5 @@ nlia.cache
 nra.cache
 .coqdeps.d
 *Makefile.coq*
+doc/
+coqdocjs
