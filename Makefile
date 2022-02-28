@@ -23,7 +23,7 @@ $(MF_COQ): _CoqProject
 
 clean:
 	if [ -e $(MF_COQ) ] ; then make -f $(MF_COQ) cleanall ; fi
-	$(RM) */*.{vo,glob} */.*.aux $(MF_COQ){,.conf}
+	$(RM) */*.{vo,vos,vok,glob} */.*.aux $(MF_COQ){,.conf}
 
 cleanall: clean
 	$(RM) _CoqProject
