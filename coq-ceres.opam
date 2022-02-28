@@ -12,12 +12,15 @@ bug-reports: "https://github.com/Lysxia/coq-ceres/issues"
 authors: [ "Li-yao Xia" ]
 
 depends: [
+  "dune" {>= "2.8" & build}
   "coq" {>= "8.8"}
 ]
 
-build: [ make "-j%{jobs}%" ]
-install: [ make "install" ]
-run-test: [ make "-j%{jobs}%" "test" ]
+build: [
+  [ "dune" "subst" ] {dev}
+  [ "dune" "build" "-p" name "-j" jobs ]
+]
+run-test: [ "dune" "build" "-p" name "test" "tutorial" ]
 
 tags: [
   "keyword:serialization"
