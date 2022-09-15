@@ -144,6 +144,7 @@ Check (eq_refl : Serialize t = (t -> sexp)).
 
 (** Since [t] is recursive, this function will be defined using [fix]. *)
 
+Global
 Instance Serialize_t : Serialize t :=
   fix sz (a : t) : sexp :=
     match a with
@@ -180,6 +181,7 @@ Check (eq_refl : Deserialize t = (loc -> sexp -> error + t)).
 for recursive types where you have to build a fixpoint and explicitly pass the
 two arguments to [Deser.match_con]. *)
 
+Global
 Instance Deserialize_t : Deserialize t :=
   fix ds (l : loc) (e : sexp) : error + t :=
     Deser.match_con "t" []

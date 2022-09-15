@@ -111,6 +111,7 @@ Proof.
   - apply not_iff_compat, eqb_eq_ascii.
 Qed.
 
+Global
 Instance Decidable_eq_ascii : forall (a b : ascii), Decidable (a = b).
 Proof.
   exact (fun a b : ascii =>
@@ -150,6 +151,7 @@ Proof with auto.
     + apply IHs1...
 Defined.
 
+Global
 Instance Decidable_eq_string : forall (s1 s2 : string), Decidable (s1 = s2).
 Proof.
   exact (fun s1 s2 : string =>

@@ -35,11 +35,13 @@ Class CompleteIntegral (A : Type) `{Integral A} `{SemiIntegral A} : Prop :=
 Class SoundIntegral (A : Type) `{Integral A} `{SemiIntegral A} : Prop :=
   sound_integral : forall z a, from_Z z = Some a -> to_Z a = z.
 
+Global
 Instance CompleteClass_Integral {A} `{CompleteIntegral A} : CompleteClass A.
 Proof.
   intros l a; cbn; rewrite complete_integral; reflexivity.
 Qed.
 
+Global
 Instance SoundClass_Integral {A} `{SoundIntegral A} : SoundClass A.
 Proof.
   intros l [ [] | ] a; cbn; try discriminate.
@@ -48,11 +50,13 @@ Proof.
   apply (f_equal Atom), (f_equal Num). apply sound_integral; assumption.
 Qed.
 
+Global
 Instance Complete_Z : CompleteIntegral Z.
 Proof.
   intros a. reflexivity.
 Qed.
 
+Global
 Instance Complete_N : CompleteIntegral N.
 Proof.
   intros a. unfold from_Z, SemiIntegral_N.
@@ -62,6 +66,7 @@ Proof.
     apply N2Z.is_nonneg.
 Qed.
 
+Global
 Instance Complete_nat : CompleteIntegral nat.
 Proof.
   intros a. unfold from_Z, SemiIntegral_nat.
@@ -71,11 +76,13 @@ Proof.
     apply Nat2Z.is_nonneg.
 Qed.
 
+Global
 Instance Sound_Z : SoundIntegral Z.
 Proof.
   intros a b H; injection H; intros []; reflexivity.
 Qed.
 
+Global
 Instance Sound_N : SoundIntegral N.
 Proof.
   intros z n. unfold from_Z, SemiIntegral_N.
@@ -84,6 +91,7 @@ Proof.
   intros []; rewrite Z2N.id; auto.
 Qed.
 
+Global
 Instance Sound_nat : SoundIntegral nat.
 Proof.
   intros z n.  unfold from_Z, SemiIntegral_nat.
@@ -161,12 +169,14 @@ Ltac elim_Exists H :=
     destruct H as [ H | H ]; [ | elim_Exists H ]
   end.
 
+Global
 Instance CompleteClass_bool : CompleteClass bool.
 Proof.
   unfold CompleteClass, Complete.
   intros l []; reflexivity.
 Qed.
 
+Global
 Instance SoundClass_bool : SoundClass bool.
 Proof.
   intros l e a Ee; apply sound_match_con in Ee.
@@ -174,17 +184,20 @@ Proof.
     destruct Ee as [Eatom Ea]; subst; try reflexivity.
 Qed.
 
+Global
 Instance CompleteClass_option {A} `{CompleteClass A} : CompleteClass (option A).
 Proof.
   unfold CompleteClass, Complete.
   intros l []; cbn; [ rewrite H1 | ]; reflexivity.
 Qed.
 
+Global
 Instance CompleteClass_sum {A B} `{CompleteClass A} `{CompleteClass B} : CompleteClass (A + B).
 Proof.
   intros l []; cbn; rewrite complete_class; reflexivity.
 Qed.
 
+Global
 Instance CompleteClass_prod {A B} `{CompleteClass A} `{CompleteClass B} : CompleteClass (A * B).
 Proof.
   intros l []; cbn; rewrite 2 complete_class; reflexivity.
@@ -244,6 +257,7 @@ Ltac sound_field Ea :=
    destruct Ea as [a1 e1 es Ea1 Ea];
    sound_field Ea).
 
+Global
 Instance SoundClass_option {A} `{SoundClass A} : SoundClass (option A).
 Proof.
   intros l e a Ee; apply sound_match_con in Ee.
@@ -255,6 +269,7 @@ Proof.
     rewrite Ea1; assumption.
 Qed.
 
+Global
 Instance SoundClass_sum {A B} `{SoundClass A} `{SoundClass B} : SoundClass (A + B).
 Proof.
   intros l e a Ee; apply sound_match_con in Ee.
@@ -269,6 +284,7 @@ Proof.
     rewrite Ea1; assumption.
 Qed.
 
+Global
 Instance SoundClass_prod {A B} `{SoundClass A} `{SoundClass B} : SoundClass (A * B).
 Proof.
   intros l [ ea | [ | ea [ | eb [ | ] ] ] ] a; cbn; try discriminate.
@@ -296,6 +312,7 @@ Proof.
       eapply sound_class. eassumption.
 Qed.
 
+Global
 Instance SoundClass_list {A} `{SoundClass A} : SoundClass (list A).
 Proof.
   intros l [e | es] a; cbn; try discriminate.
@@ -313,27 +330,32 @@ Proof.
     apply IHys.
 Qed.
 
+Global
 Instance CompleteClass_list {A} `{CompleteClass A} : CompleteClass (list A).
 Proof.
   intros l a. apply complete_class_list.
 Qed.
 
+Global
 Instance CompleteClass_string : CompleteClass string.
 Proof.
   intros l a. reflexivity.
 Qed.
 
+Global
 Instance SoundClass_string : SoundClass string.
 Proof.
   intros l [ [] | ]; cbn; try discriminate.
   intros ? E; injection E; intros []; reflexivity.
 Qed.
 
+Global
 Instance CompleteClass_ascii : CompleteClass ascii.
 Proof.
   intros l a. reflexivity.
 Qed.
 
+Global
 Instance SoundClass_ascii : SoundClass ascii.
 Proof.
   intros l [ [ | s | ] | ]; cbn; try discriminate.

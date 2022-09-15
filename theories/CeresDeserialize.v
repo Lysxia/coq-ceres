@@ -234,7 +234,9 @@ Definition con5_ {A B C D E R} (f : A -> B -> C -> D -> E -> R)
 Class DeserFromSexpList (A R : Type) (n m : nat) :=
   _from_sexp_list : A -> FromSexpListN n m R.
 
+Global
 Instance DeserFromSexpList_0 R m : DeserFromSexpList R R m m := fun r => ret r.
+Global
 Instance DeserFromSexpList_S A B R n m `{Deserialize A} `{DeserFromSexpList B R (S n) m}
   : DeserFromSexpList (A -> B) R n m :=
   fun f => _from_sexp >>= fun a => _from_sexp_list (f a).
@@ -247,6 +249,7 @@ End Deser.
 Class SemiIntegral (A : Type) :=
   from_Z : Z -> option A.
 
+Global
 Instance Deserialize_SemiIntegral `{SemiIntegral A} : Deserialize A :=
   fun l e =>
     match e with
@@ -259,9 +262,12 @@ Instance Deserialize_SemiIntegral `{SemiIntegral A} : Deserialize A :=
     | List _ => inl (DeserError l "could not read integral type, got a list"%string)
     end.
 
+Global
 Instance SemiIntegral_Z : SemiIntegral Z := Some.
+Global
 Instance SemiIntegral_N : SemiIntegral N :=
   fun n => if (n <? 0)%Z then None else Some (Z.to_N n).
+Global
 Instance SemiIntegral_nat : SemiIntegral nat :=
   fun n => if (n <? 0)%Z then None else Some (Z.to_nat n).
 
@@ -269,23 +275,27 @@ Instance SemiIntegral_nat : SemiIntegral nat :=
 
 Import ListNotations.
 
+Global
 Instance Deserialize_bool : Deserialize bool :=
   Deser.match_con "bool"
     [ ("false", false)
     ; ("true" , true)
     ]%string [].
 
+Global
 Instance Deserialize_option {A} `{Deserialize A} : Deserialize (option A) :=
   Deser.match_con "option"
     [ ("None", None) ]%string
     [ ("Some", Deser.con1_ Some) ]%string.
 
+Global
 Instance Deserialize_sum {A B} `{Deserialize A} `{Deserialize B} : Deserialize (A + B) :=
   Deser.match_con "sum" []
     [ ("inl", Deser.con1_ inl)
     ; ("inr", Deser.con1_ inr)
     ]%string.
 
+Global
 Instance Deserialize_prod {A B} `{Deserialize A} `{Deserialize B} : Deserialize (A * B) :=
   fun l e =>
     match e with
@@ -297,9 +307,11 @@ Instance Deserialize_prod {A B} `{Deserialize A} `{Deserialize B} : Deserialize 
     | Atom_ _ => inl (DeserError l "could not read 'prod', expected list of length 2, got atom"%string)
     end.
 
+Global
 Instance Deserialize_Empty_set : Deserialize Empty_set :=
   fun l _ => inl (DeserError l "Tried to deserialize Empty_set"%string).
 
+Global
 Instance Deserialize_unit : Deserialize unit :=
   fun l e =>
     match e with
@@ -308,6 +320,7 @@ Instance Deserialize_unit : Deserialize unit :=
     | List _ => inl (DeserError l "could not read 'unit', expected atom ""tt"", got a list"%string)
     end.
 
+Global
 Instance Deserialize_string : Deserialize string :=
   fun l e =>
     match e with
@@ -316,6 +329,7 @@ Instance Deserialize_string : Deserialize string :=
     | List _ => inl (DeserError l "could not read 'string', got list"%string)
     end.
 
+Global
 Instance Deserialize_ascii : Deserialize ascii :=
   fun l e =>
     match e with
@@ -338,6 +352,7 @@ Fixpoint _sexp_to_list {A} (pa : FromSexp A) (xs : list A)
     end
   end.
 
+Global
 Instance Deserialize_list {A} `{Deserialize A} : Deserialize (list A) :=
   fun l e =>
     match e with
@@ -345,4 +360,5 @@ Instance Deserialize_list {A} `{Deserialize A} : Deserialize (list A) :=
     | List es => _sexp_to_list _from_sexp nil 0 l es
     end.
 
+Global
 Instance Deserialize_sexp : Deserialize sexp := fun _ => inr.
