@@ -169,6 +169,7 @@ Proof with auto.
   - subst; destruct b; simpl; try apply Z.eqb_refl; try apply eqb_eq_string...
 Defined.
 
+Global
 Instance Decidable_eq_atom : forall (x1 x2 : atom), Decidable (x1 = x2).
 Proof.
   exact (fun x1 x2 =>
@@ -206,6 +207,7 @@ Defined.
 
 Definition eqb_eq_sexp : eqb_eq eqb_sexp := eqb_eq_sexp_ eqb_eq_atom.
 
+Global
 Instance Decidable_eq_sexp : forall (s1 s2 : sexp), Decidable (s1 = s2).
 Proof.
   exact (fun s1 s2 =>
