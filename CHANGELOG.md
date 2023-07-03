@@ -1,3 +1,8 @@
+# 0.4.1
+
+- Build with Dune
+- Compatibility with 8.14, 8.15, 8.16, 8.17
+
 # 0.4.0
 
 - Reexport `CeresParser` and `CeresFormat` in `Ceres`
